@@ -162,6 +162,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DXListCtrl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DXListItem.cpp"
 				>
 			</File>
@@ -197,6 +201,10 @@
 			</File>
 			<File
 				RelativePath=".\DXLabel.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DXListCtrl.h"
 				>
 			</File>
 			<File

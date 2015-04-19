@@ -1,3 +1,22 @@
+/* 		
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  File:		DXLabel.h
+ *  Author:		Richard Zou
+ *	Created on:	2015-03-01
+ */
+
 #ifndef DX_LABEL_H
 #define DX_LABEL_H
 
@@ -23,7 +42,6 @@ public:
     virtual ~CDXLabel(void);
 
     virtual void Render();
-    virtual void Shutdonw();
     void SetText(const string &strText);
     void SetAlignment(DWORD dwAlignment);
     void SetFontColor(int nAlpha, int nRed, int nGreen, int nBlue);
@@ -32,7 +50,7 @@ protected:
     LPDIRECT3DTEXTURE9  m_pTexture;
     int         m_nFontType;
     DWORD       m_dwAlignment;
-    D3DCOLOR    m_dwColor;
+    D3DCOLOR    m_dwFontColor;
 
 private:
     string      m_strText;

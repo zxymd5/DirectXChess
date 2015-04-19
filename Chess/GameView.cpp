@@ -1,3 +1,22 @@
+/* 		
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  File:		GameView.cpp
+ *  Author:		Richard Zou
+ *	Created on:	2015-03-01
+ */
+
 #include "GameView.h"
 #include "GameHandle.h"
 #include "GameSettings.h"
@@ -13,8 +32,8 @@ CGameView::CGameView(void)
     m_pChessBoardCover = NULL;
     m_pBlackSide = NULL;
     m_pRedSide = NULL;
-    m_pHistoryLeft = NULL;
-    m_pHistoryRight = NULL;
+    m_pLeftHistoryBG = NULL;
+    m_pRightHistoryBG = NULL;
 
     for (int i = 0; i < s_nChessBoardRow; i++)
     {
@@ -38,6 +57,18 @@ CGameView::CGameView(void)
     m_pMessageBox = NULL;
     m_pConfirm = NULL;
     m_pCurrFocusWidget = NULL;
+    m_pLeftMoveHistory = NULL;
+    m_pRightMoveHistory = NULL;
+    m_pLeftPrevPage = NULL;
+    m_pLeftPrevRecord = NULL;
+    m_pLeftNextPage = NULL;
+    m_pLeftNextRecord = NULL;
+    m_pLeftPageInfo = NULL;
+    m_pRightPrevRecord = NULL;
+    m_pRightPrevPage = NULL;
+    m_pRightNextPage = NULL;
+    m_pRightNextRecord = NULL;
+    m_pRightPageInfo = NULL;
 
     m_bGameStarted = false;
     m_bGamePaused = false;
@@ -55,11 +86,11 @@ void CGameView::Init(HWND hWnd)
     m_pChessBackground = (CDXImage *)g_GameEngine.GetWidgetByName("Background");
     m_mapWidget.insert(make_pair(m_pChessBackground->GetDepth(), m_pChessBackground));
 
-    m_pHistoryLeft = (CDXImage *)g_GameEngine.GetWidgetByName("HistoryLeft");
-    m_mapWidget.insert(make_pair(m_pHistoryLeft->GetDepth(), m_pHistoryLeft));
+    m_pLeftHistoryBG = (CDXImage *)g_GameEngine.GetWidgetByName("HistoryLeft");
+    m_mapWidget.insert(make_pair(m_pLeftHistoryBG->GetDepth(), m_pLeftHistoryBG));
 
-    m_pHistoryRight = (CDXImage *)g_GameEngine.GetWidgetByName("HistoryRight");
-    m_mapWidget.insert(make_pair(m_pHistoryRight->GetDepth(), m_pHistoryRight));
+    m_pRightHistoryBG = (CDXImage *)g_GameEngine.GetWidgetByName("HistoryRight");
+    m_mapWidget.insert(make_pair(m_pRightHistoryBG->GetDepth(), m_pRightHistoryBG));
 
     m_pChessBoard = (CDXImage *)g_GameEngine.GetWidgetByName("ChessBoard");
     m_mapWidget.insert(make_pair(m_pChessBoard->GetDepth(), m_pChessBoard));
@@ -130,9 +161,61 @@ void CGameView::Init(HWND hWnd)
     m_pMessageBox->SetAlignment(DT_CENTER | DT_VCENTER);
     m_mapWidget.insert(make_pair(m_pMessageBox->GetDepth(), m_pMessageBox));
 
+    m_pLeftMoveHistory = (CDXListCtrl *)g_GameEngine.GetWidgetByName("LeftMoveCtrl");
+    for (int i = 0; i < m_pLeftMoveHistory->GetListItemCount(); i++)
+    {
+        m_pLeftMoveHistory->GetListItem(i).SetFontColor(255, 0, 0, 0);
+        m_pLeftMoveHistory->GetListItem(i).SetAlignment(DT_CENTER | DT_VCENTER);
+    }
+    m_mapWidget.insert(make_pair(m_pLeftMoveHistory->GetDepth(), m_pLeftMoveHistory));
+
+    m_pRightMoveHistory = (CDXListCtrl *)g_GameEngine.GetWidgetByName("RightMoveCtrl");
+    for (int i = 0; i < m_pLeftMoveHistory->GetListItemCount(); i++)
+    {
+        m_pRightMoveHistory->GetListItem(i).SetFontColor(255, 0, 0, 0);
+        m_pRightMoveHistory->GetListItem(i).SetAlignment(DT_CENTER | DT_VCENTER);
+    }
+    m_mapWidget.insert(make_pair(m_pRightMoveHistory->GetDepth(), m_pRightMoveHistory));
+
     m_pConfirm = (CDXButton *)g_GameEngine.GetWidgetByName("Confirm");
     m_pConfirm->SetCallBackInfo(OnConfirm, this);
     m_mapWidget.insert(make_pair(m_pConfirm->GetDepth(), m_pConfirm));
+
+    m_pLeftPrevPage = (CDXButton *)g_GameEngine.GetWidgetByName("LeftPrevPage");
+    m_mapWidget.insert(make_pair(m_pLeftPrevPage->GetDepth(), m_pLeftPrevPage));
+
+    m_pLeftPrevRecord = (CDXButton *)g_GameEngine.GetWidgetByName("LeftPrevRecord");
+    m_mapWidget.insert(make_pair(m_pLeftPrevRecord->GetDepth(), m_pLeftPrevRecord));
+
+    m_pLeftNextPage = (CDXButton *)g_GameEngine.GetWidgetByName("LeftNextPage");
+    m_mapWidget.insert(make_pair(m_pLeftNextPage->GetDepth(), m_pLeftNextPage));
+
+    m_pLeftNextRecord = (CDXButton *)g_GameEngine.GetWidgetByName("LeftNextRecord");
+    m_mapWidget.insert(make_pair(m_pLeftNextRecord->GetDepth(), m_pLeftNextRecord));
+
+    m_pLeftPageInfo = (CDXLabel *)g_GameEngine.GetWidgetByName("LeftPageInfo");
+    m_pLeftPageInfo->SetFontColor(255, 0, 0, 0);
+    m_pLeftPageInfo->SetAlignment(DT_CENTER | DT_VCENTER);
+    m_pLeftPageInfo->SetText("0/0");
+    m_mapWidget.insert(make_pair(m_pLeftPageInfo->GetDepth(), m_pLeftPageInfo));
+
+    m_pRightPrevPage = (CDXButton *)g_GameEngine.GetWidgetByName("RightPrevPage");
+    m_mapWidget.insert(make_pair(m_pRightPrevPage->GetDepth(), m_pRightPrevPage));
+
+    m_pRightPrevRecord = (CDXButton *)g_GameEngine.GetWidgetByName("RightPrevRecord");
+    m_mapWidget.insert(make_pair(m_pRightPrevRecord->GetDepth(), m_pRightPrevRecord));
+
+    m_pRightNextPage = (CDXButton *)g_GameEngine.GetWidgetByName("RightNextPage");
+    m_mapWidget.insert(make_pair(m_pRightNextPage->GetDepth(), m_pRightNextPage));
+
+    m_pRightNextRecord = (CDXButton *)g_GameEngine.GetWidgetByName("RightNextRecord");
+    m_mapWidget.insert(make_pair(m_pRightNextRecord->GetDepth(), m_pRightNextRecord));
+
+    m_pRightPageInfo = (CDXLabel *)g_GameEngine.GetWidgetByName("RightPageInfo");
+    m_pRightPageInfo->SetFontColor(255, 0, 0, 0);
+    m_pRightPageInfo->SetAlignment(DT_CENTER | DT_VCENTER);
+    m_pRightPageInfo->SetText("0/0");
+    m_mapWidget.insert(make_pair(m_pRightPageInfo->GetDepth(), m_pRightPageInfo));
 
     char szChessManName[100];
     for (int i = 0; i < s_nChessBoardRow; i++)
@@ -143,8 +226,6 @@ void CGameView::Init(HWND hWnd)
             CDXImage *pChessMan = new CDXImage;
 
             pChessMan->SetWidgetName(szChessManName);
-//             RECT Pos = GetChessManInitPos(i, j, g_GameSettings.m_nCompetitorSide);
-//             pChessMan->SetPosRect(Pos);
             pChessMan->SetVisible(false);
             pChessMan->SetDepth(97);
 
@@ -586,4 +667,9 @@ void CGameView::ChangeChessManPos()
 
     m_pBlackSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nBlackSide));
     m_pRedSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nRedSide));
+}
+
+void CGameView::UpdateMoveHistory()
+{
+
 }

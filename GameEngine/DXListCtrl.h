@@ -12,37 +12,40 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  File:		DXButton.h
+ *  File:		DXListCtrl.h
  *  Author:		Richard Zou
  *	Created on:	2015-03-01
  */
 
-#ifndef CDX_BUTTON_H
-#define CDX_BUTTON_H
+#ifndef DX_LIST_CTRL_H
+#define DX_LIST_CTRL_H
 
-#include "DXWidget.h"
+#include "dxwidget.h"
+#include "DXListItem.h"
+static const int s_nMaxListItem = 10;
 
-class CDXButton :
-    public CDXWidget
+class CDXListCtrl : public CDXWidget
 {
 public:
-    CDXButton(void);
-    virtual ~CDXButton(void);
-    void Init(const char *strWidgetName, const char *strTextureFile,
-              const char *strTextureFileSelected, const char *strTextureFileDisabled,
+    CDXListCtrl(void);
+    void Init(const char *strWidgetName, 
+              const char *strItemTextureFile,
+               const char *strListItemBasename,
               int nLeft, int nTop, 
               int nWidth, int nHeight, 
+               int nFontType, int nListItemCount, int nColumnCount,
+              int szColumnWidth[s_nMaxListItemColumn],
               bool bVisible, int nDepth);
-    const int GetCurrState();
-    void SetCurrState(int nCurrState);
-    virtual void HandleFocus(bool bFocus);
 
+    virtual void Shutdown();
     virtual void Render();
-    virtual void MsgResponse(HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam);
+    CDXListItem &GetListItem(int nListItemIndex);
+    int GetListItemCount() const;
+    virtual ~CDXListCtrl(void);
 
 private:
-    int             m_nCurrState;
-    LPDIRECT3DTEXTURE9  m_szTexture[STATE_COUNT];
+    CDXListItem m_szListItem[s_nMaxListItem];
+    int m_nListItemCount;
 };
 
 #endif

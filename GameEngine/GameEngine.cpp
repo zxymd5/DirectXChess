@@ -1,9 +1,29 @@
+/* 		
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  File:		GameEngine.cpp
+ *  Author:		Richard Zou
+ *	Created on:	2015-03-01
+ */
+
 #include "GameEngine.h"
 #include "../Include/SimpleIni.h"
 
 #include "DXImage.h"
 #include "DXButton.h"
 #include "DXLabel.h"
+#include "DXListCtrl.h"
 
 CGameEngine g_GameEngine;
 
@@ -113,6 +133,9 @@ void CGameEngine::ParseFile( const char *FileName )
     const char *strTextureFile;
     const char *strTextureFileSelected;
     const char *strTextureFileDisabled;
+    const char *strItemTextureFile;
+    const char *strListItemBasename;
+    const char *strColumnWidth;
 
     bool bVisible;
     int nDepth;
@@ -126,6 +149,9 @@ void CGameEngine::ParseFile( const char *FileName )
     int nTextWidth;
     int nTextHeight;
     int nFontType;
+    int nColumnCount;
+    int nListItemCount;
+    int szColumnWidth[s_nMaxListItemColumn];
 
     for (; it != Sections.end(); ++it)
     {
@@ -147,11 +173,25 @@ void CGameEngine::ParseFile( const char *FileName )
         nTop = Ini.GetLongValue(it->pItem, "Top", 0);
         nWidth = Ini.GetLongValue(it->pItem, "Width", 0);;
         nHeight = Ini.GetLongValue(it->pItem, "Height", 0);
+        
+        //For text area
         nTextLeft = Ini.GetLongValue(it->pItem, "TextLeft", 0);
         nTextTop = Ini.GetLongValue(it->pItem, "TextTop", 0);
         nTextWidth = Ini.GetLongValue(it->pItem, "TextWidth", 0);
         nTextHeight = Ini.GetLongValue(it->pItem, "TextHeight", 0);
         nFontType = Ini.GetLongValue(it->pItem, "FontType", 0);
+
+        //For listctrl
+        strItemTextureFile = Ini.GetValue(it->pItem, "ItemTextureFile", NULL);
+        strListItemBasename = Ini.GetValue(it->pItem, "ListItemBasename", NULL);
+        strColumnWidth = Ini.GetValue(it->pItem, "ColumnWidth", NULL);
+        if (strColumnWidth != NULL)
+        {
+            memset(szColumnWidth, 0, sizeof(int) * s_nMaxListItemColumn);
+            StringToIntArray(strColumnWidth, szColumnWidth, ',');
+        }
+        nColumnCount = Ini.GetLongValue(it->pItem, "ColumnCount", 0);
+        nListItemCount = Ini.GetLongValue(it->pItem, "ListItemCount", 0);
 
         switch(nWidgetType)
         {
@@ -179,6 +219,14 @@ void CGameEngine::ParseFile( const char *FileName )
                                             nLeft, nTop,nWidth, nHeight, bVisible, nDepth);
             }
             break;
+        case 4:
+            {
+                pWidget = new CDXListCtrl;
+                ((CDXListCtrl *)pWidget)->Init(it->pItem, strItemTextureFile, strListItemBasename, 
+                                                nLeft, nTop, nWidth, nHeight, nFontType, 
+                                                nListItemCount, nColumnCount, szColumnWidth,
+                                                bVisible, nDepth);
+            }
 
         default:
             break;
@@ -273,6 +321,7 @@ LPD3DXFONT CGameEngine::GetFont( int nFontType )
     {
         FontInfo *pInfo = new FontInfo;
         ZeroMemory(pInfo, sizeof(FontInfo));
+        pInfo->nFontType = nFontType;
 
         switch(nFontType)
         {
@@ -313,10 +362,12 @@ LPD3DXFONT CGameEngine::GetFont( int nFontType )
         if (FAILED(hRet))
         {
             MessageBox(NULL, "D3DXCreateFont() failed", "创建字体失败", MB_OK);
+            return NULL;
         }
         else if (hRet == S_OK)
         {
             pFont = pInfo->pFont;
+            m_vecFont.push_back(pInfo);
         }
 
     }
@@ -369,6 +420,7 @@ LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth
         if (FAILED(hRet))
         {
             MessageBox(NULL, "D3DXCreateTextureFromFileEx() failed", "创建纹理失败", MB_OK);
+            return NULL;
         }
         else
         {
@@ -378,7 +430,55 @@ LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth
             nHeight = ImageInfo.Height;
             nWidth = ImageInfo.Width;
         }
+        m_vecTexture.push_back(pInfo);
     }
 
     return pTexture;
+}
+
+void CGameEngine::StringToIntArray( const char *str, int szArr[], char chDelimiter )
+{
+    const char *p = str;
+    int i = 0;
+    int j = 0;
+    char strDst[256];
+    char strDigit[5];
+    memset(strDst, 0, 256);
+    memset(strDigit, 0, 5);
+
+
+    //去掉其他字符
+    while(*p != '\0')
+    {
+        if (*p == chDelimiter || *p >= '0' || *p <= '9')
+        {
+            strDst[i] = *p;
+            i++;
+        }
+
+        p++;
+    }
+
+    p = strDst;
+    i = 0;
+
+    //40,90,70
+    while (*p != '\0')
+    {
+        if (*p == ',')
+        {
+            szArr[i] = atoi(strDigit);
+            i++;
+            memset(strDigit, 0, 5);
+            j = 0;
+        }
+        else
+        {
+            strDigit[j] = *p;
+            j++;
+        }
+
+        p++;
+    }
+    szArr[i] = atoi(strDigit);
 }

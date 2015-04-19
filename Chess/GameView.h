@@ -1,3 +1,22 @@
+/* 		
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  File:		GameView.h
+ *  Author:		Richard Zou
+ *	Created on:	2015-03-01
+ */
+
 #ifndef GAME_VIEW_H
 #define GAME_VIEW_H
 
@@ -6,6 +25,7 @@
 #include "../GameEngine/DXImage.h"
 #include "../GameEngine/DXButton.h"
 #include "../GameEngine/DXLabel.h"
+#include "../GameEngine/DXListCtrl.h"
 #include "../GameEngine/SoundPlayer.h"
 
 #include <Windows.h>
@@ -32,6 +52,7 @@ public:
     void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void PlayTipSound(const MoveRoute &stRoute, int nGameResult);
     void UpdateGeneralStatus(int nGameResult);
+    void UpdateMoveHistory();
     void ShowResultView(int nGameResult);
 
     void Init(HWND hWnd);
@@ -59,8 +80,8 @@ private:
     CDXImage    *m_pBlackSide;
     CDXImage    *m_pRedSide;
     CDXImage    *m_pszGamingChessMan[s_nChessBoardRow][s_nChessBoardColumn];
-    CDXImage    *m_pHistoryRight;
-    CDXImage    *m_pHistoryLeft;
+    CDXImage    *m_pRightHistoryBG;
+    CDXImage    *m_pLeftHistoryBG;
     CDXButton   *m_pStart;
     CDXButton   *m_pPauseGame;
     CDXButton   *m_pContinue;
@@ -75,6 +96,18 @@ private:
     CDXLabel    *m_pMessageBox;
     CDXButton   *m_pConfirm;
     CDXWidget   *m_pCurrFocusWidget;
+    CDXListCtrl *m_pLeftMoveHistory;
+    CDXListCtrl *m_pRightMoveHistory;
+    CDXButton   *m_pLeftPrevPage;
+    CDXButton   *m_pLeftPrevRecord;
+    CDXButton   *m_pLeftNextPage;
+    CDXButton   *m_pLeftNextRecord;
+    CDXLabel    *m_pLeftPageInfo;
+    CDXButton   *m_pRightPrevRecord;
+    CDXButton   *m_pRightPrevPage;
+    CDXButton   *m_pRightNextPage;
+    CDXButton   *m_pRightNextRecord;
+    CDXLabel    *m_pRightPageInfo;
     CSoundPlayer m_clSoundPlayer;
 
     HWND        m_hWnd;

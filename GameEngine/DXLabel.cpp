@@ -1,3 +1,22 @@
+/* 		
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  File:		DXLabel.cpp
+ *  Author:		Richard Zou
+ *	Created on:	2015-03-01
+ */
+
 #include "DXLabel.h"
 #include "GameEngine.h"
 
@@ -46,15 +65,10 @@ void CDXLabel::Render()
         stTextPos.top = m_nTextTop;
         stTextPos.right = m_nTextLeft + m_nTextWidth;
         stTextPos.bottom = m_nTextTop + m_nTextHeight;
-        g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_strText.c_str(), -1, &stTextPos, m_dwAlignment, m_dwColor);
+        g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_strText.c_str(), -1, &stTextPos, m_dwAlignment, m_dwFontColor);
 
         CDXWidget::Render();
     }
-}
-
-void CDXLabel::Shutdonw()
-{
-    CDXWidget::Shutdown();
 }
 
 void CDXLabel::SetText( const string &strText )
@@ -69,7 +83,7 @@ void CDXLabel::SetAlignment( DWORD dwAlignment )
 
 void CDXLabel::SetFontColor( int nAlpha, int nRed, int nGreen, int nBlue )
 {
-    m_dwColor = D3DCOLOR_ARGB(nAlpha, nRed, nGreen, nBlue);
+    m_dwFontColor = D3DCOLOR_ARGB(nAlpha, nRed, nGreen, nBlue);
 }
 
 void CDXLabel::MsgResponse( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )

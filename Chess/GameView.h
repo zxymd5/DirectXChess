@@ -31,6 +31,7 @@
 #include <Windows.h>
 #include <map>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -47,18 +48,33 @@ public:
     virtual void ProcessEvent(CSubject *pSub, int nEvent);
     void ProcessUpdateChessManEvent(CSubject *pSub);
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
+    void ProcessFallbackEvent( CSubject *pSub );
 
     void UpdateChessMan(int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void PlayTipSound(const MoveRoute &stRoute, int nGameResult);
     void UpdateGeneralStatus(int nGameResult);
     void UpdateMoveHistory();
+    void AddMoveHistory(const MoveRoute &stRoute);
+    void FallbackMoveHistory(bool bMySide);
+
+    void ClearHisotryDisplay();
+    void UpdateMoveHistoryDisplay(bool bMySide);
+
+    int GetMoveHistoryTotalPage(bool bMySide);
+    int GetMoveHistoryCurrentPage(bool bMySide);
+    int GetMoveHistoryCurrentIndex(bool bMySide);
+
     void ShowResultView(int nGameResult);
 
     void Init(HWND hWnd);
     void ChangeChessManPos();
     void Shutdown();
     void Render();
+    void NextRecord(bool bMySide);
+    void PrevRecord(bool bMySide);
+    void NextPage(bool bMySide);
+    void PrevPage(bool bMySide);
 
     static void OnStart(void * pParam);
     static void OnPauseGame(void * pParam);
@@ -72,6 +88,10 @@ public:
     static void OnSettings(void * pParam);
     static void OnExit(void * pParam);
     static void OnConfirm(void * pParam);
+    static void OnPrevPage(void * pParam);
+    static void OnPrevRecord(void *pParam);
+    static void OnNextRecord(void *pParam);
+    static void OnNextPage(void *pParam);
 
 private:
     CDXImage    *m_pChessBackground;
@@ -116,7 +136,10 @@ private:
     bool        m_bGameStarted;
     bool        m_bGamePaused;
     bool        m_bGameOver;
-
+    vector<ChineseMoveStep> m_vecLeftMoveHistory;
+    vector<ChineseMoveStep> m_vecRightMoveHistory;
+    int         m_nCurrentLeftStepOrder;  //从1开始
+    int         m_nCurrentRightStepOrder; //从1开始
 };
 
 extern CGameView g_GameView;

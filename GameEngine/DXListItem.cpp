@@ -89,5 +89,17 @@ void CDXListItem::SetText( const char *strText, int nColumn )
     assert(nColumn >= 0 && nColumn < m_nColumnCount && 
         strText != NULL && strlen(strText) > 0 && 
         strlen(strText) < s_nMaxTextLen);
+
     strcpy(m_szText[nColumn], strText);
+}
+
+void CDXListItem::SetNumber( int nNumber, int nColumn )
+{
+    assert(nColumn >= 0 && nColumn < m_nColumnCount);
+    sprintf(m_szText[nColumn], "%d", nNumber);
+}
+
+void CDXListItem::ClearText( int nColumn )
+{
+    memset(m_szText[nColumn], 0, s_nMaxTextLen);
 }

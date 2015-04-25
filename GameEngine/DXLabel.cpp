@@ -89,3 +89,16 @@ void CDXLabel::SetFontColor( int nAlpha, int nRed, int nGreen, int nBlue )
 void CDXLabel::MsgResponse( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 }
+
+void CDXLabel::SetNumber( int nNumber )
+{
+    char strNumber[10];
+    memset(strNumber, 0, 10);
+    sprintf(strNumber, "%d", nNumber);
+    m_strText.assign(strNumber);
+}
+
+void CDXLabel::ClearText()
+{
+    m_strText.clear();
+}

@@ -31,77 +31,8 @@
 #define WINDOW_NAME     "CHESS BY DIRECTX"
 HWND g_Hwnd;
 HINSTANCE g_hInstance;
-// HWND g_BlackListView;
-// HWND g_RedListView;
 
 using namespace std;
-
-// void InitListViewColumns(HWND hWndListView);
-
-// void CreateListView(HWND hWndParent, HINSTANCE hInst)
-// {
-//     INITCOMMONCONTROLSEX icex;
-//     
-//     icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-//     icex.dwICC = ICC_LISTVIEW_CLASSES;
-//     InitCommonControlsEx(&icex);
-// 
-//     RECT rt = GetChessManListViewInitPos(g_GameSettings.m_nCompetitorSide, s_nRedSide);
-//     g_RedListView = CreateWindow(WC_LISTVIEW, 
-//                                  "",
-//                                  WS_VISIBLE | WS_CHILD | LVS_REPORT,
-//                                  rt.left,
-//                                  rt.top,
-//                                  160,
-//                                  400,
-//                                  hWndParent,
-//                                  NULL,
-//                                  hInst,
-//                                  NULL
-//                                  );
-//     SetWindowPos(g_RedListView, HWND_TOPMOST, rt.left, rt.top, 160, 400, SWP_SHOWWINDOW);
-// 
-//     rt = GetChessManListViewInitPos(g_GameSettings.m_nCompetitorSide, s_nBlackSide);
-//     g_BlackListView = CreateWindow(WC_LISTVIEW, 
-//         "",
-//         WS_VISIBLE | WS_CHILD | LVS_REPORT,
-//         rt.left,
-//         rt.top,
-//         160,
-//         400,
-//         hWndParent,
-//         NULL,
-//         hInst,
-//         NULL
-//         );
-//     SetWindowPos(g_BlackListView, HWND_TOPMOST, rt.left, rt.top, 160, 400, SWP_SHOWWINDOW);
-// 
-//     InitListViewColumns(g_RedListView);
-//     InitListViewColumns(g_BlackListView);
-// 
-//     HWND MyDlg = CreateDialog(hInst, "Test", hWndParent, NULL);
-//     SetWindowPos(MyDlg, HWND_TOPMOST, rt.left, rt.top, 160, 400, SWP_SHOWWINDOW);
-// }
-// 
-// void InitListViewColumns(HWND hWndListView)
-// {
-//     LVCOLUMN lvc;
-//     LPTSTR pszColNames[] = {"步数", "走法", "时间"};
-//     lvc.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-//     lvc.fmt = LVCFMT_LEFT;
-// 
-//     lvc.pszText = pszColNames[0];
-//     lvc.cx = 40;
-//     ListView_InsertColumn(hWndListView, 0, &lvc);
-// 
-//     lvc.pszText = pszColNames[1];
-//     lvc.cx = 80;
-//     ListView_InsertColumn(hWndListView, 1, &lvc);
-// 
-//     lvc.pszText = pszColNames[2];
-//     lvc.cx = 40;
-//     ListView_InsertColumn(hWndListView, 2, &lvc);
-// }
 
 void RenderScene()
 {
@@ -148,12 +79,16 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 g_GameSettings.m_nCompetitor = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
 
                 ComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
-                g_GameSettings.m_nCompetitorSide = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
+                int nCompetitorSide = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
 
                 ComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
                 g_GameSettings.m_nAhead = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
-
-                g_GameView.ChangeChessManPos();
+                
+                if (g_GameSettings.m_nCompetitorSide != nCompetitorSide)
+                {
+                    g_GameSettings.m_nCompetitorSide = nCompetitorSide;
+                    g_GameView.ChangeChessManPos();
+                }
 
                 EndDialog(hWnd, wParam);
             }

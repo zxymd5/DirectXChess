@@ -79,6 +79,8 @@ static const int s_nRedAdvisor = 12;   //红仕
 static const int s_nRedMinister = 13;  //红相
 static const int s_nRedSoldier = 14;   //红兵
 
+static const char *s_pChessManCode = "krncabpKRNCABP"; //将车马炮士象卒帅车马炮仕相兵
+
 static const char *s_pszChessManName[] = 
 {
     "BlackGeneral", "BlackChariot", "BlackHorse", "BlackCannon", 
@@ -100,6 +102,7 @@ static const int s_szDefaultChessManLayout[s_nChessBoardRow][s_nChessBoardColumn
     {0, s_nRedCannon, 0, 0, 0, 0, 0, s_nRedCannon, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0},
     {s_nRedChariot, s_nRedHorse, s_nRedMinister, s_nRedAdvisor, s_nRedGeneral, s_nRedAdvisor, s_nRedMinister, s_nRedHorse, s_nRedChariot}
+
 };
 
 static const int s_nChessManTypeCount = 14;    //棋子种类个数
@@ -108,6 +111,7 @@ static RECT GetChessManInitPos(int nRow, int nColumn, int nCompetitorSide)
 {
     RECT Pos;
     nRow = nCompetitorSide == s_nBlackSide ? nRow : s_nChessBoardRow - nRow - 1;
+    nColumn = nCompetitorSide == s_nBlackSide ? nColumn : s_nChessBoardColumn - nColumn - 1;
     Pos.left = s_nChessBoardCellStartX + nColumn * s_nChessBoardCellLength - s_nChessManLength / 2;
     Pos.top = s_nChessBoardCellStartY + nRow * s_nChessBoardCellLength - s_nChessManLength / 2;
     Pos.right = Pos.left + s_nChessManLength;
@@ -236,12 +240,28 @@ struct MoveRoute
     bool bAttackGeneral;
     ChessManPosition stFromPos;
     ChessManPosition stToPos;
+    char strMoveStepAlpha[5];
 
     MoveRoute()
     {
         nKilledChessMan = 0;
         nMovingChessMan = 0;
         bAttackGeneral = false;
+        memset(strMoveStepAlpha, 0, 5);
+    }
+};
+
+struct ChineseMoveStep
+{
+    int nOrderNumber;
+    char szMoveStepInfo[32];
+    char szMoveStepTime[32];
+
+    ChineseMoveStep()
+    {
+        nOrderNumber = 0;
+        memset(szMoveStepInfo, 0, 32);
+        memset(szMoveStepTime, 0, 32);
     }
 };
 
@@ -270,7 +290,16 @@ static bool IsCompleteMoveRoute(const MoveRoute &stRoute)
         stRoute.stToPos.nColumn != -1);
 }
 
+static void CurrentTimeToStr(char *strTime)
+{
+    SYSTEMTIME sys;
+    GetLocalTime( &sys );
+    sprintf(strTime, "%02d:%02d:%02d", sys.wHour, sys.wMinute, sys.wSecond);
+}
+
 static const int s_nEventUpdateChessMan = 1;
 static const int s_nEventUpdateCurrentChessMan = 2;
+static const int s_nEventFallback = 3;
+static const int s_nMoveStepPerPage = 10;
 
 #endif

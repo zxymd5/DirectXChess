@@ -44,7 +44,7 @@ public:
     int GetDeadOne() const;
     list<MoveRoute> &GetLstMoveRoute();
     int GetGeneralPosition(int nChessMan, int &nRow, int &nColumn);
-    void FallBack(int nWhichSide);
+    void FallBack();
 
     void FallBackOneStep();
 

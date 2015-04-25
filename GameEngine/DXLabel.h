@@ -43,6 +43,8 @@ public:
 
     virtual void Render();
     void SetText(const string &strText);
+    void ClearText();
+    void SetNumber(int nNumber);
     void SetAlignment(DWORD dwAlignment);
     void SetFontColor(int nAlpha, int nRed, int nGreen, int nBlue);
 

@@ -21,6 +21,9 @@
 #define MOVE_ROUTE_GENERATOR_H
 
 #include "CommDef.h"
+#include <string>
+
+using namespace std;
 
 class CMoveRouteGenerator
 {
@@ -57,6 +60,25 @@ public:
 
     int GetChessManPosition(int szChessMan[][s_nChessBoardColumn], int nSpecChessMan, ChessManPosition szPos[] );
 
+    //获取着法的数字坐标格式，如k5+1
+    void GetChessManMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetBlackGeneralMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetBlackAdvisorMinisterMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetBlackChariotCannonMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan);
+    void GetBlackHorseMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetBlackSoldierMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetRedGeneralMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetRedAdvisorMinisterMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetRedChariotCannonMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan);
+    void GetRedHorseMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetRedSoldierMoveStepAlpha(int szChessMan[][s_nChessBoardColumn], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+
+    //将数字坐标格式转换成中文格式如将5进1
+    static string DigitToChinese(char chDigit, bool bBlack);
+    static string ChessManCodetoChinese(char chCode, bool bBlack);
+    static string ActionToChinese(char chAction);
+    static void AlphaFmtToChiness(const char *strAlphaFmt, char strChineseFmt[], bool bBlack);
+    
 };
 
 #endif

@@ -73,6 +73,8 @@ CGameView::CGameView(void)
     m_bGameStarted = false;
     m_bGamePaused = false;
     m_bGameOver = false;
+    m_nCurrentLeftStepOrder = 0;
+    m_nCurrentRightStepOrder = 0;
 }
 
 CGameView::~CGameView(void)
@@ -182,15 +184,19 @@ void CGameView::Init(HWND hWnd)
     m_mapWidget.insert(make_pair(m_pConfirm->GetDepth(), m_pConfirm));
 
     m_pLeftPrevPage = (CDXButton *)g_GameEngine.GetWidgetByName("LeftPrevPage");
+    m_pLeftPrevPage->SetCallBackInfo(OnPrevPage, this);
     m_mapWidget.insert(make_pair(m_pLeftPrevPage->GetDepth(), m_pLeftPrevPage));
 
     m_pLeftPrevRecord = (CDXButton *)g_GameEngine.GetWidgetByName("LeftPrevRecord");
+    m_pLeftPrevRecord->SetCallBackInfo(OnPrevRecord, this);
     m_mapWidget.insert(make_pair(m_pLeftPrevRecord->GetDepth(), m_pLeftPrevRecord));
 
     m_pLeftNextPage = (CDXButton *)g_GameEngine.GetWidgetByName("LeftNextPage");
+    m_pLeftNextPage->SetCallBackInfo(OnNextPage, this);
     m_mapWidget.insert(make_pair(m_pLeftNextPage->GetDepth(), m_pLeftNextPage));
 
     m_pLeftNextRecord = (CDXButton *)g_GameEngine.GetWidgetByName("LeftNextRecord");
+    m_pLeftNextRecord->SetCallBackInfo(OnNextRecord, this);
     m_mapWidget.insert(make_pair(m_pLeftNextRecord->GetDepth(), m_pLeftNextRecord));
 
     m_pLeftPageInfo = (CDXLabel *)g_GameEngine.GetWidgetByName("LeftPageInfo");
@@ -200,15 +206,19 @@ void CGameView::Init(HWND hWnd)
     m_mapWidget.insert(make_pair(m_pLeftPageInfo->GetDepth(), m_pLeftPageInfo));
 
     m_pRightPrevPage = (CDXButton *)g_GameEngine.GetWidgetByName("RightPrevPage");
+    m_pRightPrevPage->SetCallBackInfo(OnPrevPage, this);
     m_mapWidget.insert(make_pair(m_pRightPrevPage->GetDepth(), m_pRightPrevPage));
 
     m_pRightPrevRecord = (CDXButton *)g_GameEngine.GetWidgetByName("RightPrevRecord");
+    m_pRightPrevRecord->SetCallBackInfo(OnPrevRecord, this);
     m_mapWidget.insert(make_pair(m_pRightPrevRecord->GetDepth(), m_pRightPrevRecord));
 
     m_pRightNextPage = (CDXButton *)g_GameEngine.GetWidgetByName("RightNextPage");
+    m_pRightNextPage->SetCallBackInfo(OnNextPage, this);
     m_mapWidget.insert(make_pair(m_pRightNextPage->GetDepth(), m_pRightNextPage));
 
     m_pRightNextRecord = (CDXButton *)g_GameEngine.GetWidgetByName("RightNextRecord");
+    m_pRightNextRecord->SetCallBackInfo(OnNextRecord, this);
     m_mapWidget.insert(make_pair(m_pRightNextRecord->GetDepth(), m_pRightNextRecord));
 
     m_pRightPageInfo = (CDXLabel *)g_GameEngine.GetWidgetByName("RightPageInfo");
@@ -246,6 +256,11 @@ void CGameView::Init(HWND hWnd)
     m_clSoundPlayer.AddAudioFile(s_pAudioLoss);
     m_clSoundPlayer.AddAudioFile(s_pAudioWin);
     m_clSoundPlayer.AddAudioFile(s_pAudioMove);
+
+    m_nCurrentLeftStepOrder = m_vecLeftMoveHistory.size();
+    m_nCurrentRightStepOrder = m_vecRightMoveHistory.size();
+    UpdateMoveHistoryDisplay(false);
+    UpdateMoveHistoryDisplay(true);
 }
 
 void CGameView::Render()
@@ -274,6 +289,11 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
     case s_nEventUpdateCurrentChessMan:
         {
             ProcessUpdateMoveRouteEvent(pSub);
+        }
+        break;
+    case s_nEventFallback:
+        {
+            ProcessFallbackEvent(pSub);
         }
         break;
     default:
@@ -426,6 +446,9 @@ void CGameView::UpdateMoveRoute( const MoveRoute &stRoute, int szChessMan[s_nChe
 
         GetChessManPicture(szTextureFile, stRoute.nMovingChessMan, true);
         m_pszGamingChessMan[stRoute.stToPos.nRow][stRoute.stToPos.nColumn]->SetTexture(szTextureFile);
+
+        //更新MoveHistory
+        AddMoveHistory(stRoute);
     }
 }
 
@@ -449,6 +472,17 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     
     m_bGameOver = nGameResult != -1;
     ShowResultView(nGameResult);
+}
+
+void CGameView::ProcessFallbackEvent( CSubject *pSub )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pSub;
+    int szChessMan[s_nChessBoardRow][s_nChessBoardColumn];
+    pGameHandle->GetChessMan(szChessMan);
+    UpdateChessMan(szChessMan);
+
+    FallbackMoveHistory(false);
+    FallbackMoveHistory(true);
 }
 
 void CGameView::PlayTipSound( const MoveRoute &stRoute, int nGameResult )
@@ -533,11 +567,13 @@ void CGameView::OnNewGame( void *pParam )
 
     g_GameHandle.Init();
     pGameView->m_clSoundPlayer.Play(s_pAudioNewGame);
+
+    pGameView->ClearHisotryDisplay();
 }
 
-void CGameView::OnOpen( void *Param )
+void CGameView::OnOpen( void *pParam )
 {
-    CGameView *pGameView = (CGameView *)Param;
+    CGameView *pGameView = (CGameView *)pParam;
     pGameView->m_bGameStarted = true;
     pGameView->m_pPauseGame->SetCurrState(STATE_ACTIVE);
     pGameView->m_pSave->SetCurrState(STATE_ACTIVE);
@@ -547,40 +583,40 @@ void CGameView::OnOpen( void *Param )
     pGameView->m_clSoundPlayer.Play(s_pAudioNewGame);
 }
 
-void CGameView::OnSave( void *Param )
+void CGameView::OnSave( void *pParam )
 {
 
 }
 
-void CGameView::OnFallback( void *Param )
+void CGameView::OnFallback( void *pParam )
 {
-    g_GameHandle.FallBack(g_GameSettings.m_nCompetitorSide == s_nRedSide ? s_nBlackSide : s_nRedSide);
+    g_GameHandle.FallBack();
 }
 
-void CGameView::OnTie( void *Param )
-{
-
-}
-
-void CGameView::OnLose( void *Param )
+void CGameView::OnTie( void *pParam )
 {
 
 }
 
-void CGameView::OnSettings( void *Param )
+void CGameView::OnLose( void *pParam )
 {
-    CGameView *GameView = (CGameView *)Param;
-    PostMessage(GameView->m_hWnd, WM_SETTINGS, 0, 0);
+
 }
 
-void CGameView::OnConfirm( void *Param )
+void CGameView::OnSettings( void *pParam )
 {
-    CGameView *GameView = (CGameView *)Param;
-    GameView->m_pConfirm->SetVisible(false);
-    GameView->m_pMessageBox->SetVisible(false);
+    CGameView *pGameView = (CGameView *)pParam;
+    PostMessage(pGameView->m_hWnd, WM_SETTINGS, 0, 0);
 }
 
-void CGameView::OnExit( void *Param )
+void CGameView::OnConfirm( void *pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+    pGameView->m_pConfirm->SetVisible(false);
+    pGameView->m_pMessageBox->SetVisible(false);
+}
+
+void CGameView::OnExit( void *pParam )
 {
     g_GameSettings.SaveSettings(s_pSettingsFile);
     PostQuitMessage(0);
@@ -667,9 +703,260 @@ void CGameView::ChangeChessManPos()
 
     m_pBlackSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nBlackSide));
     m_pRedSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nRedSide));
+
+    //交换左右两边数据
+    int nCurrentOrder = m_nCurrentLeftStepOrder;
+    m_nCurrentLeftStepOrder = m_nCurrentRightStepOrder;
+    m_nCurrentRightStepOrder = nCurrentOrder;
+
+    vector<ChineseMoveStep> vecMoveHistory = m_vecLeftMoveHistory;
+    m_vecLeftMoveHistory = m_vecRightMoveHistory;
+    m_vecRightMoveHistory = vecMoveHistory;
+
+    UpdateMoveHistoryDisplay(false);
+    UpdateMoveHistoryDisplay(true);
 }
 
 void CGameView::UpdateMoveHistory()
 {
 
 }
+
+void CGameView::OnPrevPage( void * pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+
+    pGameView->PrevPage(pGameView->m_pCurrFocusWidget == pGameView->m_pRightPrevPage);
+}
+
+void CGameView::OnPrevRecord( void *pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+
+    pGameView->PrevRecord(pGameView->m_pCurrFocusWidget == pGameView->m_pRightPrevRecord);
+}
+
+void CGameView::OnNextRecord( void *pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+
+    pGameView->NextRecord(pGameView->m_pCurrFocusWidget == pGameView->m_pRightNextRecord);
+}
+
+void CGameView::OnNextPage( void *pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+
+    pGameView->NextPage(pGameView->m_pCurrFocusWidget == pGameView->m_pRightNextPage);
+}
+
+void CGameView::UpdateMoveHistoryDisplay(bool bMySide)
+{
+    int nCurrentPage = GetMoveHistoryCurrentPage(bMySide);
+    int nCurrentRecord = GetMoveHistoryCurrentIndex(bMySide);
+    int nTotalPage = GetMoveHistoryTotalPage(bMySide);
+
+    vector<ChineseMoveStep> &vecMoveHistory = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+    CDXLabel *pLabel = bMySide ? m_pRightPageInfo : m_pLeftPageInfo;
+    CDXListCtrl *pListCtrl = bMySide ? m_pRightMoveHistory : m_pLeftMoveHistory;
+
+    //先清除文本
+    for (int i = 0; i < s_nMoveStepPerPage; i++)
+    {
+        pListCtrl->GetListItem(i).ClearText(0);
+        pListCtrl->GetListItem(i).ClearText(1);
+        pListCtrl->GetListItem(i).ClearText(2);
+    }
+
+    CDXButton *pPrevPage = bMySide ? m_pRightPrevPage : m_pLeftPrevPage;
+    CDXButton *pPrevRecord = bMySide ? m_pRightPrevRecord : m_pLeftPrevRecord;
+    CDXButton *pNextPage = bMySide ? m_pRightNextPage: m_pLeftNextPage;
+    CDXButton *pNextRecord = bMySide ? m_pRightNextRecord : m_pLeftNextRecord;
+    if (vecMoveHistory.size() == 0)
+    {
+        pPrevRecord->SetCurrState(STATE_DISABLE);
+        pPrevPage->SetCurrState(STATE_DISABLE);
+        pNextRecord->SetCurrState(STATE_DISABLE);
+        pNextPage->SetCurrState(STATE_DISABLE);
+    }
+    else
+    {
+        int &nCurrentStepOrder = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+        int nStartIndex = (nCurrentPage - 1) * s_nMoveStepPerPage;
+        int nEndIndex = min(nCurrentPage * s_nMoveStepPerPage, vecMoveHistory.size()) - 1;
+
+        for (int i = nStartIndex; i <= nEndIndex; i++)
+        {
+            pListCtrl->GetListItem(i % 10).SetNumber(vecMoveHistory.at(i).nOrderNumber, 0);
+            pListCtrl->GetListItem(i % 10).SetText(vecMoveHistory.at(i).szMoveStepInfo, 1);
+            pListCtrl->GetListItem(i % 10).SetText(vecMoveHistory.at(i).szMoveStepTime, 2);
+            pListCtrl->GetListItem(i % 10).SetFontColor(255, 0, 0, 0);
+        }
+
+        pListCtrl->GetListItem(nCurrentRecord - 1).SetFontColor(255, 255, 0, 0);
+
+        pPrevRecord->SetCurrState(nCurrentStepOrder == 1 ? STATE_DISABLE : STATE_ACTIVE);
+        pPrevPage->SetCurrState(nCurrentPage == 1 ? STATE_DISABLE : STATE_ACTIVE);
+        pNextRecord->SetCurrState(nCurrentStepOrder == vecMoveHistory.size() ? STATE_DISABLE : STATE_ACTIVE);
+        pNextPage->SetCurrState(nCurrentPage == nTotalPage ? STATE_DISABLE : STATE_ACTIVE);
+    }
+
+    char strPageInfo[32];
+    sprintf(strPageInfo, "%d/%d", nCurrentPage, nTotalPage);
+    pLabel->SetText(strPageInfo);
+}
+
+int CGameView::GetMoveHistoryTotalPage(bool bMySide)
+{
+    int nTotalPage = 0;
+    vector<ChineseMoveStep> &vecMoveHistory = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+
+    if (vecMoveHistory.size() % s_nMoveStepPerPage == 0)
+    {
+        nTotalPage = vecMoveHistory.size() / s_nMoveStepPerPage;
+    }
+    else
+    {
+        nTotalPage = vecMoveHistory.size() / s_nMoveStepPerPage + 1;
+    }
+
+    return nTotalPage;
+}
+
+int CGameView::GetMoveHistoryCurrentPage(bool bMySide)
+{
+    int nCurrentPage = 0;
+    int nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+
+    if (nCurrentStepOrderNumber % s_nMoveStepPerPage == 0)
+    {
+        nCurrentPage = nCurrentStepOrderNumber / s_nMoveStepPerPage;
+    }
+    else
+    {
+        nCurrentPage = nCurrentStepOrderNumber / s_nMoveStepPerPage + 1;
+    }
+    return nCurrentPage;
+}
+
+int CGameView::GetMoveHistoryCurrentIndex(bool bMySide)
+{
+    int nCurrentRecordIndex = 0;    //从1开始
+    int nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    
+    if (nCurrentStepOrderNumber % s_nMoveStepPerPage == 0)
+    {
+        nCurrentRecordIndex = s_nMoveStepPerPage;
+    }
+    else
+    {
+        nCurrentRecordIndex = nCurrentStepOrderNumber % s_nMoveStepPerPage;
+    }
+
+    return nCurrentRecordIndex;
+}
+
+void CGameView::NextRecord( bool bMySide )
+{
+    int &nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    vector<ChineseMoveStep> &vecMoveHistory = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+
+    if (nCurrentStepOrderNumber == vecMoveHistory.size())
+    {
+        return;
+    }
+
+    nCurrentStepOrderNumber++;
+    UpdateMoveHistoryDisplay(bMySide);
+}
+
+void CGameView::PrevRecord( bool bMySide )
+{
+    int &nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    if (nCurrentStepOrderNumber == 1)
+    {
+        return;
+    }
+
+    nCurrentStepOrderNumber--;
+    UpdateMoveHistoryDisplay(bMySide);
+}
+
+void CGameView::NextPage( bool bMySide )
+{
+    if (GetMoveHistoryCurrentPage(bMySide) == GetMoveHistoryTotalPage(bMySide))
+    {
+        return;
+    }
+
+    int &nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    vector<ChineseMoveStep> &vecMoveHistory = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+    nCurrentStepOrderNumber = min(nCurrentStepOrderNumber + s_nMoveStepPerPage, vecMoveHistory.size());
+
+    UpdateMoveHistoryDisplay(bMySide);
+}
+
+void CGameView::PrevPage( bool bMySide )
+{
+    if (GetMoveHistoryCurrentPage(bMySide) == 1)
+    {
+        return;
+    }
+
+    int &nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    nCurrentStepOrderNumber = max(nCurrentStepOrderNumber - s_nMoveStepPerPage, 1);
+
+    UpdateMoveHistoryDisplay(bMySide);
+}
+
+void CGameView::AddMoveHistory( const MoveRoute &stRoute )
+{
+    ChineseMoveStep stMoveStep;
+    bool bBlack = IsBlackSide(stRoute.nMovingChessMan);
+    bool bMySide = false;
+    if ((g_GameSettings.m_nCompetitorSide == s_nRedSide && bBlack) ||
+        (g_GameSettings.m_nCompetitorSide == s_nBlackSide && !bBlack))
+    {
+        bMySide = true;
+    }
+    else
+    {
+        bMySide =false;
+    }
+    
+    vector<ChineseMoveStep> &vecMoveStep = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+    stMoveStep.nOrderNumber = vecMoveStep.size() + 1;
+    CMoveRouteGenerator::AlphaFmtToChiness(stRoute.strMoveStepAlpha, stMoveStep.szMoveStepInfo, bBlack);
+    CurrentTimeToStr(stMoveStep.szMoveStepTime);
+    vecMoveStep.push_back(stMoveStep);
+
+    int &nCurrentStepOrder = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+    nCurrentStepOrder = vecMoveStep.size();
+    UpdateMoveHistoryDisplay(bMySide);
+}
+
+void CGameView::FallbackMoveHistory( bool bMySide )
+{
+    vector<ChineseMoveStep> &vecMoveStep = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
+
+    if (vecMoveStep.size() > 0)
+    {
+        vecMoveStep.pop_back();
+
+        int &nCurrentStepOrder = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
+
+        nCurrentStepOrder = vecMoveStep.size();
+        UpdateMoveHistoryDisplay(bMySide);
+    }
+}
+
+void CGameView::ClearHisotryDisplay()
+{
+    m_vecRightMoveHistory.clear();
+    m_vecLeftMoveHistory.clear();
+    m_nCurrentRightStepOrder = 0;
+    m_nCurrentLeftStepOrder = 0;
+    UpdateMoveHistoryDisplay(true);
+    UpdateMoveHistoryDisplay(false);
+}
+

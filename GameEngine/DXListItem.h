@@ -37,7 +37,8 @@ public:
             int nColumnCount, int szColumnWidth[s_nMaxListItemColumn],
             bool bVisible, int nDepth);
     void SetText(const char *strText, int nColumn);
-
+    void SetNumber(int nNumber, int nColumn);
+    void ClearText(int nColumn);
     virtual void Render();
 
 private:

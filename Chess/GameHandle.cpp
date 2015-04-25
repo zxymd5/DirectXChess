@@ -99,6 +99,9 @@ void CGameHandle::SetCurrentMoveRoute(int nRow, int nColumn)
                 if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
                     m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
                 {
+                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
+                                                            m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
+                                                            m_stCurrentMoveRoute.strMoveStepAlpha);
                     m_stCurrentMoveRoute.stToPos.nRow = nRow;
                     m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
                     bNotifyView = true;
@@ -133,6 +136,9 @@ void CGameHandle::SetCurrentMoveRoute(int nRow, int nColumn)
                 if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
                     m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
                 {
+                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
+                        m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
+                        m_stCurrentMoveRoute.strMoveStepAlpha);
                     m_stCurrentMoveRoute.stToPos.nRow = nRow;
                     m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
                     bNotifyView = true;
@@ -236,72 +242,24 @@ int CGameHandle::GetGeneralPosition( int nGeneral, int &nRow, int &nColumn )
     return nChessManCount;
 }
 
-void CGameHandle::FallBack( int nWhichSide )
+void CGameHandle::FallBack()
 {
     if (m_lstMoveRoute.size() > 0)
     {
-        if (nWhichSide == s_nRedSide)   //红方悔棋
+        //如果只走了一步，切轮到红方走棋，则不能悔棋
+        if (m_lstMoveRoute.size() == 1)
         {
-            //如果只走了一步，切轮到红方走棋，则不能悔棋
-            if (m_lstMoveRoute.size() == 1)
-            {
-                if (m_nCurrentTurn == s_nTurnRed)
-                {
-                    return;
-                }
-                else
-                {
-                    //悔一步棋
-                    FallBackOneStep();
-                }
-            }
-            else
-            {
-                if (m_nCurrentTurn == s_nTurnRed)
-                {
-                    //悔两步棋
-                    FallBackOneStep();
-                    FallBackOneStep();
-                }
-                else
-                {
-                    //悔一步棋
-                    FallBackOneStep();
-                }
-            }
+            //悔一步棋
+            FallBackOneStep();
         }
-        else                            //黑方悔棋
+        else
         {
-            //如果只走了一步，切轮到黑方走棋，则不能悔棋
-            if (m_lstMoveRoute.size() == 1)
-            {
-                if (m_nCurrentTurn == s_nTurnBlack)
-                {
-                    return;
-                }
-                else
-                {
-                    //悔一步棋
-                    FallBackOneStep();
-                }
-            }
-            else
-            {
-                if (m_nCurrentTurn == s_nTurnBlack)
-                {
-                    //悔两步棋
-                    FallBackOneStep();
-                    FallBackOneStep();
-                }
-                else
-                {
-                    //悔一步棋
-                    FallBackOneStep();
-                }
-            }
+            //悔两步棋
+            FallBackOneStep();
+            FallBackOneStep();
         }
 
-        Notify(s_nEventUpdateCurrentChessMan);
+        Notify(s_nEventFallback);
         ResetMoveRoute(m_stCurrentMoveRoute);
     }
 }
@@ -318,5 +276,8 @@ void CGameHandle::FallBackOneStep()
     m_szChessMan[stRoute.stToPos.nRow][stRoute.stToPos.nColumn] = stRoute.nKilledChessMan;
     m_lstMoveRoute.pop_back();
     m_nCurrentTurn = (m_nCurrentTurn == s_nTurnBlack ? s_nTurnRed : s_nTurnBlack);
-    m_stCurrentMoveRoute = m_lstMoveRoute.back();
+    if (m_lstMoveRoute.size() > 0)
+    {
+        m_stCurrentMoveRoute = m_lstMoveRoute.back();
+    }
 }

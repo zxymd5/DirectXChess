@@ -24,6 +24,8 @@
 #include <stdio.h>
 
 #define WM_SETTINGS (WM_USER + 0)
+#define WM_OPENFILE (WM_USER + 1)
+#define WM_SAVEFILE (WM_USER + 2)
 
 static const int s_nWindowStartX = 0;
 static const int s_nWindowStartY = 0;
@@ -300,6 +302,7 @@ static void CurrentTimeToStr(char *strTime)
 static const int s_nEventUpdateChessMan = 1;
 static const int s_nEventUpdateCurrentChessMan = 2;
 static const int s_nEventFallback = 3;
+static const int s_nEventLoadChessMan = 4;
 static const int s_nMoveStepPerPage = 10;
 
 #endif

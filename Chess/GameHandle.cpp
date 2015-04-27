@@ -19,6 +19,8 @@
 
 #include "GameHandle.h"
 #include "GameSettings.h"
+#include <assert.h>
+#include <fstream>
 
 CGameHandle g_GameHandle;
 
@@ -198,10 +200,12 @@ void CGameHandle::ResetMoveRoute( MoveRoute &stRoute )
 {
     stRoute.nMovingChessMan = 0;
     stRoute.nKilledChessMan = 0;
+    stRoute.bAttackGeneral = false;
     stRoute.stFromPos.nRow = -1;
     stRoute.stFromPos.nColumn = -1;
     stRoute.stToPos.nRow = -1;
     stRoute.stToPos.nColumn = -1;
+    memset(stRoute.strMoveStepAlpha, 0, 5);
 }
 
 void CGameHandle::SetGameResult( int nGameResult )
@@ -246,7 +250,6 @@ void CGameHandle::FallBack()
 {
     if (m_lstMoveRoute.size() > 0)
     {
-        //如果只走了一步，切轮到红方走棋，则不能悔棋
         if (m_lstMoveRoute.size() == 1)
         {
             //悔一步棋
@@ -280,4 +283,105 @@ void CGameHandle::FallBackOneStep()
     {
         m_stCurrentMoveRoute = m_lstMoveRoute.back();
     }
+}
+
+void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
+{
+    assert(pFileName != NULL);
+    //txt文件
+    if (nFileType == 1)
+    {
+        //先保存m_szChessMan
+        ofstream fs;
+        fs.open(pFileName, ios::out | ios::trunc);
+        for (int i = 0; i < s_nChessBoardRow; i++)
+        {
+            for (int j = 0; j < s_nChessBoardColumn - 1; j++)
+            {
+                fs << m_szChessMan[i][j] << '\t';
+            }
+            fs << m_szChessMan[i][s_nChessBoardColumn - 1] << endl;
+        }
+        fs << endl;
+        
+        //再保存轮到谁走棋，棋局结果
+        fs << m_nCurrentTurn << '\t' << m_nGameResult << '\t' << m_nWhoIsDead << endl << endl;
+
+        //最后保存走棋历史记录
+        list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
+        for (; it != m_lstMoveRoute.end(); ++it)
+        {
+            fs << it->nMovingChessMan << '\t' 
+                << it->nKilledChessMan << '\t' 
+                << it->bAttackGeneral  << '\t' 
+                << it->stFromPos.nRow << '\t' 
+                << it->stFromPos.nColumn << '\t'
+                << it->stToPos.nRow << '\t'
+                << it->stToPos.nColumn << '\t'
+                << it->strMoveStepAlpha << endl;
+        }
+        fs.close();
+    }
+    else
+    {
+  
+    }
+}
+
+void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
+{
+    assert(pFileName != NULL);
+    //txt文件
+    if (nFileType == 1)
+    {
+        fstream fs;
+        fs.open(pFileName, ios::in);
+
+        //先读取m_szChessMan
+        for (int i = 0; i < s_nChessBoardRow; i++)
+        {
+            for (int j = 0; j < s_nChessBoardColumn; j++)
+            {
+                fs >> m_szChessMan[i][j];
+            }
+        }
+        fs.seekp(1, ios::cur);
+
+        //再保存轮到谁走棋，棋局结果
+        fs >> m_nCurrentTurn >> m_nGameResult >> m_nWhoIsDead;
+        fs.seekp(1, ios::cur);
+
+        //最后保存走棋历史记录
+        MoveRoute stMoveRoute;
+        while(!fs.eof())
+        {
+            fs >> stMoveRoute.nMovingChessMan
+                >> stMoveRoute.nKilledChessMan
+                >> stMoveRoute.bAttackGeneral
+                >> stMoveRoute.stFromPos.nRow
+                >> stMoveRoute.stFromPos.nColumn
+                >> stMoveRoute.stToPos.nRow
+                >> stMoveRoute.stToPos.nColumn
+                >> stMoveRoute.strMoveStepAlpha;
+            if (fs.eof())
+            {
+                break;
+            }
+            m_lstMoveRoute.push_back(stMoveRoute);
+        }
+
+        fs.close();
+    }
+    else
+    {
+
+    }
+
+    if (m_lstMoveRoute.size())
+    {
+        m_stCurrentMoveRoute = m_lstMoveRoute.back();
+    }
+    
+    Notify(s_nEventLoadChessMan);
+    ResetMoveRoute(m_stCurrentMoveRoute);
 }

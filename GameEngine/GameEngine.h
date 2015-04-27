@@ -44,6 +44,7 @@ public:
     void                AddWidget(CDXWidget *pWidget);
     LPD3DXFONT          GetFont(int nFontType);
     LPDIRECT3DTEXTURE9  GetTexture( const char *strFileName, int &nWidth, int &nHeight);
+    void                CreateTexFromDir(const char *strDir);
     void                StringToIntArray(const char *str, int szArr[], char chDelimiter );
     void                Render();
 

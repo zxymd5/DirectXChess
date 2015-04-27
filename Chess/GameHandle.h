@@ -45,8 +45,9 @@ public:
     list<MoveRoute> &GetLstMoveRoute();
     int GetGeneralPosition(int nChessMan, int &nRow, int &nColumn);
     void FallBack();
-
     void FallBackOneStep();
+    void SaveToFile(const char *pFileName, int nFileType);
+    void LoadFromFile(const char *pFileName, int nFileType);
 
 private:
     int m_nCurrentTurn;

@@ -397,9 +397,11 @@ LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth
         ZeroMemory(pInfo, sizeof(TextureInfo));
         strcpy(pInfo->szFileName, strFileName);
         D3DXIMAGE_INFO ImageInfo;
+        ZeroMemory(&ImageInfo, sizeof(ImageInfo));
 
         if (FAILED(D3DXGetImageInfoFromFile(pInfo->szFileName, &ImageInfo)))
         {
+            MessageBox(NULL, "D3DXGetImageInfoFromFile() failed", "获取图像信息失败", MB_OK);
             return NULL;
         }
 
@@ -481,4 +483,63 @@ void CGameEngine::StringToIntArray( const char *str, int szArr[], char chDelimit
         p++;
     }
     szArr[i] = atoi(strDigit);
+}
+
+void CGameEngine::CreateTexFromDir( const char *strDir )
+{
+    WIN32_FIND_DATA FindFileData;
+    HANDLE hListFile;
+
+    char szFilePath[MAX_PATH];
+    char szFileFullPath[MAX_PATH];
+    strcpy(szFilePath, strDir);
+    strcat(szFilePath, "*.png");
+
+    hListFile = FindFirstFile(szFilePath, &FindFileData);
+    if (hListFile == INVALID_HANDLE_VALUE)
+    {
+        return;
+    }
+    else
+    {
+        do 
+        {
+            TextureInfo *pInfo = new TextureInfo;
+            ZeroMemory(pInfo, sizeof(TextureInfo));
+            sprintf(pInfo->szFileName, "%s%s", strDir, FindFileData.cFileName);
+            D3DXIMAGE_INFO ImageInfo;
+            ZeroMemory(&ImageInfo, sizeof(ImageInfo));
+
+            if (FAILED(D3DXGetImageInfoFromFile(pInfo->szFileName, &ImageInfo)))
+            {
+                MessageBox(NULL, "D3DXGetImageInfoFromFile() failed", "获取图像信息失败", MB_OK);
+                continue;
+            }
+
+            HRESULT hRet = D3DXCreateTextureFromFileEx(m_pD3DDevice, 
+                pInfo->szFileName, 
+                ImageInfo.Width,
+                ImageInfo.Height,
+                ImageInfo.MipLevels,
+                0,
+                ImageInfo.Format,
+                D3DPOOL_MANAGED,
+                D3DX_FILTER_NONE,
+                D3DX_FILTER_NONE,
+                0,
+                &ImageInfo,
+                NULL, 
+                &pInfo->pTexture);
+            if (FAILED(hRet))
+            {
+                MessageBox(NULL, "D3DXCreateTextureFromFileEx() failed", "创建纹理失败", MB_OK);
+                continue;
+            }
+            pInfo->nHeight = ImageInfo.Height;
+            pInfo->nWidth = ImageInfo.Width;
+            m_vecTexture.push_back(pInfo);
+
+        } while (FindNextFile(hListFile, &FindFileData));
+    }
+
 }

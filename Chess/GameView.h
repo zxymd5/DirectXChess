@@ -49,6 +49,7 @@ public:
     void ProcessUpdateChessManEvent(CSubject *pSub);
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
     void ProcessFallbackEvent( CSubject *pSub );
+    void ProcessLoadChessManEvent( CSubject *pSub );
 
     void UpdateChessMan(int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);

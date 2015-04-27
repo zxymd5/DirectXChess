@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleInid.lib Comctl32.lib"
+				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleInid.lib Comctl32.lib d3d11.lib d3dx11.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../Lib"
 				GenerateDebugInformation="true"

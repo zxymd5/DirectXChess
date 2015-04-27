@@ -111,6 +111,69 @@ void OnSettings()
     DialogBox(g_hInstance, (LPCTSTR)IDD_DIALOG_SETTINGS, g_Hwnd, (DLGPROC)SettingsProc);
 }
 
+void OnFileOperate(UINT uMsg)
+{
+    OPENFILENAME Ofn;
+    char szFileName[MAX_PATH];
+    memset(szFileName, 0, MAX_PATH);
+
+    ZeroMemory(&Ofn, sizeof(Ofn));
+    Ofn.lStructSize = sizeof(Ofn);
+    Ofn.hwndOwner = g_Hwnd;
+    Ofn.lpstrFile = szFileName;
+    Ofn.nMaxFile = sizeof(szFileName);
+    Ofn.lpstrFilter = "文本文件(*.txt)\0*.txt\0数据文件(*.db)\0*.db\0\0";
+    Ofn.nFilterIndex = 1;
+    Ofn.lpstrFileTitle = NULL;
+    Ofn.nMaxFileTitle = 0;
+    Ofn.lpstrInitialDir = NULL;
+
+    if (uMsg == WM_OPENFILE)
+    {
+        Ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+        Ofn.lpstrTitle = "打开文件";
+        if (GetOpenFileName(&Ofn))
+        {
+            g_GameHandle.LoadFromFile(szFileName, Ofn.nFilterIndex);
+        }
+    }
+    else
+    {
+        Ofn.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST |
+            OFN_HIDEREADONLY | OFN_NOREADONLYRETURN;
+        Ofn.lpstrTitle = "保存文件";
+        if (GetSaveFileName(&Ofn))
+        {
+            g_GameHandle.SaveToFile(szFileName, Ofn.nFilterIndex);
+        }
+    }
+}
+
+void OnSaveFile()
+{
+    OPENFILENAME Ofn;
+    char szFileName[MAX_PATH];
+    memset(szFileName, 0, MAX_PATH);
+
+    ZeroMemory(&Ofn, sizeof(Ofn));
+    Ofn.lStructSize = sizeof(Ofn);
+    Ofn.hwndOwner = g_Hwnd;
+    Ofn.lpstrFile = szFileName;
+    Ofn.nMaxFile = sizeof(szFileName);
+    Ofn.lpstrFilter = "文本文件(*.txt)\0*.txt\0数据文件(*.db)\0*.db\0\0";
+    Ofn.nFilterIndex = 1;
+    Ofn.lpstrFileTitle = NULL;
+    Ofn.nMaxFileTitle = 0;
+    Ofn.lpstrInitialDir = NULL;
+    Ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+    Ofn.lpstrTitle = "打开文件";
+    if (GetOpenFileName(&Ofn))
+    {
+        int m = 0;
+    }
+
+}
+
 LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg)
@@ -132,6 +195,14 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETTINGS:
         OnSettings();
+        break;
+    
+    case WM_OPENFILE:
+    case WM_SAVEFILE:
+        OnFileOperate(msg);
+        break;
+
+    default:
         break;
     }
 
@@ -165,6 +236,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     //GameEngine初始化
     g_GameEngine.Init(hWnd, nWindowWidth, nWindowHeight);
+    g_GameEngine.CreateTexFromDir(s_pPictureFolder);
     g_GameEngine.ParseFile(s_pWidgetConfigFile);
 
     g_GameSettings.LoadSettings(s_pSettingsFile);

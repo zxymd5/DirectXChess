@@ -296,6 +296,11 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
             ProcessFallbackEvent(pSub);
         }
         break;
+    case s_nEventLoadChessMan:
+        {
+            ProcessLoadChessManEvent(pSub);
+        }
+        break;
     default:
         break;
     }
@@ -446,9 +451,6 @@ void CGameView::UpdateMoveRoute( const MoveRoute &stRoute, int szChessMan[s_nChe
 
         GetChessManPicture(szTextureFile, stRoute.nMovingChessMan, true);
         m_pszGamingChessMan[stRoute.stToPos.nRow][stRoute.stToPos.nColumn]->SetTexture(szTextureFile);
-
-        //更新MoveHistory
-        AddMoveHistory(stRoute);
     }
 }
 
@@ -464,12 +466,40 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     if (IsCompleteMoveRoute(stRoute))
     {
         UpdateChessMan(szChessMan);
+
+        //更新MoveHistory
+        AddMoveHistory(stRoute);
     }
 
     UpdateMoveRoute(stRoute, szChessMan);
     PlayTipSound(stRoute, nGameResult);
     UpdateGeneralStatus(nGameResult);
     
+    m_bGameOver = nGameResult != -1;
+    ShowResultView(nGameResult);
+}
+
+
+void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pSub;
+    MoveRoute stRoute = pGameHandle->GetCurrentMoveRoute();
+    list<MoveRoute> lstMoveRoute = pGameHandle->GetLstMoveRoute();
+    int nGameResult = pGameHandle->GetGameResult();
+
+    int szChessMan[s_nChessBoardRow][s_nChessBoardColumn];
+    pGameHandle->GetChessMan(szChessMan);
+    UpdateChessMan(szChessMan);
+    UpdateMoveRoute(stRoute, szChessMan);
+
+    list<MoveRoute>::iterator it = lstMoveRoute.begin();
+    for (; it != lstMoveRoute.end(); ++it)
+    {
+        AddMoveHistory(*it);
+    }
+
+    UpdateGeneralStatus(nGameResult);
+    m_bGameStarted = true;
     m_bGameOver = nGameResult != -1;
     ShowResultView(nGameResult);
 }
@@ -574,18 +604,14 @@ void CGameView::OnNewGame( void *pParam )
 void CGameView::OnOpen( void *pParam )
 {
     CGameView *pGameView = (CGameView *)pParam;
-    pGameView->m_bGameStarted = true;
-    pGameView->m_pPauseGame->SetCurrState(STATE_ACTIVE);
+    PostMessage(pGameView->m_hWnd, WM_OPENFILE, 0, 0);
     pGameView->m_pSave->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pFallback->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pTie->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pLose->SetCurrState(STATE_ACTIVE);
-    pGameView->m_clSoundPlayer.Play(s_pAudioNewGame);
 }
 
 void CGameView::OnSave( void *pParam )
 {
-
+    CGameView *pGameView = (CGameView *)pParam;
+    PostMessage(pGameView->m_hWnd, WM_SAVEFILE, 0, 0);
 }
 
 void CGameView::OnFallback( void *pParam )
@@ -685,9 +711,9 @@ void CGameView::ShowResultView( int nGameResult )
         m_pMessageBox->SetVisible(true);
         m_pMessageBox->SetText(strText);
         m_pConfirm->SetVisible(true);
+        m_pSave->SetCurrState(STATE_DISABLE);
+        m_pSettings->SetCurrState(STATE_ACTIVE);
     }
-
-    m_pSettings->SetCurrState(STATE_ACTIVE);
 }
 
 void CGameView::ChangeChessManPos()
@@ -959,4 +985,3 @@ void CGameView::ClearHisotryDisplay()
     UpdateMoveHistoryDisplay(true);
     UpdateMoveHistoryDisplay(false);
 }
-

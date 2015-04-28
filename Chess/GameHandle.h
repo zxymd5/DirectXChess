@@ -22,6 +22,7 @@
 
 #include "Subject.h"
 #include "MoveRouteGenerator.h"
+#include <process.h>
 
 #include <list>
 using namespace std;
@@ -48,6 +49,7 @@ public:
     void FallBackOneStep();
     void SaveToFile(const char *pFileName, int nFileType);
     void LoadFromFile(const char *pFileName, int nFileType);
+    static unsigned int __stdcall SaveGameFunc(void *pParam);
 
 private:
     int m_nCurrentTurn;
@@ -57,6 +59,10 @@ private:
     list<MoveRoute> m_lstMoveRoute;
     MoveRoute m_stCurrentMoveRoute;
     CMoveRouteGenerator m_clGenerator;
+    char m_szGameInfoSaveFile[MAX_PATH];
+    HANDLE m_hEventSaveGame;    //写数据库的Event
+    HANDLE m_hEventGameSaved;
+    HANDLE m_hThreadSaveGame;   //写数据库的线程
 };
 
 extern CGameHandle g_GameHandle;

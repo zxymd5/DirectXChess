@@ -21,6 +21,7 @@
 #include "GameSettings.h"
 #include <assert.h>
 #include <fstream>
+#include "../Include/sqlite3.h"
 
 CGameHandle g_GameHandle;
 
@@ -29,10 +30,19 @@ CGameHandle::CGameHandle(void)
     memset(m_szChessMan, 0, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
     m_nCurrentTurn = -1;
     m_nWhoIsDead = 0;
+    memset(m_szGameInfoSaveFile, 0, MAX_PATH);
+
+    m_hEventSaveGame = INVALID_HANDLE_VALUE;
+    m_hEventGameSaved = INVALID_HANDLE_VALUE;
+    m_hThreadSaveGame = INVALID_HANDLE_VALUE;
 }
 
 CGameHandle::~CGameHandle(void)
 {
+    WaitForSingleObject(m_hEventGameSaved, INFINITE);
+    CloseHandle(m_hEventSaveGame);
+    CloseHandle(m_hThreadSaveGame);
+    CloseHandle(m_hEventGameSaved);
 }
 
 void CGameHandle::Init()
@@ -44,6 +54,10 @@ void CGameHandle::Init()
     ResetMoveRoute(m_stCurrentMoveRoute);
     ResetChessManLayout();
     Notify(s_nEventUpdateChessMan);
+
+    m_hEventSaveGame = CreateEvent(NULL, TRUE, FALSE, NULL); 
+    m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
+    m_hThreadSaveGame = (HANDLE)_beginthreadex(NULL, 0, SaveGameFunc, this, 0, NULL);
 }
 
 //置棋子为最初状态
@@ -324,13 +338,16 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
     }
     else
     {
-  
+        SetEvent(m_hEventSaveGame);
+        ResetEvent(m_hEventGameSaved);
+        strcpy(m_szGameInfoSaveFile, pFileName);
     }
 }
 
 void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
 {
     assert(pFileName != NULL);
+    memset(m_szChessMan, 0, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
     //txt文件
     if (nFileType == 1)
     {
@@ -347,11 +364,11 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
         }
         fs.seekp(1, ios::cur);
 
-        //再保存轮到谁走棋，棋局结果
+        //再读取轮到谁走棋，棋局结果
         fs >> m_nCurrentTurn >> m_nGameResult >> m_nWhoIsDead;
         fs.seekp(1, ios::cur);
 
-        //最后保存走棋历史记录
+        //最后读取走棋历史记录
         MoveRoute stMoveRoute;
         while(!fs.eof())
         {
@@ -374,7 +391,79 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
     }
     else
     {
+        sqlite3 *db = NULL;
+        int nRet = sqlite3_open(pFileName, &db);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "无法打开文件！", "错误信息", MB_OK);
+            return;
+        }
+        
+        char szSQL[1024];
+        sqlite3_stmt *stmt;
 
+        sprintf(szSQL, "select nrow, ncolumn, nchesstype from chessman");        
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return;
+        }
+        
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            int nRow = sqlite3_column_int(stmt, 0);
+            int nColumn = sqlite3_column_int(stmt, 1);
+            int nChessman = sqlite3_column_int(stmt, 2);
+
+            m_szChessMan[nRow][nColumn] = nChessman;
+        }
+
+        sqlite3_reset(stmt);
+        sprintf(szSQL, "select ncurrentturn, ngameresult, nwhoisdead from gameinfo");        
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return;
+        }
+
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            m_nCurrentTurn = sqlite3_column_int(stmt, 0);
+            m_nGameResult = sqlite3_column_int(stmt, 1);
+            m_nWhoIsDead = sqlite3_column_int(stmt, 2);
+        }
+
+        sqlite3_reset(stmt);
+        sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return;
+        }
+
+        while(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+            MoveRoute stRoute;
+            stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
+            stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
+            stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
+            stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
+            stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
+            stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
+            stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
+            strcpy(stRoute.strMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
+
+            m_lstMoveRoute.push_back(stRoute);
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
     }
 
     if (m_lstMoveRoute.size())
@@ -384,4 +473,171 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
     
     Notify(s_nEventLoadChessMan);
     ResetMoveRoute(m_stCurrentMoveRoute);
+}
+
+unsigned int __stdcall CGameHandle::SaveGameFunc( void *pParam )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pParam;
+
+    while(1)
+    {
+        WaitForSingleObject(pGameHandle->m_hEventSaveGame, INFINITE);
+
+        sqlite3 *db = NULL;
+        int nRet = sqlite3_open(pGameHandle->m_szGameInfoSaveFile, &db);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "无法创建文件！", "错误信息", MB_OK);
+            return 0;
+        }
+
+        //创建表
+        char szSQL[1024];
+        char *pErrMsg = NULL;
+
+        sprintf(szSQL, "DROP table if exists chessman");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "删除表chessman失败！", "错误信息", MB_OK);
+            return 0;
+        }
+
+        sprintf(szSQL, "CREATE TABLE if not exists chessman (nrow INT, ncolumn INT, nchesstype INT)");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "创建表chessman失败！", "错误信息", MB_OK);
+            return 0;
+        }
+
+        sprintf(szSQL, "DROP table if exists gameinfo");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "删除表gameinfo失败！", "错误信息", MB_OK);
+            return 0;
+        }
+
+        sprintf(szSQL, "CREATE TABLE if not exists gameinfo (ncurrentturn INT, ngameresult INT, nwhoisdead INT)");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "创建表gameinfo失败！", "错误信息", MB_OK);
+            sqlite3_close(db);
+            return 0;
+        }
+
+        sprintf(szSQL, "DROP table if exists moveroute");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "删除表moveroute失败！", "错误信息", MB_OK);
+            return 0;
+        }
+
+        sprintf(szSQL, "CREATE TABLE if not exists moveroute (id INT, nmovingchessman INT, nkilledchessman INT, battackgeneral INT, nfromrow INT, nfromcolumn INT, ntorow INT, ntocolumn INT, strmovestepalpha VARCHAR (10))");
+        nRet = sqlite3_exec(db, szSQL, NULL, 0, &pErrMsg);
+        if (nRet != SQLITE_OK)
+        {
+            ::MessageBox(NULL, "创建表moveroute失败！", "错误信息", MB_OK);
+            sqlite3_close(db);
+            return 0;
+        }
+
+        //插入数据
+        sqlite3_stmt *stmt;
+
+        sprintf(szSQL, "insert into chessman(nrow, ncolumn, nchesstype) values (:nrow, :ncolumn, :nchesstype)");
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return 0;
+        }
+        for (int i = 0; i < s_nChessBoardRow; i++)
+        {
+            for (int j = 0; j < s_nChessBoardColumn; j++)
+            {
+                if (pGameHandle->m_szChessMan[i][j] > 0)
+                {
+                    sqlite3_bind_int(stmt, 1, i);
+                    sqlite3_bind_int(stmt, 2, j);
+                    sqlite3_bind_int(stmt, 3, pGameHandle->m_szChessMan[i][j]);
+                    nRet = sqlite3_step(stmt);
+                    if (nRet != SQLITE_DONE)
+                    {
+                        sqlite3_finalize(stmt);
+                        sqlite3_close(db);
+                        return 0;
+                    }
+                    sqlite3_reset(stmt);
+                }
+            }
+        }
+
+        sprintf(szSQL, "insert into gameinfo(ncurrentturn, ngameresult, nwhoisdead) values (:ncurrentturn, :ngameresult, :nwhoisdead)");
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return 0;
+        }
+
+        sqlite3_bind_int(stmt, 1, pGameHandle->m_nCurrentTurn);
+        sqlite3_bind_int(stmt, 2, pGameHandle->m_nGameResult);
+        sqlite3_bind_int(stmt, 3, pGameHandle->m_nWhoIsDead);
+        nRet = sqlite3_step(stmt);
+        if (nRet != SQLITE_DONE)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return 0;
+        }
+        sqlite3_reset(stmt);
+
+        sprintf(szSQL, "insert into moveroute(id, nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha) values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        if (SQLITE_OK != nRet)
+        {
+            sqlite3_finalize(stmt);
+            sqlite3_close(db);
+            return 0;
+        }
+
+        list<MoveRoute>::iterator it = pGameHandle->m_lstMoveRoute.begin();
+        int i = 1;
+        for (; it != pGameHandle->m_lstMoveRoute.end(); ++it)
+        {
+            sqlite3_bind_int(stmt, 1, i);
+            sqlite3_bind_int(stmt, 2, it->nMovingChessMan);
+            sqlite3_bind_int(stmt, 3, it->nKilledChessMan);
+            sqlite3_bind_int(stmt, 4, it->bAttackGeneral ? 1 : 0);
+            sqlite3_bind_int(stmt, 5, it->stFromPos.nRow);
+            sqlite3_bind_int(stmt, 6, it->stFromPos.nColumn);
+            sqlite3_bind_int(stmt, 7, it->stToPos.nRow);
+            sqlite3_bind_int(stmt, 8, it->stToPos.nColumn);
+            sqlite3_bind_text(stmt, 9, it->strMoveStepAlpha, -1, NULL);
+            nRet = sqlite3_step(stmt);
+            if (nRet != SQLITE_DONE)
+            {
+                sqlite3_finalize(stmt);
+                sqlite3_close(db);
+                return 0;
+            }  
+
+            sqlite3_reset(stmt);
+            i++;
+        }
+
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+
+        ResetEvent(pGameHandle->m_hEventSaveGame);
+        SetEvent(pGameHandle->m_hEventGameSaved);
+    }
+
+    return 0;
 }

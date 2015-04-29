@@ -35,6 +35,7 @@ CGameHandle::CGameHandle(void)
     m_hEventSaveGame = INVALID_HANDLE_VALUE;
     m_hEventGameSaved = INVALID_HANDLE_VALUE;
     m_hThreadSaveGame = INVALID_HANDLE_VALUE;
+    m_llCurrentStepStartTime = 0;
 }
 
 CGameHandle::~CGameHandle(void)
@@ -47,11 +48,6 @@ CGameHandle::~CGameHandle(void)
 
 void CGameHandle::Init()
 {
-    m_nCurrentTurn = g_GameSettings.m_nAhead;
-    m_nGameResult = -1;
-    m_nWhoIsDead = 0;
-    m_lstMoveRoute.clear();
-    ResetMoveRoute(m_stCurrentMoveRoute);
     ResetChessManLayout();
     Notify(s_nEventUpdateChessMan);
 
@@ -59,6 +55,19 @@ void CGameHandle::Init()
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
     m_hThreadSaveGame = (HANDLE)_beginthreadex(NULL, 0, SaveGameFunc, this, 0, NULL);
 }
+
+void CGameHandle::NewGame()
+{
+    m_nCurrentTurn = g_GameSettings.m_nAhead;
+    m_nGameResult = -1;
+    m_nWhoIsDead = 0;
+    m_lstMoveRoute.clear();
+    ResetMoveRoute(m_stCurrentMoveRoute);
+    ResetChessManLayout();
+    Notify(s_nEventUpdateChessMan);
+    m_llCurrentStepStartTime = ::timeGetTime();
+}
+
 
 //ÖÃÆå×ÓÎª×î³õ×´Ì¬
 void CGameHandle::ResetChessManLayout()
@@ -72,7 +81,7 @@ void CGameHandle::GetChessMan( int szChessMan[][s_nChessBoardColumn] )
 }
 
 //to do
-void CGameHandle::SetCurrentMoveRoute(int nRow, int nColumn)
+void CGameHandle::DoMove(int nRow, int nColumn)
 {
     if ((nRow == -1 || nColumn == -1) || 
         (nRow == m_stCurrentMoveRoute.stFromPos.nRow && 
@@ -195,12 +204,13 @@ void CGameHandle::SetCurrentMoveRoute(int nRow, int nColumn)
 
             m_lstMoveRoute.push_back(m_stCurrentMoveRoute);
             m_nCurrentTurn = (m_nCurrentTurn == s_nTurnBlack ? s_nTurnRed : s_nTurnBlack);
-            Notify(s_nEventUpdateCurrentChessMan);
+            Notify(s_nEventUpdateMove);
             ResetMoveRoute(m_stCurrentMoveRoute);
+            m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
         }
         else
         {
-            Notify(s_nEventUpdateCurrentChessMan);
+            Notify(s_nEventUpdateMove);
         }
     }
 }
@@ -640,4 +650,56 @@ unsigned int __stdcall CGameHandle::SaveGameFunc( void *pParam )
     }
 
     return 0;
+}
+
+__int64 CGameHandle::GetCurrentStepStartTime()
+{
+    return m_llCurrentStepStartTime;
+}
+
+void CGameHandle::StepTimeOver()
+{
+    if (m_nGameResult == -1)
+    {
+        if (m_nCurrentTurn == s_nTurnBlack)
+        {
+            m_nGameResult = s_nResultRedWin;
+        }
+        else
+        {
+            m_nGameResult = s_nResultBlackWin;
+        }
+
+        m_llCurrentStepStartTime = 0;
+        Notify(s_nEventGameResult);
+    }
+}
+
+void CGameHandle::OnTie()
+{
+    if (m_nGameResult == -1)
+    {
+        m_nGameResult = s_nResultTie;
+
+        m_llCurrentStepStartTime = 0;
+        Notify(s_nEventGameResult);
+    }
+}
+
+void CGameHandle::OnLose()
+{
+    if (m_nGameResult == -1)
+    {
+        if (g_GameSettings.m_nCompetitorSide == s_nBlackSide)
+        {
+            m_nGameResult = s_nResultBlackWin;
+        }
+        else
+        {
+            m_nGameResult = s_nResultRedWin;
+        }
+
+        m_llCurrentStepStartTime = 0;
+        Notify(s_nEventGameResult);
+    }
 }

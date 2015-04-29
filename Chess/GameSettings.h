@@ -31,6 +31,7 @@ public:
     int m_nCompetitor;
     int m_nCompetitorSide;
     int m_nAhead;
+    int m_nStepTime;
 
 };
 

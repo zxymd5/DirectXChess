@@ -50,10 +50,14 @@ public:
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
     void ProcessFallbackEvent( CSubject *pSub );
     void ProcessLoadChessManEvent( CSubject *pSub );
+    void ProcessGameResultEvent( CSubject *pSub );
 
     void UpdateChessMan(int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
     void PlayTipSound(const MoveRoute &stRoute, int nGameResult);
+
+    void PlayGameResultSound( int nGameResult );
+
     void UpdateGeneralStatus(int nGameResult);
     void UpdateMoveHistory();
     void AddMoveHistory(const MoveRoute &stRoute);
@@ -104,8 +108,6 @@ private:
     CDXImage    *m_pRightHistoryBG;
     CDXImage    *m_pLeftHistoryBG;
     CDXButton   *m_pStart;
-    CDXButton   *m_pPauseGame;
-    CDXButton   *m_pContinue;
     CDXButton   *m_pNewGame;
     CDXButton   *m_pOpen;
     CDXButton   *m_pSave;
@@ -130,6 +132,7 @@ private:
     CDXButton   *m_pRightNextRecord;
     CDXLabel    *m_pRightPageInfo;
     CSoundPlayer m_clSoundPlayer;
+    CDXLabel    *m_pStepTimeLeft;
 
     HWND        m_hWnd;
     multimap<int, CDXWidget *, greater<int>> m_mapWidget;
@@ -141,6 +144,7 @@ private:
     vector<ChineseMoveStep> m_vecRightMoveHistory;
     int         m_nCurrentLeftStepOrder;  //从1开始
     int         m_nCurrentRightStepOrder; //从1开始
+    bool        m_bStepTimeOverNotify;
 };
 
 extern CGameView g_GameView;

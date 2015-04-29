@@ -44,8 +44,6 @@ CGameView::CGameView(void)
     }
 
     m_pStart = NULL;
-    m_pPauseGame = NULL;
-    m_pContinue = NULL;
     m_pNewGame = NULL;
     m_pOpen = NULL;
     m_pSave = NULL;
@@ -69,12 +67,13 @@ CGameView::CGameView(void)
     m_pRightNextPage = NULL;
     m_pRightNextRecord = NULL;
     m_pRightPageInfo = NULL;
+    m_pStepTimeLeft = NULL;
 
     m_bGameStarted = false;
-    m_bGamePaused = false;
     m_bGameOver = false;
     m_nCurrentLeftStepOrder = 0;
     m_nCurrentRightStepOrder = 0;
+    m_bStepTimeOverNotify = false;
 }
 
 CGameView::~CGameView(void)
@@ -109,16 +108,6 @@ void CGameView::Init(HWND hWnd)
     m_pStart = (CDXButton *)g_GameEngine.GetWidgetByName("Start");
     m_pStart->SetCallBackInfo(OnStart, this);
     m_mapWidget.insert(make_pair(m_pStart->GetDepth(), m_pStart));
-
-    m_pPauseGame = (CDXButton *)g_GameEngine.GetWidgetByName("PauseGame");
-    m_pPauseGame->SetCallBackInfo(OnPauseGame, this);
-    m_pPauseGame->SetCurrState(STATE_DISABLE);
-    m_mapWidget.insert(make_pair(m_pPauseGame->GetDepth(), m_pPauseGame));
-
-    m_pContinue = (CDXButton *)g_GameEngine.GetWidgetByName("Continue");
-    m_pContinue->SetCallBackInfo(OnContinue, this);
-    m_pContinue->SetCurrState(STATE_DISABLE);
-    m_mapWidget.insert(make_pair(m_pContinue->GetDepth(), m_pContinue));
 
     m_pNewGame = (CDXButton *)g_GameEngine.GetWidgetByName("NewGame");
     m_pNewGame->SetCallBackInfo(OnNewGame, this);
@@ -227,6 +216,13 @@ void CGameView::Init(HWND hWnd)
     m_pRightPageInfo->SetText("0/0");
     m_mapWidget.insert(make_pair(m_pRightPageInfo->GetDepth(), m_pRightPageInfo));
 
+    m_pStepTimeLeft = (CDXLabel *)g_GameEngine.GetWidgetByName("StepTimeLeft");
+    m_pStepTimeLeft->SetFontColor(255, 255, 0, 0);
+    m_pStepTimeLeft->SetAlignment(DT_CENTER | DT_VCENTER);
+    m_pStepTimeLeft->SetText("00:00:00");
+    m_pStepTimeLeft->SetVisible(g_GameSettings.m_nStepTime > 0);
+    m_mapWidget.insert(make_pair(m_pStepTimeLeft->GetDepth(), m_pStepTimeLeft));
+
     char szChessManName[100];
     for (int i = 0; i < s_nChessBoardRow; i++)
     {
@@ -256,6 +252,7 @@ void CGameView::Init(HWND hWnd)
     m_clSoundPlayer.AddAudioFile(s_pAudioLoss);
     m_clSoundPlayer.AddAudioFile(s_pAudioWin);
     m_clSoundPlayer.AddAudioFile(s_pAudioMove);
+    m_clSoundPlayer.AddAudioFile(s_pAudioTie);
 
     m_nCurrentLeftStepOrder = m_vecLeftMoveHistory.size();
     m_nCurrentRightStepOrder = m_vecRightMoveHistory.size();
@@ -269,6 +266,22 @@ void CGameView::Render()
     for (it = m_mapWidget.begin(); it != m_mapWidget.end(); ++it)
     {
         (it->second)->Render();
+    }
+
+    __int64 llCurrentTime = ::timeGetTime();
+    int nTimeElapsed = max((llCurrentTime - g_GameHandle.GetCurrentStepStartTime()) / 1000, 0);
+    int nTimeLeft = max(g_GameSettings.m_nStepTime - nTimeElapsed, 0);
+    char szStepTimeLeft[10];
+    if (g_GameHandle.GetCurrentStepStartTime() > 0 && g_GameSettings.m_nStepTime > 0)
+    {
+        ConvertToTimeStr(nTimeLeft, szStepTimeLeft);
+        m_pStepTimeLeft->SetText(szStepTimeLeft);
+
+        if (!m_bStepTimeOverNotify && nTimeLeft == 0)
+        {
+            g_GameHandle.StepTimeOver();
+            m_bStepTimeOverNotify = true;
+        }
     }
 }
 
@@ -286,7 +299,7 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
             ProcessUpdateChessManEvent(pSub);
         }
         break;
-    case s_nEventUpdateCurrentChessMan:
+    case s_nEventUpdateMove:
         {
             ProcessUpdateMoveRouteEvent(pSub);
         }
@@ -299,6 +312,11 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
     case s_nEventLoadChessMan:
         {
             ProcessLoadChessManEvent(pSub);
+        }
+        break;
+    case s_nEventGameResult:
+        {
+            ProcessGameResultEvent(pSub);
         }
         break;
     default:
@@ -356,8 +374,7 @@ void CGameView::MsgResponse( HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPa
         }
 
         if (!m_pChessBoardCover->IsVisible() && 
-            m_bGameStarted && !m_bGamePaused &&
-            !m_bGameOver)
+            m_bGameStarted && !m_bGameOver)
         {
             switch(uMessage)
             {
@@ -412,7 +429,7 @@ void CGameView::HandleLButtonUp()
     {
         if (GetCoordinate (pt, nRow, nColumn, g_GameSettings.m_nCompetitorSide))
         {
-            g_GameHandle.SetCurrentMoveRoute(nRow, nColumn);
+            g_GameHandle.DoMove(nRow, nColumn);
         }
     }
 
@@ -469,6 +486,7 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
 
         //更新MoveHistory
         AddMoveHistory(stRoute);
+        m_bStepTimeOverNotify = nGameResult != -1;
     }
 
     UpdateMoveRoute(stRoute, szChessMan);
@@ -479,6 +497,15 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     ShowResultView(nGameResult);
 }
 
+void CGameView::ProcessGameResultEvent( CSubject *pSub )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pSub;
+
+    int nGameResult = pGameHandle->GetGameResult();
+    m_bGameOver = nGameResult != -1;
+    PlayGameResultSound(nGameResult);
+    ShowResultView(nGameResult);
+}
 
 void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
 {
@@ -519,16 +546,7 @@ void CGameView::PlayTipSound( const MoveRoute &stRoute, int nGameResult )
 {
     if (nGameResult != -1)
     {
-        //对手胜
-        if ((nGameResult == s_nResultRedWin && g_GameSettings.m_nCompetitorSide == s_nRedSide) ||
-            (nGameResult == s_nResultBlackWin && g_GameSettings.m_nCompetitorSide == s_nBlackSide) )
-        {
-            m_clSoundPlayer.Play(s_pAudioLoss);
-        }
-        else
-        {
-            m_clSoundPlayer.Play(s_pAudioWin);
-        }
+        PlayGameResultSound(nGameResult);
     }
     else
     {
@@ -567,35 +585,18 @@ void CGameView::OnStart( void *pParam )
     pGameView->m_pOpen->SetCurrState(STATE_ACTIVE);
 }
 
-void CGameView::OnPauseGame( void *pParam )
-{
-    CGameView *pGameView = (CGameView *)pParam;
-    pGameView->m_bGamePaused = true;
-    pGameView->m_pPauseGame->SetCurrState(STATE_DISABLE);
-    pGameView->m_pContinue->SetCurrState(STATE_ACTIVE);
-}
-
-void CGameView::OnContinue( void *pParam )
-{
-    CGameView *pGameView = (CGameView *)pParam;
-    pGameView->m_bGamePaused = false;
-    pGameView->m_pPauseGame->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pContinue->SetCurrState(STATE_DISABLE);
-}
-
 void CGameView::OnNewGame( void *pParam )
 {
     CGameView *pGameView = (CGameView *)pParam;
     pGameView->m_bGameStarted = true;
     pGameView->m_bGameOver = false;
-    pGameView->m_pPauseGame->SetCurrState(STATE_ACTIVE);
     pGameView->m_pSave->SetCurrState(STATE_ACTIVE);
     pGameView->m_pFallback->SetCurrState(STATE_ACTIVE);
     pGameView->m_pTie->SetCurrState(STATE_ACTIVE);
     pGameView->m_pLose->SetCurrState(STATE_ACTIVE);
     pGameView->m_pSettings->SetCurrState(STATE_DISABLE);
 
-    g_GameHandle.Init();
+    g_GameHandle.NewGame();
     pGameView->m_clSoundPlayer.Play(s_pAudioNewGame);
 
     pGameView->ClearHisotryDisplay();
@@ -621,12 +622,12 @@ void CGameView::OnFallback( void *pParam )
 
 void CGameView::OnTie( void *pParam )
 {
-
+    g_GameHandle.OnTie();
 }
 
 void CGameView::OnLose( void *pParam )
 {
-
+    g_GameHandle.OnLose();
 }
 
 void CGameView::OnSettings( void *pParam )
@@ -984,4 +985,26 @@ void CGameView::ClearHisotryDisplay()
     m_nCurrentLeftStepOrder = 0;
     UpdateMoveHistoryDisplay(true);
     UpdateMoveHistoryDisplay(false);
+}
+
+void CGameView::PlayGameResultSound( int nGameResult )
+{
+    //对手胜
+    if (nGameResult != s_nResultTie)
+    {
+        if ((nGameResult == s_nResultRedWin && g_GameSettings.m_nCompetitorSide == s_nRedSide) ||
+            (nGameResult == s_nResultBlackWin && g_GameSettings.m_nCompetitorSide == s_nBlackSide) )
+        {
+            m_clSoundPlayer.Play(s_pAudioLoss);
+        }
+        else
+        {
+            m_clSoundPlayer.Play(s_pAudioWin);
+        }
+
+    }
+    else
+    {
+        m_clSoundPlayer.Play(s_pAudioTie);
+    }
 }

@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <string>
 
 #define WM_SETTINGS (WM_USER + 0)
 #define WM_OPENFILE (WM_USER + 1)
@@ -52,6 +53,7 @@ static const char *s_pAudioEat = "Audio/Eat.wav";
 static const char *s_pAudioLoss = "Audio/Loss.wav";
 static const char *s_pAudioMove = "Audio/Move.wav";
 static const char *s_pAudioWin = "Audio/Win.wav";
+static const char *s_pAudioTie = "Audio/Draw.wav";
 
 static const int s_nTurnBlack = 1;
 static const int s_nTurnRed = 2;
@@ -299,10 +301,19 @@ static void CurrentTimeToStr(char *strTime)
     sprintf(strTime, "%02d:%02d:%02d", sys.wHour, sys.wMinute, sys.wSecond);
 }
 
+static void ConvertToTimeStr(int nSeconds, char *pSeconds)
+{
+    int nHour = nSeconds / 3600;
+    int nMinute = (nSeconds - nHour * 3600) / 60;
+    int nSecond = nSeconds - nHour * 3600 - nMinute * 60;
+    sprintf(pSeconds, "%.2d:%.2d:%.2d", nHour, nMinute, nSecond);
+}
+
 static const int s_nEventUpdateChessMan = 1;
-static const int s_nEventUpdateCurrentChessMan = 2;
+static const int s_nEventUpdateMove = 2;
 static const int s_nEventFallback = 3;
 static const int s_nEventLoadChessMan = 4;
+static const int s_nEventGameResult = 5;
 static const int s_nMoveStepPerPage = 10;
 
 #endif

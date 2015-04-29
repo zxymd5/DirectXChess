@@ -54,20 +54,22 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             OffsetRect(&rt, 512 - (rt.right - rt.left) / 2, 384 - (rt.bottom - rt.top) / 2);
             MoveWindow(hWnd, rt.left, rt.top, rt.right - rt.left, rt.bottom - rt.top, TRUE);
 
-            HWND ComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"电脑");
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"人");
-            SendMessage(ComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nCompetitor - 1), 0);
+            HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"电脑");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"人");
+            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nCompetitor - 1), 0);
 
-            ComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"黑");
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"红");
-            SendMessage(ComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nCompetitorSide - 1), 0);
+            hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"黑");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"红");
+            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nCompetitorSide - 1), 0);
 
-            ComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"黑方");
-            SendMessage(ComboBox, CB_ADDSTRING, 0, (LPARAM)"红方");
-            SendMessage(ComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nAhead - 1), 0);
+            hComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"黑方");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"红方");
+            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nAhead - 1), 0);
+
+            SetDlgItemInt(hWnd, IDC_STEPTIMEEDIT, g_GameSettings.m_nStepTime, FALSE);
         }
         break;
 
@@ -75,20 +77,22 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             if (wParam == IDOK)
             {
-                HWND ComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
-                g_GameSettings.m_nCompetitor = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
+                HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
+                g_GameSettings.m_nCompetitor = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
 
-                ComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
-                int nCompetitorSide = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
+                hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
+                int nCompetitorSide = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
 
-                ComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
-                g_GameSettings.m_nAhead = SendMessage(ComboBox, CB_GETCURSEL, 0, 0) + 1;
+                hComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
+                g_GameSettings.m_nAhead = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
                 
                 if (g_GameSettings.m_nCompetitorSide != nCompetitorSide)
                 {
                     g_GameSettings.m_nCompetitorSide = nCompetitorSide;
                     g_GameView.ChangeChessManPos();
                 }
+                
+                g_GameSettings.m_nStepTime = GetDlgItemInt(hWnd, IDC_STEPTIMEEDIT, NULL, FALSE);
 
                 EndDialog(hWnd, wParam);
             }

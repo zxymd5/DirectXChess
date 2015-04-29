@@ -25,6 +25,7 @@
 #include <process.h>
 
 #include <list>
+#include <MMSystem.h>
 using namespace std;
 
 class CGameHandle : public CSubject
@@ -33,9 +34,10 @@ public:
     CGameHandle(void);
     virtual ~CGameHandle(void);
     void Init();
+    void NewGame();
     void ResetChessManLayout();
     void GetChessMan(int szChessMan[][s_nChessBoardColumn]);
-    void SetCurrentMoveRoute(int nRow, int nColumn);
+    void DoMove(int nRow, int nColumn);
     const MoveRoute &GetCurrentMoveRoute();
     void ResetMoveRoute(MoveRoute &stRoute);
     void SetGameResult(int nGameResult);
@@ -49,6 +51,11 @@ public:
     void FallBackOneStep();
     void SaveToFile(const char *pFileName, int nFileType);
     void LoadFromFile(const char *pFileName, int nFileType);
+    __int64 GetCurrentStepStartTime();
+    void StepTimeOver();
+    void OnTie();
+    void OnLose();
+
     static unsigned int __stdcall SaveGameFunc(void *pParam);
 
 private:
@@ -63,6 +70,7 @@ private:
     HANDLE m_hEventSaveGame;    //写数据库的Event
     HANDLE m_hEventGameSaved;
     HANDLE m_hThreadSaveGame;   //写数据库的线程
+    __int64 m_llCurrentStepStartTime;
 };
 
 extern CGameHandle g_GameHandle;

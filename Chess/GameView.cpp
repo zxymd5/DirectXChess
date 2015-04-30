@@ -219,8 +219,7 @@ void CGameView::Init(HWND hWnd)
     m_pStepTimeLeft = (CDXLabel *)g_GameEngine.GetWidgetByName("StepTimeLeft");
     m_pStepTimeLeft->SetFontColor(255, 255, 0, 0);
     m_pStepTimeLeft->SetAlignment(DT_CENTER | DT_VCENTER);
-    m_pStepTimeLeft->SetText("00:00:00");
-    m_pStepTimeLeft->SetVisible(g_GameSettings.m_nStepTime > 0);
+    m_pStepTimeLeft->SetText(" ");
     m_mapWidget.insert(make_pair(m_pStepTimeLeft->GetDepth(), m_pStepTimeLeft));
 
     char szChessManName[100];
@@ -272,10 +271,12 @@ void CGameView::Render()
     int nTimeElapsed = max((llCurrentTime - g_GameHandle.GetCurrentStepStartTime()) / 1000, 0);
     int nTimeLeft = max(g_GameSettings.m_nStepTime - nTimeElapsed, 0);
     char szStepTimeLeft[10];
+    char szText[32];
     if (g_GameHandle.GetCurrentStepStartTime() > 0 && g_GameSettings.m_nStepTime > 0)
     {
         ConvertToTimeStr(nTimeLeft, szStepTimeLeft);
-        m_pStepTimeLeft->SetText(szStepTimeLeft);
+        sprintf(szText, "%s%s", g_GameHandle.GetCurrentTurn() == s_nTurnBlack ? "黑方走棋" : "红方走棋", szStepTimeLeft);
+        m_pStepTimeLeft->SetText(szText);
 
         if (!m_bStepTimeOverNotify && nTimeLeft == 0)
         {
@@ -294,9 +295,14 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
 
     switch(nEvent)
     {
-    case s_nEventUpdateChessMan:
+    case s_nEventInitBoard:
         {
-            ProcessUpdateChessManEvent(pSub);
+            ProcessInitBoardEvent(pSub);
+        }
+        break;
+    case s_nEventNewGame:
+        {
+            ProcessNewGameEvent(pSub);
         }
         break;
     case s_nEventUpdateMove:
@@ -324,12 +330,25 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
     }
 }
 
-void CGameView::ProcessUpdateChessManEvent( CSubject *pSub )
+void CGameView::ProcessInitBoardEvent( CSubject *pSub )
 {
     CGameHandle *pGameHandle = (CGameHandle *)pSub;
     int szChessMan[s_nChessBoardRow][s_nChessBoardColumn];
     pGameHandle->GetChessMan(szChessMan);
     UpdateChessMan(szChessMan);
+}
+
+void CGameView::ProcessNewGameEvent( CSubject *pSub )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pSub;
+    int szChessMan[s_nChessBoardRow][s_nChessBoardColumn];
+    pGameHandle->GetChessMan(szChessMan);
+    UpdateChessMan(szChessMan);
+
+    if (g_GameSettings.m_nStepTime <= 0)
+    {
+        m_pStepTimeLeft->SetText(pGameHandle->GetCurrentTurn() == s_nTurnBlack ? "黑方走棋" : "红方走棋");
+    }
 }
 
 void CGameView::UpdateChessMan( int szChessMan[s_nChessBoardRow][s_nChessBoardColumn] )
@@ -493,6 +512,11 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     PlayTipSound(stRoute, nGameResult);
     UpdateGeneralStatus(nGameResult);
     
+    if (g_GameSettings.m_nStepTime <= 0 && nGameResult == -1)
+    {
+        m_pStepTimeLeft->SetText(pGameHandle->GetCurrentTurn() == s_nTurnBlack ? "黑方走棋" : "红方走棋");
+    }
+
     m_bGameOver = nGameResult != -1;
     ShowResultView(nGameResult);
 }
@@ -540,6 +564,11 @@ void CGameView::ProcessFallbackEvent( CSubject *pSub )
 
     FallbackMoveHistory(false);
     FallbackMoveHistory(true);
+
+    if (g_GameSettings.m_nStepTime <= 0 && pGameHandle->GetGameResult() == -1)
+    {
+        m_pStepTimeLeft->SetText(pGameHandle->GetCurrentTurn() == s_nTurnBlack ? "黑方走棋" : "红方走棋");
+    }
 }
 
 void CGameView::PlayTipSound( const MoveRoute &stRoute, int nGameResult )

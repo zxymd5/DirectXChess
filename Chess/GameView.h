@@ -46,7 +46,8 @@ public:
     void HandleLButtonUp();
 
     virtual void ProcessEvent(CSubject *pSub, int nEvent);
-    void ProcessUpdateChessManEvent(CSubject *pSub);
+    void ProcessInitBoardEvent(CSubject *pSub);
+    void ProcessNewGameEvent(CSubject *pSub);
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
     void ProcessFallbackEvent( CSubject *pSub );
     void ProcessLoadChessManEvent( CSubject *pSub );

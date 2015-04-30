@@ -309,11 +309,12 @@ static void ConvertToTimeStr(int nSeconds, char *pSeconds)
     sprintf(pSeconds, "%.2d:%.2d:%.2d", nHour, nMinute, nSecond);
 }
 
-static const int s_nEventUpdateChessMan = 1;
-static const int s_nEventUpdateMove = 2;
-static const int s_nEventFallback = 3;
-static const int s_nEventLoadChessMan = 4;
-static const int s_nEventGameResult = 5;
-static const int s_nMoveStepPerPage = 10;
+static const int s_nEventInitBoard = 1;
+static const int s_nEventNewGame = 2;
+static const int s_nEventUpdateMove = 3;
+static const int s_nEventFallback = 4;
+static const int s_nEventLoadChessMan = 5;
+static const int s_nEventGameResult = 6;
+static const int s_nMoveStepPerPage = 7;
 
 #endif

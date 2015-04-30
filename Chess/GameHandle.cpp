@@ -49,7 +49,7 @@ CGameHandle::~CGameHandle(void)
 void CGameHandle::Init()
 {
     ResetChessManLayout();
-    Notify(s_nEventUpdateChessMan);
+    Notify(s_nEventInitBoard);
 
     m_hEventSaveGame = CreateEvent(NULL, TRUE, FALSE, NULL); 
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
@@ -64,7 +64,7 @@ void CGameHandle::NewGame()
     m_lstMoveRoute.clear();
     ResetMoveRoute(m_stCurrentMoveRoute);
     ResetChessManLayout();
-    Notify(s_nEventUpdateChessMan);
+    Notify(s_nEventNewGame);
     m_llCurrentStepStartTime = ::timeGetTime();
 }
 

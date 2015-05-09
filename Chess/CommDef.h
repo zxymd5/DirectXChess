@@ -57,15 +57,9 @@ static const char *AUDIO_WIN = "Audio/Win.wav";
 static const char *AUDIO_TIE = "Audio/Draw.wav";
 static const char *AUDIO_ILLEGAL = "Audio/Forbid.wav";
 
+static const int TIE = 0;
 static const int BLACK = 1;
 static const int RED = 2;
-static const int s_nResultTie = 0;
-static const int s_nResultBlackWin = 1;
-static const int s_nResultRedWin = 2;
-static const int s_nBlackDead = 1;
-static const int s_nRedDead = 2;
-static const int s_nBlackSide = 1;
-static const int s_nRedSide = 2;
 static const int COMPITITOR_MACHINE = 1;
 static const int COMPITITOR_HUMAN = 2;
 static const int COMPITITOR_NETWORK = 3;
@@ -86,7 +80,7 @@ static const int RED_ADVISOR = 12;      //红仕
 static const int RED_MINISTER = 13;     //红相
 static const int RED_SOLDIER = 14;      //红兵
 
-static const char *s_pChessManCode = "krncabpKRNCABP"; //将车马炮士象卒帅车马炮仕相兵
+static const char *CHESSMAN_CODE = "krncabpKRNCABP"; //将车马炮士象卒帅车马炮仕相兵
 
 static const char *ALL_CHESSMAN_NAME[] = 
 {
@@ -116,95 +110,95 @@ static const int CHESSMAN_TYPE_COUNT = 14;    //棋子种类个数
 
 static RECT GetChessManInitPos(int nRow, int nColumn, int nCompetitorSide)
 {
-    RECT Pos;
-    nRow = nCompetitorSide == s_nBlackSide ? nRow : CHESSBOARD_ROW - nRow - 1;
-    nColumn = nCompetitorSide == s_nBlackSide ? nColumn : CHESSBOARD_COLUMN - nColumn - 1;
-    Pos.left = CHESSBOARD_CELL_START_X + nColumn * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
-    Pos.top = CHESSBOARD_CELL_START_Y + nRow * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
-    Pos.right = Pos.left + CHESSMAN_LEN;
-    Pos.bottom = Pos.top + CHESSMAN_LEN;
+    RECT rc;
+    nRow = nCompetitorSide == BLACK ? nRow : CHESSBOARD_ROW - nRow - 1;
+    nColumn = nCompetitorSide == BLACK ? nColumn : CHESSBOARD_COLUMN - nColumn - 1;
+    rc.left = CHESSBOARD_CELL_START_X + nColumn * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
+    rc.top = CHESSBOARD_CELL_START_Y + nRow * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
+    rc.right = rc.left + CHESSMAN_LEN;
+    rc.bottom = rc.top + CHESSMAN_LEN;
 
-    return Pos;
+    return rc;
 }
 
 static RECT GetChessManSideInitPos(int nCompetitorSide, int nSide)
 {
-    RECT Pos;
+    RECT rc;
 
-    Pos.top = 55;
-    Pos.bottom = Pos.top + CHESSBOARD_CELL_LEN;
+    rc.top = 55;
+    rc.bottom = rc.top + CHESSBOARD_CELL_LEN;
 
-    if (nSide == s_nBlackSide)
+    if (nSide == BLACK)
     {
-        if (nCompetitorSide == s_nBlackSide)
+        if (nCompetitorSide == BLACK)
         {
-            Pos.left = 85;
+            rc.left = 85;
         }
         else
         {
-            Pos.left = 885;
+            rc.left = 885;
         }
     }
     else
     {
-        if (nCompetitorSide == s_nBlackSide)
+        if (nCompetitorSide == BLACK)
         {
-            Pos.left = 885;
+            rc.left = 885;
         }
         else
         {
-            Pos.left = 85;
+            rc.left = 85;
         }
     }
     
-    Pos.right = Pos.left + CHESSBOARD_CELL_LEN;
+    rc.right = rc.left + CHESSBOARD_CELL_LEN;
 
-    return Pos;
+    return rc;
 }
 
 static RECT GetChessManListViewInitPos(int nCompetitorSide, int nSide)
 {
-    RECT Pos;
+    RECT rc;
 
-    Pos.top = 130;
-    Pos.bottom = Pos.top + 440;
+    rc.top = 130;
+    rc.bottom = rc.top + 440;
 
-    if (nSide == s_nBlackSide)
+    if (nSide == BLACK)
     {
-        if (nCompetitorSide == s_nBlackSide)
+        if (nCompetitorSide == BLACK)
         {
-            Pos.left = 5;
+            rc.left = 5;
         }
         else
         {
-            Pos.left = 815;
+            rc.left = 815;
         }
     }
     else
     {
-        if (nCompetitorSide == s_nBlackSide)
+        if (nCompetitorSide == BLACK)
         {
-            Pos.left = 815;
+            rc.left = 815;
         }
         else
         {
-            Pos.left = 5;
+            rc.left = 5;
         }
     }
 
-    Pos.right = Pos.left + 200;
+    rc.right = rc.left + 200;
 
-    return Pos;
+    return rc;
 }
 
-static bool GetCoordinate (const POINT &stPt, int &nRow, int &nColumn, int nCompetitorSide)
+static bool GetCoordinate (const POINT &pt, int &nRow, int &nColumn, int nCompetitorSide)
 {
     for (nRow = 0; nRow < CHESSBOARD_ROW; nRow++)
     {
         for (nColumn = 0; nColumn < CHESSBOARD_COLUMN; nColumn++)
         {
-            RECT Rect = GetChessManInitPos(nRow, nColumn, nCompetitorSide);
-            if (PtInRect(&Rect, stPt))
+            RECT rc = GetChessManInitPos(nRow, nColumn, nCompetitorSide);
+            if (PtInRect(&rc, pt))
             {
                 return true;
             }
@@ -216,15 +210,15 @@ static bool GetCoordinate (const POINT &stPt, int &nRow, int &nColumn, int nComp
     return false;
 }
 
-static void GetChessManPicture(char strPictureName[], int nChessMan, bool bSelected)
+static void GetChessManPicture(char szPictureName[], int nChessMan, bool bSelected)
 {
     if (!bSelected)
     {
-        sprintf(strPictureName, "%s%s.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
+        sprintf(szPictureName, "%s%s.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
     }
     else
     {
-        sprintf(strPictureName, "%s%sSel.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
+        sprintf(szPictureName, "%s%sSel.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
     }
 }
 
@@ -247,14 +241,14 @@ struct MoveRoute
     bool bAttackGeneral;
     ChessManPosition stFromPos;
     ChessManPosition stToPos;
-    char strMoveStepAlpha[5];
+    char szMoveStepAlpha[5];
 
     MoveRoute()
     {
         nKilledChessMan = 0;
         nMovingChessMan = 0;
         bAttackGeneral = false;
-        memset(strMoveStepAlpha, 0, 5);
+        memset(szMoveStepAlpha, 0, 5);
     }
 };
 
@@ -297,11 +291,11 @@ static bool IsCompleteMoveRoute(const MoveRoute &stRoute)
         stRoute.stToPos.nColumn != -1);
 }
 
-static void CurrentTimeToStr(char *strTime)
+static void CurrentTimeToStr(char *pTime)
 {
     SYSTEMTIME sys;
     GetLocalTime( &sys );
-    sprintf(strTime, "%02d:%02d:%02d", sys.wHour, sys.wMinute, sys.wSecond);
+    sprintf(pTime, "%02d:%02d:%02d", sys.wHour, sys.wMinute, sys.wSecond);
 }
 
 static void ConvertToTimeStr(int nSeconds, char *pSeconds)

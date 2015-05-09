@@ -339,17 +339,17 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent )
 void CGameView::ProcessInitBoardEvent( CSubject *pSub )
 {
     CGameHandle *pGameHandle = (CGameHandle *)pSub;
-    int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
-    pGameHandle->GetChessMan(szChessMan);
-    UpdateChessMan(szChessMan);
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
+    UpdateChessMan(arrChessMan);
 }
 
 void CGameView::ProcessNewGameEvent( CSubject *pSub )
 {
     CGameHandle *pGameHandle = (CGameHandle *)pSub;
-    int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
-    pGameHandle->GetChessMan(szChessMan);
-    UpdateChessMan(szChessMan);
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
+    UpdateChessMan(arrChessMan);
 
     if (g_GameSettings.m_nStepTime <= 0)
     {
@@ -362,16 +362,16 @@ void CGameView::ProcessIllegalMoveEvent( CSubject *pSub )
     m_clSoundPlayer.Play(AUDIO_ILLEGAL);
 }
 
-void CGameView::UpdateChessMan( int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN] )
+void CGameView::UpdateChessMan( int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN] )
 {
     char strChessManPicture[40];
     for (int i = 0; i < CHESSBOARD_ROW; i++)
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if (szChessMan[i][j] > 0)
+            if (arrChessMan[i][j] > 0)
             {
-                GetChessManPicture(strChessManPicture, szChessMan[i][j], false);
+                GetChessManPicture(strChessManPicture, arrChessMan[i][j], false);
                 m_pszGamingChessMan[i][j]->SetTexture(strChessManPicture);
                 m_pszGamingChessMan[i][j]->SetVisible(true);
             }
@@ -428,11 +428,11 @@ CDXWidget * CGameView::GetResponseMsgWidget()
     multimap<int, CDXWidget*, greater<int> >::reverse_iterator it;
     for (it = m_mapWidget.rbegin(); it != m_mapWidget.rend(); ++it)
     {
-        RECT stRt = (it->second)->GetPosRect();
-        OffsetRect(&stRt, WINDOW_START_X, WINDOW_START_Y);
+        RECT rc = (it->second)->GetPosRect();
+        OffsetRect(&rc, WINDOW_START_X, WINDOW_START_Y);
         bool bVisible = (it->second)->IsVisible();
 
-        if (PtInRect(&stRt, pt))
+        if (PtInRect(&rc, pt))
         {
             if (!bVisible)
             {
@@ -465,7 +465,7 @@ void CGameView::HandleLButtonUp()
 
 }
 
-void CGameView::UpdateMoveRoute( const MoveRoute &stRoute, int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN])
+void CGameView::UpdateMoveRoute( const MoveRoute &stRoute, int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN])
 {
     char szTextureFile[50];
     if (!IsCompleteMoveRoute(stRoute))
@@ -474,12 +474,12 @@ void CGameView::UpdateMoveRoute( const MoveRoute &stRoute, int szChessMan[CHESSB
         {
             for (int j = 0; j < CHESSBOARD_COLUMN; j++)
             {
-                if (IsSameSide(stRoute.nMovingChessMan, szChessMan[i][j]))
+                if (IsSameSide(stRoute.nMovingChessMan, arrChessMan[i][j]))
                 {
-                    GetChessManPicture(szTextureFile, szChessMan[i][j], true);
+                    GetChessManPicture(szTextureFile, arrChessMan[i][j], true);
                     if (strcmp(szTextureFile, m_pszGamingChessMan[i][j]->GetTextureFile()) == 0)
                     {
-                        GetChessManPicture(szTextureFile, szChessMan[i][j], false);
+                        GetChessManPicture(szTextureFile, arrChessMan[i][j], false);
                         m_pszGamingChessMan[i][j]->SetTexture(szTextureFile);
                     }
                 }
@@ -507,19 +507,19 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     MoveRoute stRoute = pGameHandle->GetCurrentMoveRoute();
     int nGameResult = pGameHandle->GetGameResult();
 
-    int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
-    pGameHandle->GetChessMan(szChessMan);
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
     //如果移动了完整的一步，则需要先更新整个棋盘
     if (IsCompleteMoveRoute(stRoute))
     {
-        UpdateChessMan(szChessMan);
+        UpdateChessMan(arrChessMan);
 
         //更新MoveHistory
         AddMoveHistory(stRoute);
         m_bStepTimeOverNotify = nGameResult != -1;
     }
 
-    UpdateMoveRoute(stRoute, szChessMan);
+    UpdateMoveRoute(stRoute, arrChessMan);
     PlayTipSound(stRoute, nGameResult);
     UpdateGeneralStatus(nGameResult);
     
@@ -549,10 +549,10 @@ void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
     list<MoveRoute> lstMoveRoute = pGameHandle->GetLstMoveRoute();
     int nGameResult = pGameHandle->GetGameResult();
 
-    int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
-    pGameHandle->GetChessMan(szChessMan);
-    UpdateChessMan(szChessMan);
-    UpdateMoveRoute(stRoute, szChessMan);
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
+    UpdateChessMan(arrChessMan);
+    UpdateMoveRoute(stRoute, arrChessMan);
 
     list<MoveRoute>::iterator it = lstMoveRoute.begin();
     for (; it != lstMoveRoute.end(); ++it)
@@ -569,9 +569,9 @@ void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
 void CGameView::ProcessFallbackEvent( CSubject *pSub )
 {
     CGameHandle *pGameHandle = (CGameHandle *)pSub;
-    int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
-    pGameHandle->GetChessMan(szChessMan);
-    UpdateChessMan(szChessMan);
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
+    UpdateChessMan(arrChessMan);
 
     FallbackMoveHistory(false);
     FallbackMoveHistory(true);
@@ -708,9 +708,9 @@ void CGameView::UpdateGeneralStatus( int nGameResult )
 
     switch(nGameResult)
     {
-    case s_nResultBlackWin:
+    case BLACK:
         {
-            if (g_GameHandle.GetDeadOne() == s_nRedDead &&
+            if (g_GameHandle.GetDeadOne() == RED &&
                 g_GameHandle.GetGeneralPosition(RED_GENERAL, nRow, nColumn) > 0)
             {
                 m_pszGamingChessMan[nRow][nColumn]->SetTexture(RED_DEAD_PICTURE);
@@ -718,9 +718,9 @@ void CGameView::UpdateGeneralStatus( int nGameResult )
             }
         }
         break;
-    case s_nResultRedWin:
+    case RED:
         {
-            if (g_GameHandle.GetDeadOne() == s_nBlackDead &&
+            if (g_GameHandle.GetDeadOne() == BLACK &&
                 g_GameHandle.GetGeneralPosition(BLACK_GENERAL, nRow, nColumn) > 0)
             {
                 m_pszGamingChessMan[nRow][nColumn]->SetTexture(BLACK_DEAD_PICTURE);
@@ -738,15 +738,15 @@ void CGameView::ShowResultView( int nGameResult )
     string strText;
     switch(nGameResult)
     {
-    case s_nResultTie:
+    case TIE:
         strText = "和局";
         break;
 
-    case s_nResultBlackWin:
+    case BLACK:
         strText = "黑方胜";
         break;
 
-    case s_nResultRedWin:
+    case RED:
         strText = "红方胜";
         break;
 
@@ -775,8 +775,8 @@ void CGameView::ChangeChessManPos()
         }
     }
 
-    m_pBlackSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nBlackSide));
-    m_pRedSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, s_nRedSide));
+    m_pBlackSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, BLACK));
+    m_pRedSide->SetPosRect(GetChessManSideInitPos(g_GameSettings.m_nCompetitorSide, RED));
 
     //交换左右两边数据
     int nCurrentOrder = m_nCurrentLeftStepOrder;
@@ -875,9 +875,9 @@ void CGameView::UpdateMoveHistoryDisplay(bool bMySide)
         pNextPage->SetCurrState(nCurrentPage == nTotalPage ? STATE_DISABLE : STATE_ACTIVE);
     }
 
-    char strPageInfo[32];
-    sprintf(strPageInfo, "%d/%d", nCurrentPage, nTotalPage);
-    pLabel->SetText(strPageInfo);
+    char szPageInfo[32];
+    sprintf(szPageInfo, "%d/%d", nCurrentPage, nTotalPage);
+    pLabel->SetText(szPageInfo);
 }
 
 int CGameView::GetMoveHistoryTotalPage(bool bMySide)
@@ -988,8 +988,8 @@ void CGameView::AddMoveHistory( const MoveRoute &stRoute )
     ChineseMoveStep stMoveStep;
     bool bBlack = IsBlackSide(stRoute.nMovingChessMan);
     bool bMySide = false;
-    if ((g_GameSettings.m_nCompetitorSide == s_nRedSide && bBlack) ||
-        (g_GameSettings.m_nCompetitorSide == s_nBlackSide && !bBlack))
+    if ((g_GameSettings.m_nCompetitorSide == RED && bBlack) ||
+        (g_GameSettings.m_nCompetitorSide == BLACK && !bBlack))
     {
         bMySide = true;
     }
@@ -1000,7 +1000,7 @@ void CGameView::AddMoveHistory( const MoveRoute &stRoute )
     
     vector<ChineseMoveStep> &vecMoveStep = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
     stMoveStep.nOrderNumber = vecMoveStep.size() + 1;
-    CMoveRouteGenerator::AlphaFmtToChiness(stRoute.strMoveStepAlpha, stMoveStep.szMoveStepInfo, bBlack);
+    CMoveRouteGenerator::AlphaFmtToChiness(stRoute.szMoveStepAlpha, stMoveStep.szMoveStepInfo, bBlack);
     CurrentTimeToStr(stMoveStep.szMoveStepTime);
     vecMoveStep.push_back(stMoveStep);
 
@@ -1037,10 +1037,10 @@ void CGameView::ClearHisotryDisplay()
 void CGameView::PlayGameResultSound( int nGameResult )
 {
     //对手胜
-    if (nGameResult != s_nResultTie)
+    if (nGameResult != TIE)
     {
-        if ((nGameResult == s_nResultRedWin && g_GameSettings.m_nCompetitorSide == s_nRedSide) ||
-            (nGameResult == s_nResultBlackWin && g_GameSettings.m_nCompetitorSide == s_nBlackSide) )
+        if ((nGameResult == RED && g_GameSettings.m_nCompetitorSide == RED) ||
+            (nGameResult == BLACK && g_GameSettings.m_nCompetitorSide == BLACK) )
         {
             m_clSoundPlayer.Play(AUDIO_LOSS);
         }

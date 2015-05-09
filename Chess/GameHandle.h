@@ -35,7 +35,7 @@ public:
     void Init();
     void NewGame();
     void ResetChessManLayout();
-    void GetChessMan(int szChessMan[][CHESSBOARD_COLUMN]);
+    void GetChessMan(int arrChessMan[][CHESSBOARD_COLUMN]);
     void DoMove(int nRow, int nColumn);
 
     void ApplyCompleteMove();
@@ -67,7 +67,7 @@ private:
     int m_nCurrentTurn;
     int m_nGameResult;
     int m_nWhoIsDead;
-    int m_szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    int m_arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
     list<MoveRoute> m_lstMoveRoute;
     MoveRoute m_stCurrentMoveRoute;
     CMoveRouteGenerator m_clGenerator;

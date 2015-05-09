@@ -25,8 +25,8 @@ class CGameSettings
 public:
     CGameSettings(void);
     ~CGameSettings(void);
-    void LoadSettings(const char *strFileName);
-    void SaveSettings(const char *strFileName);
+    void LoadSettings(const char *pFileName);
+    void SaveSettings(const char *pFileName);
 
     int m_nGameType;
     int m_nCompetitorSide;

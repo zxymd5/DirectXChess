@@ -43,16 +43,16 @@ void RenderScene()
     g_GameEngine.EndShow();
 }
 
-LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK SettingsProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    switch(msg)
+    switch(uMsg)
     {
     case WM_INITDIALOG:
         {
-            RECT rt;
-            GetWindowRect(hWnd, &rt);
-            OffsetRect(&rt, 512 - (rt.right - rt.left) / 2, 384 - (rt.bottom - rt.top) / 2);
-            MoveWindow(hWnd, rt.left, rt.top, rt.right - rt.left, rt.bottom - rt.top, TRUE);
+            RECT rc;
+            GetWindowRect(hWnd, &rc);
+            OffsetRect(&rc, 512 - (rc.right - rc.left) / 2, 384 - (rc.bottom - rc.top) / 2);
+            MoveWindow(hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
             HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
             SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"人机对战");
@@ -154,34 +154,9 @@ void OnFileOperate(UINT uMsg)
     }
 }
 
-void OnSaveFile()
+LRESULT WINAPI MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    OPENFILENAME Ofn;
-    char szFileName[MAX_PATH];
-    memset(szFileName, 0, MAX_PATH);
-
-    ZeroMemory(&Ofn, sizeof(Ofn));
-    Ofn.lStructSize = sizeof(Ofn);
-    Ofn.hwndOwner = g_Hwnd;
-    Ofn.lpstrFile = szFileName;
-    Ofn.nMaxFile = sizeof(szFileName);
-    Ofn.lpstrFilter = "文本文件(*.txt)\0*.txt\0数据文件(*.db)\0*.db\0\0";
-    Ofn.nFilterIndex = 1;
-    Ofn.lpstrFileTitle = NULL;
-    Ofn.nMaxFileTitle = 0;
-    Ofn.lpstrInitialDir = NULL;
-    Ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-    Ofn.lpstrTitle = "打开文件";
-    if (GetOpenFileName(&Ofn))
-    {
-        int m = 0;
-    }
-
-}
-
-LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg)
+    switch(uMsg)
     {
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -204,16 +179,16 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     
     case WM_OPENFILE:
     case WM_SAVEFILE:
-        OnFileOperate(msg);
+        OnFileOperate(uMsg);
         break;
 
     default:
         break;
     }
 
-    g_GameView.MsgResponse(hWnd, msg, wParam, lParam);
+    g_GameView.MsgResponse(hWnd, uMsg, wParam, lParam);
 
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,
@@ -229,9 +204,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     // Create the application's window
     HWND hWnd = CreateWindow(WINDOW_CLASS, WINDOW_NAME, WS_POPUPWINDOW,
-        WINDOW_START_X, WINDOW_START_Y, nWindowWidth, nWindowHeight,
+        WINDOW_START_X, WINDOW_START_Y, WINDOW_WIDTH, WINDOW_HEIGHT,
         GetDesktopWindow(), NULL, wc.hInstance, NULL);
-    SetWindowPos(hWnd, HWND_TOP, WINDOW_START_X, WINDOW_START_Y, nWindowWidth, nWindowHeight, SWP_SHOWWINDOW);
+    SetWindowPos(hWnd, HWND_TOP, WINDOW_START_X, WINDOW_START_Y, WINDOW_WIDTH, WINDOW_HEIGHT, SWP_SHOWWINDOW);
     
     ShowWindow(hWnd, SW_SHOWDEFAULT);
     UpdateWindow(hWnd);
@@ -240,8 +215,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     g_hInstance = hInstance;
 
     //GameEngine初始化
-    g_GameEngine.Init(hWnd, nWindowWidth, nWindowHeight);
-    g_GameEngine.CreateTexFromDir(PICTURE_FOLDER);
+    g_GameEngine.Init(hWnd, WINDOW_WIDTH, WINDOW_HEIGHT);
+    g_GameEngine.CreateTexFromFiles(PICTURE_FOLDER);
     g_GameEngine.ParseFile(WIDGET_CONFIG_FILE);
 
     g_GameSettings.LoadSettings(SETTINGS_FILE);

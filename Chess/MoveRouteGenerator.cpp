@@ -28,11 +28,11 @@ CMoveRouteGenerator::~CMoveRouteGenerator(void)
 {
 }
 
-bool CMoveRouteGenerator::ValidateMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+bool CMoveRouteGenerator::ValidateMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                            int nFromColumn, int nToRow, int nToColumn)
 {
-    int nMovingChessMan = szChessMan[nFromRow][nFromColumn];
-    int nKilledChessMan = szChessMan[nToRow][nToColumn];
+    int nMovingChessMan = arrChessMan[nFromRow][nFromColumn];
+    int nKilledChessMan = arrChessMan[nToRow][nToColumn];
     
     if (nFromRow == nToRow && nFromColumn == nToColumn)
     {
@@ -50,70 +50,70 @@ bool CMoveRouteGenerator::ValidateMoveRoute(int szChessMan[][CHESSBOARD_COLUMN],
     {
     case BLACK_GENERAL:
         {
-            bRet = ValidateBlackGeneralMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateBlackGeneralMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case RED_GENERAL:
         {
-            bRet = ValidateRedGeneralMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateRedGeneralMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case BLACK_ADVISOR:
         {
-           bRet = ValidateBlackAdvisorMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+           bRet = ValidateBlackAdvisorMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case RED_ADVISOR:
         {
-            bRet = ValidateRedAdvisorMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateRedAdvisorMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case BLACK_MINISTER:
         {
-            bRet = ValidateBlackMinisterMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateBlackMinisterMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case RED_MINISTER:
         {
-            bRet = ValidateRedMinisterMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateRedMinisterMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
     
     case BLACK_SOLDIER:
         {
-            bRet = ValidateBlackSoldierMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateBlackSoldierMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case RED_SOLDIER:
         {
-            bRet = ValidateRedSoldierMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateRedSoldierMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case BLACK_CHARIOT:
     case RED_CHARIOT:
         {
-            bRet = ValidateChariotMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateChariotMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case BLACK_HORSE:
     case RED_HORSE:
         {
-            bRet = ValidateHorseMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateHorseMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
     case BLACK_CANON:
     case RED_CANNON:
         {
-            bRet = ValidateCannonMoveRoute(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
+            bRet = ValidateCannonMoveRoute(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn);
         }
         break;
 
@@ -124,9 +124,9 @@ bool CMoveRouteGenerator::ValidateMoveRoute(int szChessMan[][CHESSBOARD_COLUMN],
     return bRet;
 }
 
-bool CMoveRouteGenerator::ValidateBlackGeneralMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateBlackGeneralMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
-    int nKilledChessMan = szChessMan[nToRow][nToColumn];
+    int nKilledChessMan = arrChessMan[nToRow][nToColumn];
     if (nKilledChessMan == RED_GENERAL)  //将帅在同一条直线上，中间不能隔棋子
     {
         if (nFromColumn != nToColumn)
@@ -136,7 +136,7 @@ bool CMoveRouteGenerator::ValidateBlackGeneralMoveRoute( int szChessMan[][CHESSB
 
         for (int i = nFromRow + 1; i < nToRow; i++)
         {
-            if (szChessMan[i][nFromColumn] != 0)
+            if (arrChessMan[i][nFromColumn] != 0)
             {
                 return false;
             }
@@ -158,9 +158,9 @@ bool CMoveRouteGenerator::ValidateBlackGeneralMoveRoute( int szChessMan[][CHESSB
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateRedGeneralMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateRedGeneralMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
-    int nKilledChessMan = szChessMan[nToRow][nToColumn];
+    int nKilledChessMan = arrChessMan[nToRow][nToColumn];
     if (nKilledChessMan == BLACK_GENERAL)  //将帅在同一条直线上，中间不能隔棋子
     {
         if (nFromColumn != nToColumn)
@@ -170,7 +170,7 @@ bool CMoveRouteGenerator::ValidateRedGeneralMoveRoute( int szChessMan[][CHESSBOA
 
         for (int i = nFromRow - 1; i > nToRow; i--)
         {
-            if (szChessMan[i][nFromColumn] != 0)
+            if (arrChessMan[i][nFromColumn] != 0)
             {
                 return false;
             }
@@ -192,7 +192,7 @@ bool CMoveRouteGenerator::ValidateRedGeneralMoveRoute( int szChessMan[][CHESSBOA
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateBlackAdvisorMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateBlackAdvisorMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow > 2 || nToColumn > 5 || nToColumn < 3)  //士出九宫
     {
@@ -207,7 +207,7 @@ bool CMoveRouteGenerator::ValidateBlackAdvisorMoveRoute( int szChessMan[][CHESSB
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateRedAdvisorMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateRedAdvisorMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow < 7 || nToColumn > 5 || nToColumn < 3)  //士出九宫
     {
@@ -222,7 +222,7 @@ bool CMoveRouteGenerator::ValidateRedAdvisorMoveRoute( int szChessMan[][CHESSBOA
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateBlackMinisterMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateBlackMinisterMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow > 4)
     {
@@ -234,7 +234,7 @@ bool CMoveRouteGenerator::ValidateBlackMinisterMoveRoute( int szChessMan[][CHESS
         return false;       //象走田
     }
 
-    if (szChessMan[(nFromRow + nToRow) / 2][(nFromColumn + nToColumn) / 2] != 0)
+    if (arrChessMan[(nFromRow + nToRow) / 2][(nFromColumn + nToColumn) / 2] != 0)
     {
         return false;       //象眼被塞
     }
@@ -242,7 +242,7 @@ bool CMoveRouteGenerator::ValidateBlackMinisterMoveRoute( int szChessMan[][CHESS
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateRedMinisterMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateRedMinisterMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow < 5)
     {
@@ -254,7 +254,7 @@ bool CMoveRouteGenerator::ValidateRedMinisterMoveRoute( int szChessMan[][CHESSBO
         return false;       //象走田
     }
 
-    if (szChessMan[(nFromRow + nToRow) / 2][(nFromColumn + nToColumn) / 2] != 0)
+    if (arrChessMan[(nFromRow + nToRow) / 2][(nFromColumn + nToColumn) / 2] != 0)
     {
         return false;       //象眼被塞
     }
@@ -262,7 +262,7 @@ bool CMoveRouteGenerator::ValidateRedMinisterMoveRoute( int szChessMan[][CHESSBO
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateBlackSoldierMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateBlackSoldierMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow < nFromRow)
     {
@@ -282,7 +282,7 @@ bool CMoveRouteGenerator::ValidateBlackSoldierMoveRoute( int szChessMan[][CHESSB
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateRedSoldierMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateRedSoldierMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nToRow > nFromRow)
     {
@@ -302,7 +302,7 @@ bool CMoveRouteGenerator::ValidateRedSoldierMoveRoute( int szChessMan[][CHESSBOA
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateChariotMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nFromRow != nToRow && nFromColumn != nToColumn)
     {
@@ -315,7 +315,7 @@ bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_
         {
             for (int i = nFromColumn + 1; i < nToColumn; i++)
             {
-                if (szChessMan[nFromRow][i] != 0)
+                if (arrChessMan[nFromRow][i] != 0)
                 {
                     return false;
                 }
@@ -325,7 +325,7 @@ bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_
         {
             for (int i = nToColumn + 1; i < nFromColumn; i++)
             {
-                if (szChessMan[nFromRow][i] != 0)
+                if (arrChessMan[nFromRow][i] != 0)
                 {
                     return false;
                 }
@@ -338,7 +338,7 @@ bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_
         {
             for (int i = nFromRow + 1; i < nToRow; i++)
             {
-                if (szChessMan[i][nFromColumn] != 0)
+                if (arrChessMan[i][nFromColumn] != 0)
                 {
                     return false;
                 }
@@ -348,7 +348,7 @@ bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_
         {
             for (int i = nToRow + 1; i < nFromRow; i++)
             {
-                if (szChessMan[i][nFromColumn] != 0)
+                if (arrChessMan[i][nFromColumn] != 0)
                 {
                     return false;
                 }
@@ -359,7 +359,7 @@ bool CMoveRouteGenerator::ValidateChariotMoveRoute( int szChessMan[][CHESSBOARD_
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateHorseMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateHorseMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (!((abs(nFromRow - nToRow) == 1 && abs(nFromColumn - nToColumn) == 2) ||
         (abs(nFromRow - nToRow) == 2 && abs(nFromColumn - nToColumn) == 1)))
@@ -391,7 +391,7 @@ bool CMoveRouteGenerator::ValidateHorseMoveRoute( int szChessMan[][CHESSBOARD_CO
         j = nFromRow - 1;
     }
 
-    if (szChessMan[j][i] != 0)
+    if (arrChessMan[j][i] != 0)
     {
         return false;   //蹩脚马
     }
@@ -399,7 +399,7 @@ bool CMoveRouteGenerator::ValidateHorseMoveRoute( int szChessMan[][CHESSBOARD_CO
     return true;
 }
 
-bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
+bool CMoveRouteGenerator::ValidateCannonMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn )
 {
     if (nFromRow != nToRow && nFromColumn != nToColumn)
     {
@@ -407,7 +407,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
     }
 
     //炮不吃子时经过的路线中不能有棋子
-    if (szChessMan[nToRow][nToColumn] == 0)
+    if (arrChessMan[nToRow][nToColumn] == 0)
     {
         if (nFromRow == nToRow)
         {
@@ -415,7 +415,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nFromColumn + 1; i < nToColumn; i++)
                 {
-                    if (szChessMan[nFromRow][i] != 0)
+                    if (arrChessMan[nFromRow][i] != 0)
                     {
                         return false;
                     }
@@ -425,7 +425,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nToColumn + 1; i < nFromColumn; i++)
                 {
-                    if (szChessMan[nFromRow][i] != 0)
+                    if (arrChessMan[nFromRow][i] != 0)
                     {
                         return false;
                     }
@@ -438,7 +438,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nFromRow + 1; i < nToRow; i++)
                 {
-                    if (szChessMan[i][nFromColumn] != 0)
+                    if (arrChessMan[i][nFromColumn] != 0)
                     {
                         return false;
                     }
@@ -448,7 +448,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nToRow + 1; i < nFromRow; i++)
                 {
-                    if (szChessMan[i][nFromColumn] != 0)
+                    if (arrChessMan[i][nFromColumn] != 0)
                     {
                         return false;
                     }
@@ -465,7 +465,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nFromColumn + 1; i < nToColumn; i++)
                 {
-                    if (szChessMan[nFromRow][i] != 0)
+                    if (arrChessMan[nFromRow][i] != 0)
                     {
                         nCount++;
                     }
@@ -475,7 +475,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nToColumn + 1; i < nFromColumn; i++)
                 {
-                    if (szChessMan[nFromRow][i] != 0)
+                    if (arrChessMan[nFromRow][i] != 0)
                     {
                         nCount++;
                     }
@@ -488,7 +488,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nFromRow + 1; i < nToRow; i++)
                 {
-                    if (szChessMan[i][nFromColumn] != 0)
+                    if (arrChessMan[i][nFromColumn] != 0)
                     {
                         nCount++;
                     }
@@ -498,7 +498,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
             {
                 for (int i = nToRow + 1; i < nFromRow; i++)
                 {
-                    if (szChessMan[i][nFromColumn] != 0)
+                    if (arrChessMan[i][nFromColumn] != 0)
                     {
                         nCount++;
                     }
@@ -515,7 +515,7 @@ bool CMoveRouteGenerator::ValidateCannonMoveRoute( int szChessMan[][CHESSBOARD_C
     return true;
 }
 
-int CMoveRouteGenerator::GetChessManPosition( int szChessMan[][CHESSBOARD_COLUMN], int nSpecChessMan, ChessManPosition stPos[] )
+int CMoveRouteGenerator::GetChessManPosition( int arrChessMan[][CHESSBOARD_COLUMN], int nSpecChessMan, ChessManPosition stPos[] )
 {
     int nIndex = 0;
 
@@ -523,7 +523,7 @@ int CMoveRouteGenerator::GetChessManPosition( int szChessMan[][CHESSBOARD_COLUMN
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if (szChessMan[i][j] == nSpecChessMan)
+            if (arrChessMan[i][j] == nSpecChessMan)
             {
                 stPos[nIndex].nRow = i;
                 stPos[nIndex].nColumn = j;
@@ -535,49 +535,49 @@ int CMoveRouteGenerator::GetChessManPosition( int szChessMan[][CHESSBOARD_COLUMN
     return nIndex;
 }
 
-bool CMoveRouteGenerator::IsAttackGeneral( int szChessMan[][CHESSBOARD_COLUMN], int nGeneral )
+bool CMoveRouteGenerator::IsAttackGeneral( int arrChessMan[][CHESSBOARD_COLUMN], int nGeneral )
 {
-    bool bRet = false;
+    bool bAttack = false;
 
-    ChessManPosition stPos[5];
-    GetChessManPosition(szChessMan, nGeneral, stPos);
+    ChessManPosition arrPos[5];
+    GetChessManPosition(arrChessMan, nGeneral, arrPos);
 
     if (nGeneral == BLACK_GENERAL)
     {
-        bRet = AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, RED_CHARIOT) || 
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, RED_CANNON) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, RED_SOLDIER) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, RED_HORSE) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, RED_GENERAL);
+        bAttack = AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, RED_CHARIOT) || 
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, RED_CANNON) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, RED_SOLDIER) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, RED_HORSE) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, RED_GENERAL);
     }
     else
     {
-        bRet = AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, BLACK_CHARIOT) || 
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, BLACK_CANON) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, BLACK_SOLDIER) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, BLACK_HORSE) ||
-            AttackGeneral(szChessMan, stPos[0].nRow, stPos[0].nColumn, BLACK_GENERAL);
+        bAttack = AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, BLACK_CHARIOT) || 
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, BLACK_CANON) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, BLACK_SOLDIER) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, BLACK_HORSE) ||
+            AttackGeneral(arrChessMan, arrPos[0].nRow, arrPos[0].nColumn, BLACK_GENERAL);
     }
 
-    return bRet;
+    return bAttack;
 }
 
-bool CMoveRouteGenerator::AttackGeneral( int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nSpecChessMan )
+bool CMoveRouteGenerator::AttackGeneral( int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nSpecChessMan )
 {
-    ChessManPosition stPos[5];
-    bool bIsValid[5];
-    memset(bIsValid, 0, 5);
+    ChessManPosition arrPos[5];
+    bool arrValid[5];
+    memset(arrValid, 0, 5);
 
-    int nChessManCount = GetChessManPosition(szChessMan, nSpecChessMan, stPos);
+    int nChessManCount = GetChessManPosition(arrChessMan, nSpecChessMan, arrPos);
     for (int i = 0; i < nChessManCount; i++)
     {
-        bIsValid[i] = ValidateMoveRoute(szChessMan, stPos[i].nRow, stPos[i].nColumn, nRow, nColumn);
+        arrValid[i] = ValidateMoveRoute(arrChessMan, arrPos[i].nRow, arrPos[i].nColumn, nRow, nColumn);
     }
 
     bool bCanAttack = false;
     for (int i = 0; i < 5; i++)
     {
-        if (bIsValid[i])
+        if (arrValid[i])
         {
             bCanAttack = true;
             break;
@@ -587,65 +587,65 @@ bool CMoveRouteGenerator::AttackGeneral( int szChessMan[][CHESSBOARD_COLUMN], in
     return bCanAttack;
 }
 
-void CMoveRouteGenerator::GetChessManMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetChessManMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    int nMovingChessMan = szChessMan[nFromRow][nFromColumn];
-    strAlphaFmt[0] = s_pChessManCode[nMovingChessMan - 1];
+    int nMovingChessMan = arrChessMan[nFromRow][nFromColumn];
+    szAlphaFmt[0] = CHESSMAN_CODE[nMovingChessMan - 1];
 
     switch(nMovingChessMan)
     {
     case BLACK_GENERAL:
         {
-            GetBlackGeneralMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetBlackGeneralMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case BLACK_ADVISOR:
     case BLACK_MINISTER:
         {
-            GetBlackAdvisorMinisterMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetBlackAdvisorMinisterMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case BLACK_CHARIOT:
     case BLACK_CANON:
         {
-            GetBlackChariotCannonMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt, nMovingChessMan);
+            GetBlackChariotCannonMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt, nMovingChessMan);
         }
         break;
     case BLACK_HORSE:
         {
-            GetBlackHorseMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetBlackHorseMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case BLACK_SOLDIER:
         {
-            GetBlackSoldierMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetBlackSoldierMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case RED_GENERAL:
         {
-            GetRedGeneralMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetRedGeneralMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case RED_ADVISOR:
     case RED_MINISTER:
         {
-            GetRedAdvisorMinisterMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetRedAdvisorMinisterMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case RED_CHARIOT:
     case RED_CANNON:
         {
-            GetRedChariotCannonMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt, nMovingChessMan);
+            GetRedChariotCannonMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt, nMovingChessMan);
         }
         break;
     case RED_HORSE:
         {
-            GetRedHorseMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetRedHorseMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     case RED_SOLDIER:
         {
-            GetRedSoldierMoveStepAlpha(szChessMan, nFromRow, nFromColumn, nToRow, nToColumn, strAlphaFmt);
+            GetRedSoldierMoveStepAlpha(arrChessMan, nFromRow, nFromColumn, nToRow, nToColumn, szAlphaFmt);
         }
         break;
     default:
@@ -654,241 +654,241 @@ void CMoveRouteGenerator::GetChessManMoveStepAlpha( int szChessMan[][CHESSBOARD_
 
 }
 
-void CMoveRouteGenerator::GetBlackGeneralMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetBlackGeneralMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = nFromColumn + 1 + '0';
+    szAlphaFmt[1] = nFromColumn + 1 + '0';
     //如果行相等，则平移
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = nToColumn + 1 + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = nToColumn + 1 + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 }
 
-void CMoveRouteGenerator::GetRedGeneralMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetRedGeneralMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
+    szAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 }
 
-void CMoveRouteGenerator::GetBlackAdvisorMinisterMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetBlackAdvisorMinisterMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = nFromColumn + 1 + '0';
-    strAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
-    strAlphaFmt[3] = nToColumn + 1 + '0';
+    szAlphaFmt[1] = nFromColumn + 1 + '0';
+    szAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
+    szAlphaFmt[3] = nToColumn + 1 + '0';
 }
 
-void CMoveRouteGenerator::GetRedAdvisorMinisterMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetRedAdvisorMinisterMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
-    strAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
-    strAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+    szAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
+    szAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
+    szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
 }
 
 //车炮雷同
-void CMoveRouteGenerator::GetBlackChariotCannonMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan )
+void CMoveRouteGenerator::GetBlackChariotCannonMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[], int nChessMan )
 {
     //获取车/炮的位置，如果有两个车在同一列上要分前后
-    ChessManPosition stPos[2];
-    int nBlackChariotCount = GetChessManPosition(szChessMan, nChessMan, stPos);
+    ChessManPosition arrPos[2];
+    int nBlackChariotCount = GetChessManPosition(arrChessMan, nChessMan, arrPos);
     //如果两个车/炮在同一列上
-    if (stPos[0].nColumn == stPos[1].nColumn)
+    if (arrPos[0].nColumn == arrPos[1].nColumn)
     {
-        if (stPos[0].nRow > stPos[1].nRow)
+        if (arrPos[0].nRow > arrPos[1].nRow)
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
             else
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
         }
         else
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
             else
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
         }
     }
     else
     {
-        strAlphaFmt[1] = nFromColumn + 1 + '0';
+        szAlphaFmt[1] = nFromColumn + 1 + '0';
     }
 
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = nToColumn + 1 + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = nToColumn + 1 + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 }
 
 //车炮雷同
-void CMoveRouteGenerator::GetRedChariotCannonMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan )
+void CMoveRouteGenerator::GetRedChariotCannonMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[], int nChessMan )
 {
     //获取车的位置，如果有两个车在同一列上要分前后
-    ChessManPosition stPos[2];
-    GetChessManPosition(szChessMan, nChessMan, stPos);
+    ChessManPosition arrPos[2];
+    GetChessManPosition(arrChessMan, nChessMan, arrPos);
     //如果两个车在同一列上
-    if (stPos[0].nColumn == stPos[1].nColumn)
+    if (arrPos[0].nColumn == arrPos[1].nColumn)
     {
-        if (stPos[0].nRow > stPos[1].nRow)
+        if (arrPos[0].nRow > arrPos[1].nRow)
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
             else
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
         }
         else
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
             else
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
         }
     }
     else
     {
-        strAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
+        szAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
     }
 
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 }
 
-void CMoveRouteGenerator::GetBlackHorseMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetBlackHorseMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
     //获取马的位置，如果有两个车在同一列上要分前后
-    ChessManPosition stPos[2];
-    GetChessManPosition(szChessMan, BLACK_HORSE, stPos);
+    ChessManPosition arrPos[2];
+    GetChessManPosition(arrChessMan, BLACK_HORSE, arrPos);
     //如果两个马在同一列上
-    if (stPos[0].nColumn == stPos[1].nColumn)
+    if (arrPos[0].nColumn == arrPos[1].nColumn)
     {
-        if (stPos[0].nRow > stPos[1].nRow)
+        if (arrPos[0].nRow > arrPos[1].nRow)
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
             else
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
         }
         else
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
             else
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
         }
     }
     else
     {
-        strAlphaFmt[1] = nFromColumn + 1 + '0';
+        szAlphaFmt[1] = nFromColumn + 1 + '0';
     }
 
-    strAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
-    strAlphaFmt[3] = nToColumn + 1 + '0';
+    szAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
+    szAlphaFmt[3] = nToColumn + 1 + '0';
 }
 
-void CMoveRouteGenerator::GetRedHorseMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetRedHorseMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
     //获取马的位置，如果有两个马在同一列上要分前后
-    ChessManPosition stPos[2];
-    GetChessManPosition(szChessMan, RED_HORSE, stPos);
+    ChessManPosition arrPos[2];
+    GetChessManPosition(arrChessMan, RED_HORSE, arrPos);
     //如果两个马在同一列上
-    if (stPos[0].nColumn == stPos[1].nColumn)
+    if (arrPos[0].nColumn == arrPos[1].nColumn)
     {
-        if (stPos[0].nRow > stPos[1].nRow)
+        if (arrPos[0].nRow > arrPos[1].nRow)
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
             else
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
         }
         else
         {
-            if (nFromRow == stPos[0].nRow)
+            if (nFromRow == arrPos[0].nRow)
             {
-                strAlphaFmt[1] = 'a';
+                szAlphaFmt[1] = 'a';
             }
             else
             {
-                strAlphaFmt[1] = 'b';
+                szAlphaFmt[1] = 'b';
             }
         }
     }
     else
     {
-        strAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
+        szAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
     }
 
-    strAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
-    strAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+    szAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
+    szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
 }
 
 
-void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = nFromColumn + 1 + '0';
+    szAlphaFmt[1] = nFromColumn + 1 + '0';
     //获取兵的位置
-    ChessManPosition stPos[5];
-    int SoldierCount = GetChessManPosition(szChessMan, BLACK_SOLDIER, stPos);
+    ChessManPosition arrPos[5];
+    int SoldierCount = GetChessManPosition(arrChessMan, BLACK_SOLDIER, arrPos);
 
     int nMark = 0;
     for (int i = 0; i < SoldierCount; i++)
     {
-        if (stPos[i].nColumn == nFromColumn)
+        if (arrPos[i].nColumn == nFromColumn)
         {
             nMark++;
         }
@@ -903,7 +903,7 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBO
 
         for (int i = 0; i < SoldierCount; i++)
         {
-            szSoldierCountOnEachColumn[stPos[i].nColumn]++;
+            szSoldierCountOnEachColumn[arrPos[i].nColumn]++;
         }
 
         for (int i = 0; i < CHESSBOARD_COLUMN; i++)
@@ -913,7 +913,7 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBO
                 //此纵线有两个以上的兵
                 for (int j = 0; j < SoldierCount; j++)
                 {
-                    if (i == stPos[j].nColumn)
+                    if (i == arrPos[j].nColumn)
                     {
                         szColumnForEachSoldier[n] = j;
                         n++;
@@ -925,7 +925,7 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBO
                 {
                     for (int j = n - 2; j >= k; j--)
                     {
-                        if (stPos[szColumnForEachSoldier[j]].nRow < stPos[szColumnForEachSoldier[j + 1]].nRow)
+                        if (arrPos[szColumnForEachSoldier[j]].nRow < arrPos[szColumnForEachSoldier[j + 1]].nRow)
                         {
                             int nTmp = szColumnForEachSoldier[j];
                             szColumnForEachSoldier[j] = szColumnForEachSoldier[j + 1];
@@ -940,9 +940,9 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBO
         char chOrder = 'c'; //前
         for (int i = 0; i < SoldierCount; i++)
         {
-            if (stPos[szColumnForEachSoldier[i]].nRow == nToRow)
+            if (arrPos[szColumnForEachSoldier[i]].nRow == nToRow)
             {
-                strAlphaFmt[1] = chOrder;
+                szAlphaFmt[1] = chOrder;
             }
             chOrder++;
         }
@@ -950,39 +950,39 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int szChessMan[][CHESSBO
         //转换成前后或前中后
         if (nStart == 2)
         {
-            strAlphaFmt[1] = strAlphaFmt[1] == 'c' ? 'q' : 'h';
+            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
         }
         else if (nStart == 3)
         {
-            strAlphaFmt[1] = strAlphaFmt[1] == 'c' ? 'q' : (strAlphaFmt[1] == 'd' ? 'z' : 'h');
+            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
         }
     }
 
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = nToColumn + 1 + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = nToColumn + 1 + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '-' : '+';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 
 }
 
-void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[] )
+void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[] )
 {
-    strAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
+    szAlphaFmt[1] = CHESSBOARD_COLUMN - nFromColumn + '0';
 
     //获取兵的位置
-    ChessManPosition stPos[5];
-    int SoldierCount = GetChessManPosition(szChessMan, RED_SOLDIER, stPos);
+    ChessManPosition arrPos[5];
+    int SoldierCount = GetChessManPosition(arrChessMan, RED_SOLDIER, arrPos);
 
     int nMark = 0;
     for (int i = 0; i < SoldierCount; i++)
     {
-        if (stPos[i].nColumn == nFromColumn)
+        if (arrPos[i].nColumn == nFromColumn)
         {
             nMark++;
         }
@@ -997,7 +997,7 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOAR
 
         for (int i = 0; i < SoldierCount; i++)
         {
-            szSoldierCountOnEachColumn[stPos[i].nColumn]++;
+            szSoldierCountOnEachColumn[arrPos[i].nColumn]++;
         }
 
         for (int i = CHESSBOARD_COLUMN - 1; i >= 0; i--)
@@ -1007,7 +1007,7 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOAR
                 //此纵线有两个以上的兵
                 for (int j = 0; j < SoldierCount; j++)
                 {
-                    if (i == stPos[j].nColumn)
+                    if (i == arrPos[j].nColumn)
                     {
                         szColumnForEachSoldier[n] = j;
                         n++;
@@ -1019,7 +1019,7 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOAR
                 {
                     for (int j = n - 2; j >= k; j--)
                     {
-                        if (stPos[szColumnForEachSoldier[j]].nRow > stPos[szColumnForEachSoldier[j + 1]].nRow)
+                        if (arrPos[szColumnForEachSoldier[j]].nRow > arrPos[szColumnForEachSoldier[j + 1]].nRow)
                         {
                             int nTmp = szColumnForEachSoldier[j];
                             szColumnForEachSoldier[j] = szColumnForEachSoldier[j + 1];
@@ -1034,9 +1034,9 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOAR
         char chOrder = 'c'; //前
         for (int i = 0; i < SoldierCount; i++)
         {
-            if (stPos[szColumnForEachSoldier[i]].nRow == nToRow)
+            if (arrPos[szColumnForEachSoldier[i]].nRow == nToRow)
             {
-                strAlphaFmt[1] = chOrder;
+                szAlphaFmt[1] = chOrder;
             }
             chOrder++;
         }
@@ -1044,45 +1044,45 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int szChessMan[][CHESSBOAR
         //转换成前后或前中后
         if (nStart == 2)
         {
-            strAlphaFmt[1] = strAlphaFmt[1] == 'c' ? 'q' : 'h';
+            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
         }
         else if (nStart == 3)
         {
-            strAlphaFmt[1] = strAlphaFmt[1] == 'c' ? 'q' : (strAlphaFmt[1] == 'd' ? 'z' : 'h');
+            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
         }
     }
 
     if (nFromRow == nToRow)
     {
-        strAlphaFmt[2] = '.';
-        strAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+        szAlphaFmt[2] = '.';
+        szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
     }
     else
     {
-        strAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
-        strAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
+        szAlphaFmt[2] = nFromRow > nToRow ? '+' : '-';
+        szAlphaFmt[3] = abs(nFromRow - nToRow) + '0';
     }
 }
 
-void CMoveRouteGenerator::AlphaFmtToChiness(const char *strAlphaFmt, char strChinesFmt[], bool bBlack )
+void CMoveRouteGenerator::AlphaFmtToChiness(const char *szAlphaFmt, char szChinesFmt[], bool bBlack )
 {
     string strDst;
-    if (strAlphaFmt[1] >= 'a')
+    if (szAlphaFmt[1] >= 'a')
     {
-        strDst = DigitToChinese(strAlphaFmt[1], bBlack) + 
-                 ChessManCodetoChinese(strAlphaFmt[0], bBlack) + 
-                 ActionToChinese(strAlphaFmt[2]) + 
-                 DigitToChinese(strAlphaFmt[3], bBlack);
+        strDst = DigitToChinese(szAlphaFmt[1], bBlack) + 
+                 ChessManCodetoChinese(szAlphaFmt[0], bBlack) + 
+                 ActionToChinese(szAlphaFmt[2]) + 
+                 DigitToChinese(szAlphaFmt[3], bBlack);
     }
     else
     {
-        strDst = ChessManCodetoChinese(strAlphaFmt[0], bBlack) +
-                 DigitToChinese(strAlphaFmt[1], bBlack) + 
-                 ActionToChinese(strAlphaFmt[2]) + 
-                 DigitToChinese(strAlphaFmt[3], bBlack);
+        strDst = ChessManCodetoChinese(szAlphaFmt[0], bBlack) +
+                 DigitToChinese(szAlphaFmt[1], bBlack) + 
+                 ActionToChinese(szAlphaFmt[2]) + 
+                 DigitToChinese(szAlphaFmt[3], bBlack);
     }
 
-    strcpy(strChinesFmt, strDst.c_str());
+    strcpy(szChinesFmt, strDst.c_str());
 }
 
 std::string CMoveRouteGenerator::DigitToChinese( char chDigit, bool bBlack )
@@ -1298,26 +1298,26 @@ std::string CMoveRouteGenerator::ActionToChinese( char chAction)
 }
 
 //生成走法
-void CMoveRouteGenerator::GenerateAllMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nSide, 
+void CMoveRouteGenerator::GenerateAllMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nSide, 
                                             list<MoveRoute> &lstMoveRoute )
 {
     for (int i = 0; i < CHESSBOARD_ROW; i++)
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if ((nSide == BLACK && IsBlackSide(szChessMan[i][j])) 
-                || (nSide == RED && IsRedSide(szChessMan[i][j])))
+            if ((nSide == BLACK && IsBlackSide(arrChessMan[i][j])) 
+                || (nSide == RED && IsRedSide(arrChessMan[i][j])))
             {
-                GenerateMoveRoute(szChessMan, i, j, lstMoveRoute);
+                GenerateMoveRoute(arrChessMan, i, j, lstMoveRoute);
             }
         }
     }
 }
 
-void CMoveRouteGenerator::GenerateMoveRoute( int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, list<MoveRoute> &lstMoveRoute )
+void CMoveRouteGenerator::GenerateMoveRoute( int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, list<MoveRoute> &lstMoveRoute )
 {
     int nKilledChessMan = 0;
-    int nMovingChessMan = szChessMan[nRow][nColumn];
+    int nMovingChessMan = arrChessMan[nRow][nColumn];
     int nGeneral = IsBlackSide(nMovingChessMan) ? BLACK_GENERAL : RED_GENERAL;
     int nOppGeneral = IsBlackSide(nMovingChessMan) ? RED_GENERAL : BLACK_GENERAL;
 
@@ -1330,32 +1330,32 @@ void CMoveRouteGenerator::GenerateMoveRoute( int szChessMan[][CHESSBOARD_COLUMN]
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if (ValidateMoveRoute(szChessMan, nRow, nColumn, i, j))
+            if (ValidateMoveRoute(arrChessMan, nRow, nColumn, i, j))
             {
-                nKilledChessMan = szChessMan[i][j];
+                nKilledChessMan = arrChessMan[i][j];
 
                 //再判断走棋后，自己是否被对方将军，如果自己被对方将军，则走法不合理
-                szChessMan[nRow][nColumn] = 0;
-                szChessMan[i][j] = nMovingChessMan;
+                arrChessMan[nRow][nColumn] = 0;
+                arrChessMan[i][j] = nMovingChessMan;
 
-                if (!IsAttackGeneral(szChessMan, nGeneral))
+                if (!IsAttackGeneral(arrChessMan, nGeneral))
                 {
-                    stMoveRoute.bAttackGeneral = IsAttackGeneral(szChessMan, nOppGeneral);
+                    stMoveRoute.bAttackGeneral = IsAttackGeneral(arrChessMan, nOppGeneral);
                     stMoveRoute.stToPos.nRow = i;
                     stMoveRoute.stToPos.nColumn = j;
                     stMoveRoute.nKilledChessMan = nKilledChessMan;
                     lstMoveRoute.push_back(stMoveRoute);
                 }
 
-                szChessMan[nRow][nColumn] = nMovingChessMan;
-                szChessMan[i][j] = nKilledChessMan;
+                arrChessMan[nRow][nColumn] = nMovingChessMan;
+                arrChessMan[i][j] = nKilledChessMan;
             }
         }
     }
 }
 
 //将军将死的判断
-bool CMoveRouteGenerator::IsGeneralDead( int szChessMan[][CHESSBOARD_COLUMN], int nSide)
+bool CMoveRouteGenerator::IsGeneralDead( int arrChessMan[][CHESSBOARD_COLUMN], int nSide)
 {
     bool bDead = true;
     int nGeneral = nSide == BLACK ? BLACK_GENERAL : RED_GENERAL;
@@ -1365,10 +1365,10 @@ bool CMoveRouteGenerator::IsGeneralDead( int szChessMan[][CHESSBOARD_COLUMN], in
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if ((nSide == BLACK && IsBlackSide(szChessMan[i][j])) 
-                || (nSide == RED && IsRedSide(szChessMan[i][j])))
+            if ((nSide == BLACK && IsBlackSide(arrChessMan[i][j])) 
+                || (nSide == RED && IsRedSide(arrChessMan[i][j])))
             {
-                if(CanGenerateMove(szChessMan, i, j, nGeneral))
+                if(CanSaveGeneral(arrChessMan, i, j, nGeneral))
                 {
                     bDead = false;
                     break;
@@ -1380,33 +1380,33 @@ bool CMoveRouteGenerator::IsGeneralDead( int szChessMan[][CHESSBOARD_COLUMN], in
     return bDead;
 }
 
-bool CMoveRouteGenerator::CanGenerateMove( int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nGeneral )
+bool CMoveRouteGenerator::CanSaveGeneral( int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nGeneral )
 {
-    bool bGenerate = false;
+    bool bSave = false;
     int nKilledChessMan = 0;
-    int nMovingChessMan = szChessMan[nRow][nColumn];
+    int nMovingChessMan = arrChessMan[nRow][nColumn];
 
     for (int i = 0; i < CHESSBOARD_ROW; i++)
     {
         for (int j = 0; j < CHESSBOARD_COLUMN; j++)
         {
-            if (ValidateMoveRoute(szChessMan, nRow, nColumn, i, j))
+            if (ValidateMoveRoute(arrChessMan, nRow, nColumn, i, j))
             {
-                nKilledChessMan = szChessMan[i][j];
+                nKilledChessMan = arrChessMan[i][j];
 
                 //再判断走棋后，自己是否被对方将军，如果自己被对方将军，则走法不合理
-                szChessMan[nRow][nColumn] = 0;
-                szChessMan[i][j] = nMovingChessMan;
+                arrChessMan[nRow][nColumn] = 0;
+                arrChessMan[i][j] = nMovingChessMan;
 
-                if (!IsAttackGeneral(szChessMan, nGeneral))
+                if (!IsAttackGeneral(arrChessMan, nGeneral))
                 {
-                    bGenerate = true;
+                    bSave = true;
                 }
 
-                szChessMan[nRow][nColumn] = nMovingChessMan;
-                szChessMan[i][j] = nKilledChessMan;
+                arrChessMan[nRow][nColumn] = nMovingChessMan;
+                arrChessMan[i][j] = nKilledChessMan;
 
-                if (bGenerate)
+                if (bSave)
                 {
                     break;
                 }
@@ -1414,5 +1414,5 @@ bool CMoveRouteGenerator::CanGenerateMove( int szChessMan[][CHESSBOARD_COLUMN], 
         }
     }
 
-    return bGenerate;
+    return bSave;
 }

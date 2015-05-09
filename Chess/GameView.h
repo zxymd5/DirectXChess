@@ -42,7 +42,7 @@ public:
     virtual ~CGameView(void);
 
     CDXWidget *GetResponseMsgWidget();
-    void MsgResponse(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
+    void MsgResponse(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void HandleLButtonUp();
 
     virtual void ProcessEvent(CSubject *pSub, int nEvent);
@@ -54,8 +54,8 @@ public:
     void ProcessGameResultEvent( CSubject *pSub );
     void ProcessIllegalMoveEvent( CSubject *pSub );
 
-    void UpdateChessMan(int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
-    void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
+    void UpdateChessMan(int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
+    void UpdateMoveRoute(const MoveRoute &stRoute, int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
     void PlayTipSound(const MoveRoute &stRoute, int nGameResult);
 
     void PlayGameResultSound( int nGameResult );

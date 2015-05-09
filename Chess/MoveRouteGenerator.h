@@ -31,58 +31,58 @@ class CMoveRouteGenerator
 public:
     CMoveRouteGenerator(void);
     ~CMoveRouteGenerator(void);
-    bool ValidateMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateBlackGeneralMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateBlackGeneralMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateRedGeneralMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateRedGeneralMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                     int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateBlackAdvisorMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateBlackAdvisorMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateRedAdvisorMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateRedAdvisorMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                     int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateBlackMinisterMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateBlackMinisterMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateRedMinisterMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateRedMinisterMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateBlackSoldierMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateBlackSoldierMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                         int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateRedSoldierMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateRedSoldierMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                     int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateChariotMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateChariotMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                 int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateHorseMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateHorseMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                 int nFromColumn, int nToRow, int nToColumn);
-    bool ValidateCannonMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
+    bool ValidateCannonMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, 
                                 int nFromColumn, int nToRow, int nToColumn);
-    bool IsAttackGeneral( int szChessMan[][CHESSBOARD_COLUMN], int nGeneral); //是否将军
-    bool AttackGeneral(int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nSpecChessMan);
+    bool IsAttackGeneral( int arrChessMan[][CHESSBOARD_COLUMN], int nGeneral); //是否将军
+    bool AttackGeneral(int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nSpecChessMan);
 
-    int GetChessManPosition(int szChessMan[][CHESSBOARD_COLUMN], int nSpecChessMan, ChessManPosition szPos[] );
+    int GetChessManPosition(int arrChessMan[][CHESSBOARD_COLUMN], int nSpecChessMan, ChessManPosition arrPos[] );
 
     //获取着法的数字坐标格式，如k5+1
-    void GetChessManMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetBlackGeneralMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetBlackAdvisorMinisterMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetBlackChariotCannonMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan);
-    void GetBlackHorseMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetBlackSoldierMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetRedGeneralMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetRedAdvisorMinisterMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetRedChariotCannonMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[], int nChessMan);
-    void GetRedHorseMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
-    void GetRedSoldierMoveStepAlpha(int szChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char strAlphaFmt[]);
+    void GetChessManMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetBlackGeneralMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetBlackAdvisorMinisterMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetBlackChariotCannonMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[], int nChessMan);
+    void GetBlackHorseMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetBlackSoldierMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetRedGeneralMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetRedAdvisorMinisterMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetRedChariotCannonMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[], int nChessMan);
+    void GetRedHorseMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
+    void GetRedSoldierMoveStepAlpha(int arrChessMan[][CHESSBOARD_COLUMN], int nFromRow, int nFromColumn, int nToRow, int nToColumn, char szAlphaFmt[]);
 
     //将数字坐标格式转换成中文格式如将5进1
     static string DigitToChinese(char chDigit, bool bBlack);
     static string ChessManCodetoChinese(char chCode, bool bBlack);
     static string ActionToChinese(char chAction);
-    static void AlphaFmtToChiness(const char *strAlphaFmt, char strChineseFmt[], bool bBlack);
+    static void AlphaFmtToChiness(const char *pAlphaFmt, char strChineseFmt[], bool bBlack);
 
-    void GenerateAllMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nSide, list<MoveRoute> &lstMoveRoute);
-    void GenerateMoveRoute(int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, list<MoveRoute> &lstMoveRoute);
-    bool CanGenerateMove(int szChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nGeneral);
-    bool IsGeneralDead(int szChessMan[][CHESSBOARD_COLUMN], int nSide);
+    void GenerateAllMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nSide, list<MoveRoute> &lstMoveRoute);
+    void GenerateMoveRoute(int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, list<MoveRoute> &lstMoveRoute);
+    bool CanSaveGeneral(int arrChessMan[][CHESSBOARD_COLUMN], int nRow, int nColumn, int nGeneral);
+    bool IsGeneralDead(int arrChessMan[][CHESSBOARD_COLUMN], int nSide);
     
 };
 

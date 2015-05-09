@@ -31,24 +31,24 @@ CGameSettings::~CGameSettings(void)
 {
 }
 
-void CGameSettings::LoadSettings(const char *strFileName)
+void CGameSettings::LoadSettings(const char *pFileName)
 {
     CSimpleIni clIni;
-    clIni.LoadFile(strFileName);
+    clIni.LoadFile(pFileName);
 
     m_nGameType = clIni.GetLongValue("Game", "GameType", 1);
-    m_nCompetitorSide = clIni.GetLongValue("Game", "CompetitorSide", s_nBlackSide);
+    m_nCompetitorSide = clIni.GetLongValue("Game", "CompetitorSide", BLACK);
     m_nAhead = clIni.GetLongValue("Game", "Ahead", BLACK);
     m_nStepTime = clIni.GetLongValue("Game", "StepTime", 0);
 }
 
-void CGameSettings::SaveSettings( const char *clFileName )
+void CGameSettings::SaveSettings( const char *pFileName )
 {
     CSimpleIni clIni;
-    clIni.LoadFile(clFileName);
+    clIni.LoadFile(pFileName);
     clIni.SetLongValue("Game", "GameType", m_nGameType);
     clIni.SetLongValue("Game", "CompetitorSide", m_nCompetitorSide);
     clIni.SetLongValue("Game", "Ahead", m_nAhead);
     clIni.SetLongValue("Game", "StepTime", m_nStepTime);
-    clIni.SaveFile(clFileName);
+    clIni.SaveFile(pFileName);
 }

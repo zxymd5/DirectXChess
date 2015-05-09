@@ -24,7 +24,6 @@
 #include "MoveRouteGenerator.h"
 #include <process.h>
 
-#include <list>
 #include <MMSystem.h>
 using namespace std;
 
@@ -36,8 +35,10 @@ public:
     void Init();
     void NewGame();
     void ResetChessManLayout();
-    void GetChessMan(int szChessMan[][s_nChessBoardColumn]);
+    void GetChessMan(int szChessMan[][CHESSBOARD_COLUMN]);
     void DoMove(int nRow, int nColumn);
+    bool BlackDoMove(int nRow, int nColumn);
+    bool RedDoMove(int nRow, int nColumn);
     const MoveRoute &GetCurrentMoveRoute();
     void ResetMoveRoute(MoveRoute &stRoute);
     void SetGameResult(int nGameResult);
@@ -62,7 +63,7 @@ private:
     int m_nCurrentTurn;
     int m_nGameResult;
     int m_nWhoIsDead;
-    int m_szChessMan[s_nChessBoardRow][s_nChessBoardColumn];
+    int m_szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
     list<MoveRoute> m_lstMoveRoute;
     MoveRoute m_stCurrentMoveRoute;
     CMoveRouteGenerator m_clGenerator;

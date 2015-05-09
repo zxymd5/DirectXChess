@@ -38,7 +38,7 @@ void CGameSettings::LoadSettings(const char *strFileName)
 
     m_nCompetitor = clIni.GetLongValue("ManMachineGame", "Competitor", 1);
     m_nCompetitorSide = clIni.GetLongValue("ManMachineGame", "CompetitorSide", s_nBlackSide);
-    m_nAhead = clIni.GetLongValue("ManMachineGame", "Ahead", s_nTurnBlack);
+    m_nAhead = clIni.GetLongValue("ManMachineGame", "Ahead", BLACK);
     m_nStepTime = clIni.GetLongValue("ManMachineGame", "StepTime", 0);
 }
 

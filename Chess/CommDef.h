@@ -28,35 +28,37 @@
 #define WM_OPENFILE (WM_USER + 1)
 #define WM_SAVEFILE (WM_USER + 2)
 
-static const int s_nWindowStartX = 0;
-static const int s_nWindowStartY = 0;
-static const int s_nChessBoardCellStartX = 271;
-static const int s_nChessBoardCellStartY = 112;
-static const int s_nChessManLength = 58;
-static const int s_nChessBoardCellLength = 60;
-static const int s_nChessBoardRow = 10;
-static const int s_nChessBoardColumn = 9;
-static const int s_nMaxMoveRouteHistory = 100;
+static const int WINDOW_START_X = 0;
+static const int WINDOW_START_Y = 0;
+static const int CHESSBOARD_CELL_START_X = 271;
+static const int CHESSBOARD_CELL_START_Y = 112;
+static const int CHESSMAN_LEN = 58;
+static const int CHESSBOARD_CELL_LEN = 60;
+static const int CHESSBOARD_ROW = 10;
+static const int CHESSBOARD_COLUMN = 9;
+static const int MAX_MOVEROUTE_HISTORY = 100;
+static const int MAX_MOVEROUTE = 100;
 
-static const char *s_pSettingsFile = "Config.ini";
-static const char *s_pWidgetConfigFile = "Chess.ini";
-static const char *s_pPictureFolder = "Pictures/";
-static const char *s_pBlackDeadPicture = "Pictures/BlackGeneralDead.png";
-static const char *s_pRedDeadPicture = "Pictures/RedGeneralDead.png";
-static const char *s_pBlackIndicator = "Pictures/BlackIndicator.png";
-static const char *s_pRedIndicator = "Pictures/RedIndicator.png";
+static const char *SETTINGS_FILE = "Config.ini";
+static const char *WIDGET_CONFIG_FILE = "Chess.ini";
+static const char *PICTURE_FOLDER = "Pictures/";
+static const char *BLACK_DEAD_PICTURE = "Pictures/BlackGeneralDead.png";
+static const char *RED_DEAD_PICTURE = "Pictures/RedGeneralDead.png";
+static const char *BLACK_INDICATOR = "Pictures/BlackIndicator.png";
+static const char *RED_INDICATOR = "Pictures/RedIndicator.png";
 
-static const char *s_pAudioNewGame = "Audio/NewGame.wav";
-static const char *s_pAudioAttackKing = "Audio/AttackKing.wav";
-static const char *s_pAudioChoose = "Audio/Choose.wav";
-static const char *s_pAudioEat = "Audio/Eat.wav";
-static const char *s_pAudioLoss = "Audio/Loss.wav";
-static const char *s_pAudioMove = "Audio/Move.wav";
-static const char *s_pAudioWin = "Audio/Win.wav";
-static const char *s_pAudioTie = "Audio/Draw.wav";
+static const char *AUDIO_NEW_GAME = "Audio/NewGame.wav";
+static const char *AUDIO_ATTACK_KING = "Audio/AttackKing.wav";
+static const char *AUDIO_CHOOSE = "Audio/Choose.wav";
+static const char *AUDIO_EAT = "Audio/Eat.wav";
+static const char *AUDIO_LOSS = "Audio/Loss.wav";
+static const char *AUDIO_MOVE = "Audio/Move.wav";
+static const char *AUDIO_WIN = "Audio/Win.wav";
+static const char *AUDIO_TIE = "Audio/Draw.wav";
+static const char *AUDIO_ILLEGAL = "Audio/Forbid.wav";
 
-static const int s_nTurnBlack = 1;
-static const int s_nTurnRed = 2;
+static const int BLACK = 1;
+static const int RED = 2;
 static const int s_nResultTie = 0;
 static const int s_nResultBlackWin = 1;
 static const int s_nResultRedWin = 2;
@@ -67,25 +69,25 @@ static const int s_nRedSide = 2;
 static const int s_nCompititorMachine = 1;
 static const int s_nCompititorHuman = 2;
 
-static const int s_nBlackGeneral = 1;  //黑将
-static const int s_nBlackChariot = 2;  //黑车
-static const int s_nBlackHorse = 3;    //黑马
-static const int s_nBlackCannon = 4;   //黑炮
-static const int s_nBlackAdvisor = 5;  //黑士
-static const int s_nBlackMinister = 6;     //黑象
-static const int s_nBlackSoldier = 7;  //黑卒
+static const int BLACK_GENERAL = 1;     //黑将
+static const int BLACK_CHARIOT = 2;     //黑车
+static const int BLACK_HORSE = 3;       //黑马
+static const int BLACK_CANON = 4;       //黑炮
+static const int BLACK_ADVISOR = 5;     //黑士
+static const int BLACK_MINISTER = 6;    //黑象
+static const int BLACK_SOLDIER = 7;     //黑卒
 
-static const int s_nRedGeneral = 8;   //红帅
-static const int s_nRedChariot = 9;    //红车
-static const int s_nRedHorse = 10;      //红马
-static const int s_nRedCannon = 11;    //红炮
-static const int s_nRedAdvisor = 12;   //红仕
-static const int s_nRedMinister = 13;  //红相
-static const int s_nRedSoldier = 14;   //红兵
+static const int RED_GENERAL = 8;       //红帅
+static const int RED_CHARIOT = 9;       //红车
+static const int RED_HORSE = 10;        //红马
+static const int RED_CANNON = 11;       //红炮
+static const int RED_ADVISOR = 12;      //红仕
+static const int RED_MINISTER = 13;     //红相
+static const int RED_SOLDIER = 14;      //红兵
 
 static const char *s_pChessManCode = "krncabpKRNCABP"; //将车马炮士象卒帅车马炮仕相兵
 
-static const char *s_pszChessManName[] = 
+static const char *ALL_CHESSMAN_NAME[] = 
 {
     "BlackGeneral", "BlackChariot", "BlackHorse", "BlackCannon", 
     "BlackAdvisor", "BlackMinister", "BlackSoldier", "RedGeneral", 
@@ -93,33 +95,33 @@ static const char *s_pszChessManName[] =
     "RedMinister", "RedSoldier"
 };
 
-static const int s_szDefaultChessManLayout[s_nChessBoardRow][s_nChessBoardColumn] = 
+static const int DEFAULT_CHESSBOARD_LAYOUT[CHESSBOARD_ROW][CHESSBOARD_COLUMN] = 
 {
-    {s_nBlackChariot, s_nBlackHorse, s_nBlackMinister, s_nBlackAdvisor, s_nBlackGeneral, s_nBlackAdvisor, s_nBlackMinister, s_nBlackHorse, s_nBlackChariot},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {0, s_nBlackCannon, 0, 0, 0, 0, 0, s_nBlackCannon, 0},
-    {s_nBlackSoldier, 0, s_nBlackSoldier, 0, s_nBlackSoldier, 0, s_nBlackSoldier, 0, s_nBlackSoldier},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {BLACK_CHARIOT, BLACK_HORSE, BLACK_MINISTER, BLACK_ADVISOR, BLACK_GENERAL, BLACK_ADVISOR, BLACK_MINISTER, BLACK_HORSE, BLACK_CHARIOT},
+    {0,             0,           0,              0,             0,             0,             0,              0,           0            },
+    {0,             BLACK_CANON, 0,              0,             0,             0,             0,              BLACK_CANON, 0            },
+    {BLACK_SOLDIER, 0,           BLACK_SOLDIER,  0,             BLACK_SOLDIER, 0,             BLACK_SOLDIER,  0,           BLACK_SOLDIER},
+    {0,             0,           0,              0,             0,             0,             0,              0,           0            },
 
-    {0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {s_nRedSoldier, 0, s_nRedSoldier, 0, s_nRedSoldier, 0, s_nRedSoldier, 0, s_nRedSoldier},
-    {0, s_nRedCannon, 0, 0, 0, 0, 0, s_nRedCannon, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {s_nRedChariot, s_nRedHorse, s_nRedMinister, s_nRedAdvisor, s_nRedGeneral, s_nRedAdvisor, s_nRedMinister, s_nRedHorse, s_nRedChariot}
+    {0,             0,           0,              0,             0,             0,             0,              0,           0            },
+    {RED_SOLDIER,   0,           RED_SOLDIER,    0,             RED_SOLDIER,   0,             RED_SOLDIER,    0,           RED_SOLDIER  },
+    {0,             RED_CANNON,  0,              0,             0,             0,             0,              RED_CANNON,  0            },
+    {0,             0,           0,              0,             0,             0,             0,              0,           0            },
+    {RED_CHARIOT,   RED_HORSE,   RED_MINISTER,   RED_ADVISOR,   RED_GENERAL,   RED_ADVISOR,   RED_MINISTER,   RED_HORSE,   RED_CHARIOT  }
 
 };
 
-static const int s_nChessManTypeCount = 14;    //棋子种类个数
+static const int CHESSMAN_TYPE_COUNT = 14;    //棋子种类个数
 
 static RECT GetChessManInitPos(int nRow, int nColumn, int nCompetitorSide)
 {
     RECT Pos;
-    nRow = nCompetitorSide == s_nBlackSide ? nRow : s_nChessBoardRow - nRow - 1;
-    nColumn = nCompetitorSide == s_nBlackSide ? nColumn : s_nChessBoardColumn - nColumn - 1;
-    Pos.left = s_nChessBoardCellStartX + nColumn * s_nChessBoardCellLength - s_nChessManLength / 2;
-    Pos.top = s_nChessBoardCellStartY + nRow * s_nChessBoardCellLength - s_nChessManLength / 2;
-    Pos.right = Pos.left + s_nChessManLength;
-    Pos.bottom = Pos.top + s_nChessManLength;
+    nRow = nCompetitorSide == s_nBlackSide ? nRow : CHESSBOARD_ROW - nRow - 1;
+    nColumn = nCompetitorSide == s_nBlackSide ? nColumn : CHESSBOARD_COLUMN - nColumn - 1;
+    Pos.left = CHESSBOARD_CELL_START_X + nColumn * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
+    Pos.top = CHESSBOARD_CELL_START_Y + nRow * CHESSBOARD_CELL_LEN - CHESSMAN_LEN / 2;
+    Pos.right = Pos.left + CHESSMAN_LEN;
+    Pos.bottom = Pos.top + CHESSMAN_LEN;
 
     return Pos;
 }
@@ -129,7 +131,7 @@ static RECT GetChessManSideInitPos(int nCompetitorSide, int nSide)
     RECT Pos;
 
     Pos.top = 55;
-    Pos.bottom = Pos.top + s_nChessBoardCellLength;
+    Pos.bottom = Pos.top + CHESSBOARD_CELL_LEN;
 
     if (nSide == s_nBlackSide)
     {
@@ -154,7 +156,7 @@ static RECT GetChessManSideInitPos(int nCompetitorSide, int nSide)
         }
     }
     
-    Pos.right = Pos.left + s_nChessBoardCellLength;
+    Pos.right = Pos.left + CHESSBOARD_CELL_LEN;
 
     return Pos;
 }
@@ -196,9 +198,9 @@ static RECT GetChessManListViewInitPos(int nCompetitorSide, int nSide)
 
 static bool GetCoordinate (const POINT &stPt, int &nRow, int &nColumn, int nCompetitorSide)
 {
-    for (nRow = 0; nRow < s_nChessBoardRow; nRow++)
+    for (nRow = 0; nRow < CHESSBOARD_ROW; nRow++)
     {
-        for (nColumn = 0; nColumn < s_nChessBoardColumn; nColumn++)
+        for (nColumn = 0; nColumn < CHESSBOARD_COLUMN; nColumn++)
         {
             RECT Rect = GetChessManInitPos(nRow, nColumn, nCompetitorSide);
             if (PtInRect(&Rect, stPt))
@@ -217,11 +219,11 @@ static void GetChessManPicture(char strPictureName[], int nChessMan, bool bSelec
 {
     if (!bSelected)
     {
-        sprintf(strPictureName, "%s%s.png", s_pPictureFolder, s_pszChessManName[nChessMan - 1]);
+        sprintf(strPictureName, "%s%s.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
     }
     else
     {
-        sprintf(strPictureName, "%s%sSel.png", s_pPictureFolder, s_pszChessManName[nChessMan - 1]);
+        sprintf(strPictureName, "%s%sSel.png", PICTURE_FOLDER, ALL_CHESSMAN_NAME[nChessMan - 1]);
     }
 }
 
@@ -271,12 +273,12 @@ struct ChineseMoveStep
 
 static bool IsBlackSide(int nChessManType)
 {
-    return (nChessManType >= s_nBlackGeneral) && (nChessManType <= s_nBlackSoldier);
+    return (nChessManType >= BLACK_GENERAL) && (nChessManType <= BLACK_SOLDIER);
 }
 
 static bool IsRedSide(int nChessManType)
 {
-    return (nChessManType >= s_nRedGeneral) && (nChessManType <= s_nRedSoldier);
+    return (nChessManType >= RED_GENERAL) && (nChessManType <= RED_SOLDIER);
 }
 
 static bool IsSameSide(int nSrcChessManType, int nDstChessManType)
@@ -309,12 +311,13 @@ static void ConvertToTimeStr(int nSeconds, char *pSeconds)
     sprintf(pSeconds, "%.2d:%.2d:%.2d", nHour, nMinute, nSecond);
 }
 
-static const int s_nEventInitBoard = 1;
-static const int s_nEventNewGame = 2;
-static const int s_nEventUpdateMove = 3;
-static const int s_nEventFallback = 4;
-static const int s_nEventLoadChessMan = 5;
-static const int s_nEventGameResult = 6;
-static const int s_nMoveStepPerPage = 7;
+static const int EVENT_INIT_BOARD = 1;
+static const int EVENT_NEW_GAME = 2;
+static const int EVENT_UPDATE_MOVE = 3;
+static const int EVENT_FALLBACK = 4;
+static const int EVENT_LOAD_CHESSMAN = 5;
+static const int EVENT_GAME_RESULT = 6;
+static const int EVENT_ILLEGAL_MOVE = 7;
+static const int MOVE_STEP_PER_PAGE = 10;
 
 #endif

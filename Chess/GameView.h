@@ -52,9 +52,10 @@ public:
     void ProcessFallbackEvent( CSubject *pSub );
     void ProcessLoadChessManEvent( CSubject *pSub );
     void ProcessGameResultEvent( CSubject *pSub );
+    void ProcessIllegalMoveEvent( CSubject *pSub );
 
-    void UpdateChessMan(int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
-    void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[s_nChessBoardRow][s_nChessBoardColumn]);
+    void UpdateChessMan(int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
+    void UpdateMoveRoute(const MoveRoute &stRoute, int szChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
     void PlayTipSound(const MoveRoute &stRoute, int nGameResult);
 
     void PlayGameResultSound( int nGameResult );
@@ -105,7 +106,7 @@ private:
     CDXImage    *m_pChessBoardCover;
     CDXImage    *m_pBlackSide;
     CDXImage    *m_pRedSide;
-    CDXImage    *m_pszGamingChessMan[s_nChessBoardRow][s_nChessBoardColumn];
+    CDXImage    *m_pszGamingChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
     CDXImage    *m_pRightHistoryBG;
     CDXImage    *m_pLeftHistoryBG;
     CDXButton   *m_pStart;

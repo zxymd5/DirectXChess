@@ -27,7 +27,7 @@ CGameHandle g_GameHandle;
 
 CGameHandle::CGameHandle(void)
 {
-    memset(m_szChessMan, 0, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
+    memset(m_szChessMan, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
     m_nCurrentTurn = -1;
     m_nWhoIsDead = 0;
     memset(m_szGameInfoSaveFile, 0, MAX_PATH);
@@ -49,7 +49,7 @@ CGameHandle::~CGameHandle(void)
 void CGameHandle::Init()
 {
     ResetChessManLayout();
-    Notify(s_nEventInitBoard);
+    Notify(EVENT_INIT_BOARD);
 
     m_hEventSaveGame = CreateEvent(NULL, TRUE, FALSE, NULL); 
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
@@ -64,7 +64,7 @@ void CGameHandle::NewGame()
     m_lstMoveRoute.clear();
     ResetMoveRoute(m_stCurrentMoveRoute);
     ResetChessManLayout();
-    Notify(s_nEventNewGame);
+    Notify(EVENT_NEW_GAME);
     m_llCurrentStepStartTime = ::timeGetTime();
 }
 
@@ -72,12 +72,12 @@ void CGameHandle::NewGame()
 //置棋子为最初状态
 void CGameHandle::ResetChessManLayout()
 {
-    memcpy(m_szChessMan, s_szDefaultChessManLayout, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
+    memcpy(m_szChessMan, DEFAULT_CHESSBOARD_LAYOUT, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
 }
 
-void CGameHandle::GetChessMan( int szChessMan[][s_nChessBoardColumn] )
+void CGameHandle::GetChessMan( int szChessMan[][CHESSBOARD_COLUMN] )
 {
-    memcpy(szChessMan, m_szChessMan, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
+    memcpy(szChessMan, m_szChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
 }
 
 //to do
@@ -95,85 +95,18 @@ void CGameHandle::DoMove(int nRow, int nColumn)
 
     int nChessMan = m_szChessMan[nRow][nColumn];
     int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
-    bool bNotifyView = false;
+    bool bLegal = false;
     
-    if (m_nCurrentTurn == s_nTurnRed)
+    if (m_nCurrentTurn == RED)
     {
-        if (nMovingChessMan == 0)
-        {
-            if (IsRedSide(nChessMan))
-            {
-                m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
-                m_stCurrentMoveRoute.stFromPos.nRow = nRow;
-                m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
-                bNotifyView = true;
-            }
-        }
-        else
-        {
-            if (IsRedSide(nChessMan))
-            {
-                m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
-                m_stCurrentMoveRoute.stFromPos.nRow = nRow;
-                m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
-                bNotifyView = true;
-            }
-            else
-            {
-                //判断走法是否合理
-                if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
-                    m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
-                {
-                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
-                                                            m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
-                                                            m_stCurrentMoveRoute.strMoveStepAlpha);
-                    m_stCurrentMoveRoute.stToPos.nRow = nRow;
-                    m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
-                    bNotifyView = true;
-                }
-            }
-        }
+        bLegal = RedDoMove(nRow, nColumn);
     }
     else
     {
-        if (nMovingChessMan == 0)
-        {
-            if (IsBlackSide(nChessMan))
-            {
-                m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
-                m_stCurrentMoveRoute.stFromPos.nRow = nRow;
-                m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
-                bNotifyView = true;
-            }
-        }
-        else
-        {
-            if (IsBlackSide(nChessMan))
-            {
-                m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
-                m_stCurrentMoveRoute.stFromPos.nRow = nRow;
-                m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
-                bNotifyView = true;
-            }
-            else
-            {
-                //判断走法是否合理
-                if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
-                    m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
-                {
-                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
-                        m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
-                        m_stCurrentMoveRoute.strMoveStepAlpha);
-                    m_stCurrentMoveRoute.stToPos.nRow = nRow;
-                    m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
-                    bNotifyView = true;
-                }
-            }
-        }
+        bLegal = BlackDoMove(nRow, nColumn);
     }
 
-
-    if (bNotifyView)
+    if (bLegal)
     {
         //如果走了完整的一步
         if (IsCompleteMoveRoute(m_stCurrentMoveRoute))
@@ -181,38 +114,167 @@ void CGameHandle::DoMove(int nRow, int nColumn)
             m_stCurrentMoveRoute.nKilledChessMan = m_szChessMan[nRow][nColumn];
             m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = 0;
             m_szChessMan[nRow][nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
-            m_stCurrentMoveRoute.bAttackGeneral = m_clGenerator.IsAttackGeneral(m_szChessMan, m_nCurrentTurn == s_nTurnBlack ? s_nRedGeneral : s_nBlackGeneral);
             
-            if (m_nCurrentTurn == s_nTurnBlack)
+            //判断是否将对方置于死地
+            if (m_stCurrentMoveRoute.bAttackGeneral)
             {
-                if (m_clGenerator.MeetWithGeneral(m_szChessMan, s_nBlackGeneral) ||
-                    m_clGenerator.IsAttackGeneral(m_szChessMan, s_nBlackGeneral))
+                if (m_clGenerator.IsGeneralDead(m_szChessMan, m_nCurrentTurn == BLACK ? RED : BLACK))
                 {
-                    m_nWhoIsDead = s_nBlackDead;
-                    m_nGameResult = s_nResultRedWin;
-                }
-            }
-            else
-            {
-                if (m_clGenerator.MeetWithGeneral(m_szChessMan, s_nRedGeneral) ||
-                    m_clGenerator.IsAttackGeneral(m_szChessMan, s_nRedGeneral))
-                {
-                    m_nWhoIsDead = s_nRedDead;
-                    m_nGameResult = s_nResultBlackWin;
+                    m_nWhoIsDead = m_nCurrentTurn == BLACK ? RED : BLACK;
+                    m_nGameResult = m_nCurrentTurn;
                 }
             }
 
             m_lstMoveRoute.push_back(m_stCurrentMoveRoute);
-            m_nCurrentTurn = (m_nCurrentTurn == s_nTurnBlack ? s_nTurnRed : s_nTurnBlack);
-            Notify(s_nEventUpdateMove);
+            m_nCurrentTurn = (m_nCurrentTurn == BLACK ? RED : BLACK);
+            Notify(EVENT_UPDATE_MOVE);
             ResetMoveRoute(m_stCurrentMoveRoute);
             m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
         }
         else
         {
-            Notify(s_nEventUpdateMove);
+            Notify(EVENT_UPDATE_MOVE);
         }
     }
+    else
+    {
+        Notify(EVENT_ILLEGAL_MOVE);
+    }
+}
+
+
+bool CGameHandle::BlackDoMove( int nRow, int nColumn )
+{
+    int nChessMan = m_szChessMan[nRow][nColumn];
+    int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
+    bool bLegal = false;
+
+    if (nMovingChessMan == 0)
+    {
+        if (IsBlackSide(nChessMan))
+        {
+            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.stFromPos.nRow = nRow;
+            m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
+            bLegal = true;
+        }
+    }
+    else
+    {
+        if (IsBlackSide(nChessMan))
+        {
+            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.stFromPos.nRow = nRow;
+            m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
+            bLegal = true;
+        }
+        else
+        {
+            //判断走法是否合理
+            if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
+                m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
+            {
+                //再判断走棋后，自己是否被对方将军，如果自己被对方将军，则走法不合理
+                m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = 0;
+                m_szChessMan[nRow][nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
+                if(m_clGenerator.IsAttackGeneral(m_szChessMan, BLACK_GENERAL))
+                {
+                    bLegal = false;
+                }
+                else
+                {
+                    //再判断自己是否将对方的军
+                    m_stCurrentMoveRoute.bAttackGeneral = m_clGenerator.IsAttackGeneral(m_szChessMan, RED_GENERAL);
+                    bLegal = true;
+                }
+
+                m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
+                m_szChessMan[nRow][nColumn] = nChessMan;
+                if (bLegal)
+                {
+                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
+                        m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
+                        m_stCurrentMoveRoute.strMoveStepAlpha);
+                    m_stCurrentMoveRoute.stToPos.nRow = nRow;
+                    m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
+                }
+
+            }
+            else
+            {
+                bLegal = false;
+            }
+        }
+    }
+
+    return bLegal;
+}
+
+bool CGameHandle::RedDoMove( int nRow, int nColumn )
+{
+    int nChessMan = m_szChessMan[nRow][nColumn];
+    int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
+    bool bLegal = false;
+
+    if (nMovingChessMan == 0)
+    {
+        if (IsRedSide(nChessMan))
+        {
+            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.stFromPos.nRow = nRow;
+            m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
+            bLegal = true;
+        }
+    }
+    else
+    {
+        if (IsRedSide(nChessMan))
+        {
+            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.stFromPos.nRow = nRow;
+            m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
+            bLegal = true;
+        }
+        else
+        {
+            //判断走法是否合理
+            if (m_clGenerator.ValidateMoveRoute(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow, 
+                m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn))
+            {
+                //再判断走棋后，自己是否被对方将军，如果自己被对方将军，则走法不合理
+                m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = 0;
+                m_szChessMan[nRow][nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
+                if(m_clGenerator.IsAttackGeneral(m_szChessMan, RED_GENERAL))
+                {
+                    bLegal = false;
+                }
+                else
+                {
+                    //再判断自己是否将对方的军
+                    m_stCurrentMoveRoute.bAttackGeneral = m_clGenerator.IsAttackGeneral(m_szChessMan, BLACK_GENERAL);
+                    bLegal = true;
+                }
+
+                m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
+                m_szChessMan[nRow][nColumn] = nChessMan;
+
+                if (bLegal)
+                {
+                    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
+                        m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
+                        m_stCurrentMoveRoute.strMoveStepAlpha);
+                    m_stCurrentMoveRoute.stToPos.nRow = nRow;
+                    m_stCurrentMoveRoute.stToPos.nColumn = nColumn;
+                }
+            }
+            else
+            {
+                bLegal = false;
+            }
+        }
+    }
+
+    return bLegal;
 }
 
 const MoveRoute & CGameHandle::GetCurrentMoveRoute()
@@ -286,7 +348,7 @@ void CGameHandle::FallBack()
             FallBackOneStep();
         }
 
-        Notify(s_nEventFallback);
+        Notify(EVENT_FALLBACK);
         ResetMoveRoute(m_stCurrentMoveRoute);
     }
 }
@@ -302,7 +364,7 @@ void CGameHandle::FallBackOneStep()
     m_szChessMan[stRoute.stFromPos.nRow][stRoute.stFromPos.nColumn] = stRoute.nMovingChessMan;
     m_szChessMan[stRoute.stToPos.nRow][stRoute.stToPos.nColumn] = stRoute.nKilledChessMan;
     m_lstMoveRoute.pop_back();
-    m_nCurrentTurn = (m_nCurrentTurn == s_nTurnBlack ? s_nTurnRed : s_nTurnBlack);
+    m_nCurrentTurn = (m_nCurrentTurn == BLACK ? RED : BLACK);
     if (m_lstMoveRoute.size() > 0)
     {
         m_stCurrentMoveRoute = m_lstMoveRoute.back();
@@ -318,13 +380,13 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
         //先保存m_szChessMan
         ofstream fs;
         fs.open(pFileName, ios::out | ios::trunc);
-        for (int i = 0; i < s_nChessBoardRow; i++)
+        for (int i = 0; i < CHESSBOARD_ROW; i++)
         {
-            for (int j = 0; j < s_nChessBoardColumn - 1; j++)
+            for (int j = 0; j < CHESSBOARD_COLUMN - 1; j++)
             {
                 fs << m_szChessMan[i][j] << '\t';
             }
-            fs << m_szChessMan[i][s_nChessBoardColumn - 1] << endl;
+            fs << m_szChessMan[i][CHESSBOARD_COLUMN - 1] << endl;
         }
         fs << endl;
         
@@ -357,7 +419,7 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
 void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
 {
     assert(pFileName != NULL);
-    memset(m_szChessMan, 0, sizeof(int) * s_nChessBoardRow * s_nChessBoardColumn);
+    memset(m_szChessMan, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
     //txt文件
     if (nFileType == 1)
     {
@@ -365,9 +427,9 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
         fs.open(pFileName, ios::in);
 
         //先读取m_szChessMan
-        for (int i = 0; i < s_nChessBoardRow; i++)
+        for (int i = 0; i < CHESSBOARD_ROW; i++)
         {
-            for (int j = 0; j < s_nChessBoardColumn; j++)
+            for (int j = 0; j < CHESSBOARD_COLUMN; j++)
             {
                 fs >> m_szChessMan[i][j];
             }
@@ -481,7 +543,7 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
         m_stCurrentMoveRoute = m_lstMoveRoute.back();
     }
     
-    Notify(s_nEventLoadChessMan);
+    Notify(EVENT_LOAD_CHESSMAN);
     ResetMoveRoute(m_stCurrentMoveRoute);
 }
 
@@ -566,9 +628,9 @@ unsigned int __stdcall CGameHandle::SaveGameFunc( void *pParam )
             sqlite3_close(db);
             return 0;
         }
-        for (int i = 0; i < s_nChessBoardRow; i++)
+        for (int i = 0; i < CHESSBOARD_ROW; i++)
         {
-            for (int j = 0; j < s_nChessBoardColumn; j++)
+            for (int j = 0; j < CHESSBOARD_COLUMN; j++)
             {
                 if (pGameHandle->m_szChessMan[i][j] > 0)
                 {
@@ -661,7 +723,7 @@ void CGameHandle::StepTimeOver()
 {
     if (m_nGameResult == -1)
     {
-        if (m_nCurrentTurn == s_nTurnBlack)
+        if (m_nCurrentTurn == BLACK)
         {
             m_nGameResult = s_nResultRedWin;
         }
@@ -671,7 +733,7 @@ void CGameHandle::StepTimeOver()
         }
 
         m_llCurrentStepStartTime = 0;
-        Notify(s_nEventGameResult);
+        Notify(EVENT_GAME_RESULT);
     }
 }
 
@@ -682,7 +744,7 @@ void CGameHandle::OnTie()
         m_nGameResult = s_nResultTie;
 
         m_llCurrentStepStartTime = 0;
-        Notify(s_nEventGameResult);
+        Notify(EVENT_GAME_RESULT);
     }
 }
 
@@ -700,6 +762,7 @@ void CGameHandle::OnLose()
         }
 
         m_llCurrentStepStartTime = 0;
-        Notify(s_nEventGameResult);
+        Notify(EVENT_GAME_RESULT);
     }
 }
+

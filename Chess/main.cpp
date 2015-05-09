@@ -228,9 +228,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     // Create the application's window
     HWND hWnd = CreateWindow(WINDOW_CLASS, WINDOW_NAME, WS_POPUPWINDOW,
-        s_nWindowStartX, s_nWindowStartY, nWindowWidth, nWindowHeight,
+        WINDOW_START_X, WINDOW_START_Y, nWindowWidth, nWindowHeight,
         GetDesktopWindow(), NULL, wc.hInstance, NULL);
-    SetWindowPos(hWnd, HWND_TOP, s_nWindowStartX, s_nWindowStartY, nWindowWidth, nWindowHeight, SWP_SHOWWINDOW);
+    SetWindowPos(hWnd, HWND_TOP, WINDOW_START_X, WINDOW_START_Y, nWindowWidth, nWindowHeight, SWP_SHOWWINDOW);
     
     ShowWindow(hWnd, SW_SHOWDEFAULT);
     UpdateWindow(hWnd);
@@ -240,10 +240,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     //GameEngine≥ı ºªØ
     g_GameEngine.Init(hWnd, nWindowWidth, nWindowHeight);
-    g_GameEngine.CreateTexFromDir(s_pPictureFolder);
-    g_GameEngine.ParseFile(s_pWidgetConfigFile);
+    g_GameEngine.CreateTexFromDir(PICTURE_FOLDER);
+    g_GameEngine.ParseFile(WIDGET_CONFIG_FILE);
 
-    g_GameSettings.LoadSettings(s_pSettingsFile);
+    g_GameSettings.LoadSettings(SETTINGS_FILE);
 
     g_GameView.Init(hWnd);
     g_GameHandle.Attach(&g_GameView);

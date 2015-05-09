@@ -30,15 +30,15 @@ using namespace std;
 
 struct AudioInfo
 {
-    char m_strFileName[nMaxFilePathLen];
-    LPDIRECTSOUNDBUFFER m_pPrimaryBuffer;  //主缓冲接口
-    LPDIRECTSOUNDBUFFER m_pSecondaryBuffer;  //辅助缓冲接口
+    char m_szFileName[MAX_FILE_PATH_LEN];
+    LPDIRECTSOUNDBUFFER m_lpPrimaryBuffer;  //主缓冲接口
+    LPDIRECTSOUNDBUFFER m_lpSecondaryBuffer;  //辅助缓冲接口
 
     AudioInfo()
     {
-        memset(m_strFileName, 0, nMaxFilePathLen);
-        m_pPrimaryBuffer = NULL;
-        m_pSecondaryBuffer = NULL;
+        memset(m_szFileName, 0, MAX_FILE_PATH_LEN);
+        m_lpPrimaryBuffer = NULL;
+        m_lpSecondaryBuffer = NULL;
     }
 };
 
@@ -49,14 +49,14 @@ public:
     ~CSoundPlayer(void);
     bool Init(HWND hWnd);
     void Shutdown();
-    void Play(const char *strFileName, bool bLoop = false);
-    void Stop(const char *strFileName);
-    void AddAudioFile(const char *strFileName);
+    void Play(const char *pFileName, bool bLoop = false);
+    void Stop(const char *pFileName);
+    void AddAudioFile(const char *pFileName);
     bool ParseAudioFile(FILE *pFile, WAVEFORMATEX &stWaveFmt);
     void RemoveAll();
 
 private:
-    LPDIRECTSOUND       m_pSound;
+    LPDIRECTSOUND       m_lpSound;
     deque<AudioInfo *>  m_deqAudio;
 };
 

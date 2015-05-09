@@ -26,10 +26,13 @@
 #define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p);   (p)=NULL; } }
 #define SAFE_RELEASE(p)  {if(p) { (p)->Release(); (p) = NULL; }}
 
-static const int nMaxNameLen = 50;
-static const int nMaxFilePathLen = 260;
-static const int nWindowWidth = 1024;
-static const int nWindowHeight = 768;
+static const int MAX_NAME_LEN = 50;
+static const int MAX_FILE_PATH_LEN = 260;
+static const int WINDOW_WIDTH = 1024;
+static const int WINDOW_HEIGHT = 768;
+static const int MAX_LIST_ITEM = 10;
+static const int MAX_LIST_ITEM_COLUMN = 10;
+static const int MAX_ITEM_TEXT_LEN = 32;
 
 enum FontType
 {
@@ -49,7 +52,7 @@ enum WidgetType
 
 struct TextureInfo
 {
-    char szFileName[nMaxFilePathLen];
+    char szFileName[MAX_FILE_PATH_LEN];
     int nWidth;
     int nHeight;
     LPDIRECT3DTEXTURE9 pTexture;

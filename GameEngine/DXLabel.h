@@ -30,15 +30,14 @@ class CDXLabel :
 {
 public:
     CDXLabel(void);
-    void Init(const char *strWidgetName, 
-              const char *strTextureFile,
+    void Init(const char *pWidgetName, 
+              const char *pTextureFile,
                 int nLeft, int nTop, 
                 int nWidth, int nHeight, int nFontType,
                 int nTextLeft, int nTextTop,
                 int nTextWidth, int nTextHeight,
                 bool bVisible, int nDepth);
 
-    virtual void MsgResponse(HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam);
     virtual ~CDXLabel(void);
 
     virtual void Render();
@@ -49,7 +48,7 @@ public:
     void SetFontColor(int nAlpha, int nRed, int nGreen, int nBlue);
 
 protected:
-    LPDIRECT3DTEXTURE9  m_pTexture;
+    LPDIRECT3DTEXTURE9  m_lpTexture;
     int         m_nFontType;
     DWORD       m_dwAlignment;
     D3DCOLOR    m_dwFontColor;

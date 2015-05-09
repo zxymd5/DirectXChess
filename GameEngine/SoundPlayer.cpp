@@ -23,7 +23,7 @@
 
 CSoundPlayer::CSoundPlayer(void)
 {
-    m_pSound = NULL;
+    m_lpSound = NULL;
 }
 
 CSoundPlayer::~CSoundPlayer(void)
@@ -33,13 +33,13 @@ CSoundPlayer::~CSoundPlayer(void)
 
 bool CSoundPlayer::Init( HWND hWnd )
 {
-    HRESULT Ret = DirectSoundCreate(NULL, &m_pSound, NULL);
+    HRESULT Ret = DirectSoundCreate(NULL, &m_lpSound, NULL);
     if (Ret != DS_OK)
     {
         return false;
     }
 
-    Ret = m_pSound->SetCooperativeLevel(hWnd, DSSCL_NORMAL);
+    Ret = m_lpSound->SetCooperativeLevel(hWnd, DSSCL_NORMAL);
     if (Ret != DS_OK)
     {
         return false;
@@ -75,13 +75,13 @@ void CSoundPlayer::AddAudioFile( const char *strFileName )
 
 
     AudioInfo *pInfo = new AudioInfo;
-    HRESULT hRet = m_pSound->CreateSoundBuffer(&BufferDesc, &pInfo->m_pPrimaryBuffer, NULL);
-    pInfo->m_pPrimaryBuffer->QueryInterface(IID_IDirectSoundBuffer, (void**)&pInfo->m_pSecondaryBuffer);
+    HRESULT hRet = m_lpSound->CreateSoundBuffer(&BufferDesc, &pInfo->m_lpPrimaryBuffer, NULL);
+    pInfo->m_lpPrimaryBuffer->QueryInterface(IID_IDirectSoundBuffer, (void**)&pInfo->m_lpSecondaryBuffer);
 
     char *pAudioData;
     DWORD dwAudioDataSize;
 
-    pInfo->m_pSecondaryBuffer->Lock(0, stWaveFmt.cbSize, 
+    pInfo->m_lpSecondaryBuffer->Lock(0, stWaveFmt.cbSize, 
         (void **)&pAudioData, &dwAudioDataSize, NULL, NULL, 0);
 
     if (pAudioData)
@@ -89,10 +89,10 @@ void CSoundPlayer::AddAudioFile( const char *strFileName )
         fread(pAudioData, 1, dwAudioDataSize, pFile);
     }
 
-    pInfo->m_pSecondaryBuffer->Unlock(pAudioData, dwAudioDataSize, NULL, 0);
+    pInfo->m_lpSecondaryBuffer->Unlock(pAudioData, dwAudioDataSize, NULL, 0);
 
     fclose(pFile);
-    strcpy(pInfo->m_strFileName, strFileName);
+    strcpy(pInfo->m_szFileName, strFileName);
 
     m_deqAudio.push_back(pInfo);
 }
@@ -105,13 +105,13 @@ void CSoundPlayer::Play( const char *strFileName, bool bLoop /*= false*/ )
 
     for (; it != m_deqAudio.end(); ++it)
     {
-        if (strcmp((*it)->m_strFileName, strFileName) == 0)
+        if (strcmp((*it)->m_szFileName, strFileName) == 0)
         {
             bFind = true;
-            if ((*it)->m_pSecondaryBuffer)
+            if ((*it)->m_lpSecondaryBuffer)
             {
                 DWORD Status;
-                (*it)->m_pSecondaryBuffer->GetStatus(&Status);
+                (*it)->m_lpSecondaryBuffer->GetStatus(&Status);
                 bPlaying |= ((Status & DSBSTATUS_PLAYING) != 0);
             }
 
@@ -121,7 +121,7 @@ void CSoundPlayer::Play( const char *strFileName, bool bLoop /*= false*/ )
 
     if (bFind && !bPlaying)
     {
-        (*it)->m_pSecondaryBuffer->Play(0, 0, bLoop ? DSBPLAY_LOOPING : 0);
+        (*it)->m_lpSecondaryBuffer->Play(0, 0, bLoop ? DSBPLAY_LOOPING : 0);
     }
 }
 
@@ -131,9 +131,9 @@ void CSoundPlayer::RemoveAll()
 
     for (; it != m_deqAudio.end(); ++it)
     {
-        (*it)->m_pSecondaryBuffer->Stop();
-        SAFE_RELEASE((*it)->m_pPrimaryBuffer);
-        SAFE_RELEASE((*it)->m_pSecondaryBuffer);
+        (*it)->m_lpSecondaryBuffer->Stop();
+        SAFE_RELEASE((*it)->m_lpPrimaryBuffer);
+        SAFE_RELEASE((*it)->m_lpSecondaryBuffer);
         delete (*it);
         (*it) = NULL;
     }
@@ -146,7 +146,7 @@ void CSoundPlayer::Stop( const char *strFileName )
 
     for (; it != m_deqAudio.end(); ++it)
     {
-        if (strcmp((*it)->m_strFileName, strFileName) == 0)
+        if (strcmp((*it)->m_szFileName, strFileName) == 0)
         {
             bFind = true;
             break;
@@ -155,7 +155,7 @@ void CSoundPlayer::Stop( const char *strFileName )
 
     if (bFind)
     {
-        (*it)->m_pSecondaryBuffer->Stop();
+        (*it)->m_lpSecondaryBuffer->Stop();
     }
 }
 
@@ -272,5 +272,5 @@ bool CSoundPlayer::ParseAudioFile( FILE *pFile, WAVEFORMATEX &stWaveFmt )
 void CSoundPlayer::Shutdown()
 {
     RemoveAll();
-    SAFE_RELEASE(m_pSound);
+    SAFE_RELEASE(m_lpSound);
 }

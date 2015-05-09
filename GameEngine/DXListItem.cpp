@@ -24,9 +24,9 @@
 CDXListItem::CDXListItem(void)
 {
     m_nColumnCount = 0;
-    memset(m_szColumnWidth, 0, sizeof(int) * s_nMaxListItemColumn);
-    memset(m_szText, 0, s_nMaxListItemColumn * s_nMaxTextLen);
-    memset(m_szTextPos, 0, s_nMaxListItemColumn * sizeof(RECT));
+    memset(m_arrColumnWidth, 0, sizeof(int) * MAX_LIST_ITEM_COLUMN);
+    memset(m_pszText, 0, MAX_LIST_ITEM_COLUMN * MAX_ITEM_TEXT_LEN);
+    memset(m_arrTextPos, 0, MAX_LIST_ITEM_COLUMN * sizeof(RECT));
 }
 
 CDXListItem::~CDXListItem(void)
@@ -35,23 +35,23 @@ CDXListItem::~CDXListItem(void)
 
 void CDXListItem::Render()
 {
-    if (m_pTexture && m_bVisible)
+    if (m_lpTexture && m_bVisible)
     {
         if (!CDXWidget::PreRender())
         {
             return;
         }
 
-        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_pTexture)))
+        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_lpTexture)))
         {
             MessageBox(NULL, "Set texture", "Set texture failed", MB_OK);
         }
 
         for (int i = 0; i < m_nColumnCount; i++)
         {
-            if (strlen(m_szText[i]) > 0)
+            if (strlen(m_pszText[i]) > 0)
             {
-                g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_szText[i], -1, &m_szTextPos[i], m_dwAlignment, m_dwFontColor);
+                g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_pszText[i], -1, &m_arrTextPos[i], m_dwAlignment, m_dwFontColor);
             }
         }
 
@@ -59,47 +59,47 @@ void CDXListItem::Render()
     }
 }
 
-void CDXListItem::Init( const char *strWidgetName, const char *strTextureFile, 
+void CDXListItem::Init( const char *pWidgetName, const char *pTextureFile, 
                        int nLeft, int nTop, int nWidth, int nHeight, 
                        int nFontType, int nColumnCount, 
-                       int szColumnWidth[s_nMaxListItemColumn], bool bVisible, int nDepth )
+                       int arrColumnWidth[MAX_LIST_ITEM_COLUMN], bool bVisible, int nDepth )
 {
-    if ((m_pTexture = g_GameEngine.GetTexture(strTextureFile, nWidth, nHeight)) != NULL)
+    if ((m_lpTexture = g_GameEngine.GetTexture(pTextureFile, nWidth, nHeight)) != NULL)
     {
-        CDXWidget::Init(strWidgetName, nLeft, nTop, nWidth, 
+        CDXWidget::Init(pWidgetName, nLeft, nTop, nWidth, 
             nHeight, bVisible, nDepth); 
         m_nFontType = nFontType;
         m_nColumnCount = nColumnCount;
-        memcpy(m_szColumnWidth, szColumnWidth, sizeof(int) * s_nMaxListItemColumn);
+        memcpy(m_arrColumnWidth, arrColumnWidth, sizeof(int) * MAX_LIST_ITEM_COLUMN);
 
         for (int i = 0; i < nColumnCount; i++)
         {
-            m_szTextPos[i].left = nLeft;
-            m_szTextPos[i].right = nLeft + szColumnWidth[i];
-            m_szTextPos[i].top = nTop;
-            m_szTextPos[i].bottom = nTop + nHeight;
+            m_arrTextPos[i].left = nLeft;
+            m_arrTextPos[i].right = nLeft + arrColumnWidth[i];
+            m_arrTextPos[i].top = nTop;
+            m_arrTextPos[i].bottom = nTop + nHeight;
 
-            nLeft = m_szTextPos[i].right;
+            nLeft = m_arrTextPos[i].right;
         }
     }
 }
 
-void CDXListItem::SetText( const char *strText, int nColumn )
+void CDXListItem::SetText( const char *pText, int nColumn )
 {
     assert(nColumn >= 0 && nColumn < m_nColumnCount && 
-        strText != NULL && strlen(strText) > 0 && 
-        strlen(strText) < s_nMaxTextLen);
+        pText != NULL && strlen(pText) > 0 && 
+        strlen(pText) < MAX_ITEM_TEXT_LEN);
 
-    strcpy(m_szText[nColumn], strText);
+    strcpy(m_pszText[nColumn], pText);
 }
 
 void CDXListItem::SetNumber( int nNumber, int nColumn )
 {
     assert(nColumn >= 0 && nColumn < m_nColumnCount);
-    sprintf(m_szText[nColumn], "%d", nNumber);
+    sprintf(m_pszText[nColumn], "%d", nNumber);
 }
 
 void CDXListItem::ClearText( int nColumn )
 {
-    memset(m_szText[nColumn], 0, s_nMaxTextLen);
+    memset(m_pszText[nColumn], 0, MAX_ITEM_TEXT_LEN);
 }

@@ -27,21 +27,19 @@ class CDXImage :
 {
 public:
     CDXImage(void);
-    void Init(const char *strWidgetName, const char *strTextureFile,
+    void Init(const char *pWidgetName, const char *pTextureFile,
                 int nLeft, int nTop, 
                 int nWidth, int nHeight, 
                 bool bVisible, int nDepth);
     void SetTexture(const char *pPicture);
-    void SetTexture(LPDIRECT3DTEXTURE9 pTexture);
+    void SetTexture(LPDIRECT3DTEXTURE9 lpTexture);
     const char *GetTextureFile();
     virtual ~CDXImage(void);
     virtual void Render();
 
-    virtual void MsgResponse(HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam);
-
 private:
-    LPDIRECT3DTEXTURE9  m_pTexture;
-    char                m_szTextureFile[nMaxNameLen];
+    LPDIRECT3DTEXTURE9  m_lpTexture;
+    char                m_szTextureFile[MAX_NAME_LEN];
 };
 
 #endif

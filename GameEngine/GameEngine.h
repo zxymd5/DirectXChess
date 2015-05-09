@@ -17,8 +17,8 @@
  *	Created on:	2015-03-01
  */
 
-#ifndef CGAME_ENGINE_H
-#define CGAME_ENGINE_H
+#ifndef GAME_ENGINE_H
+#define GAME_ENGINE_H
 
 #include "Common.h"
 #include <map>
@@ -33,19 +33,19 @@ class CGameEngine
 public:
     CGameEngine(void);
     ~CGameEngine(void);
-    void                Init(HWND pHwnd, int nWidth, int nHeight);
+    void                Init(HWND hWnd, int nWidth, int nHeight);
     LPDIRECT3DDEVICE9   GetDevice();
     bool                BeginShow();
     bool                EndShow();
 
-    void                ParseFile(const char *strFileName);
+    void                ParseFile(const char *pFileName);
     void                Shutdown();
-    CDXWidget           *GetWidgetByName(const char *strName);
+    CDXWidget           *GetWidgetByName(const char *pName);
     void                AddWidget(CDXWidget *pWidget);
     LPD3DXFONT          GetFont(int nFontType);
-    LPDIRECT3DTEXTURE9  GetTexture( const char *strFileName, int &nWidth, int &nHeight);
-    void                CreateTexFromDir(const char *strDir);
-    void                StringToIntArray(const char *str, int szArr[], char chDelimiter );
+    LPDIRECT3DTEXTURE9  GetTexture( const char *pFileName, int &nWidth, int &nHeight);
+    void                CreateTexFromFiles(const char *pDirectory);
+    void                StringToIntArray(const char *pSrcStr, int arrDst[], char chDelimiter );
     void                Render();
 
 private:

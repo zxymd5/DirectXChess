@@ -26,7 +26,7 @@ CDXButton::CDXButton(void)
 
     for (int i = 0; i < STATE_COUNT; i++)
     {
-        m_szTexture[i] = NULL;
+        m_lpszTexture[i] = NULL;
     }
 }
 
@@ -34,17 +34,17 @@ CDXButton::~CDXButton(void)
 {
 }
 
-void CDXButton::Init(const char *strWidgetName, const char *strTextureFile,
-                     const char *strTextureFileSelected, const char *strTextureFileDisabled,
+void CDXButton::Init(const char *pWidgetName, const char *pTextureFile,
+                     const char *pTextureFileSelected, const char *pTextureFileDisabled,
                      int nLeft, int nTop, 
                      int nWidth, int nHeight, 
                      bool bVisible, int nDepth)
 {
-    m_szTexture[STATE_ACTIVE] = g_GameEngine.GetTexture(strTextureFile, nWidth, nHeight);
-    m_szTexture[STATE_SELECT] = g_GameEngine.GetTexture(strTextureFileSelected, nWidth, nHeight);
-    m_szTexture[STATE_DISABLE] = g_GameEngine.GetTexture(strTextureFileDisabled, nWidth, nHeight);
+    m_lpszTexture[STATE_ACTIVE] = g_GameEngine.GetTexture(pTextureFile, nWidth, nHeight);
+    m_lpszTexture[STATE_SELECT] = g_GameEngine.GetTexture(pTextureFileSelected, nWidth, nHeight);
+    m_lpszTexture[STATE_DISABLE] = g_GameEngine.GetTexture(pTextureFileDisabled, nWidth, nHeight);
 
-    CDXWidget::Init(strWidgetName, nLeft, nTop, nWidth, 
+    CDXWidget::Init(pWidgetName, nLeft, nTop, nWidth, 
                     nHeight, bVisible, nDepth); 
 }
 
@@ -54,14 +54,14 @@ void CDXButton::SetCurrState( int nCurrState )
     m_nCurrState = nCurrState;
 }
 
-void CDXButton::MsgResponse( HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam )
+void CDXButton::MsgResponse( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
     if (m_nCurrState == STATE_DISABLE)
     {
         return;
     }
 
-    switch(Message)
+    switch(uMsg)
     {
     case WM_LBUTTONDOWN:
         {
@@ -94,14 +94,14 @@ const int CDXButton::GetCurrState()
 
 void CDXButton::Render()
 {
-    if (m_szTexture[m_nCurrState])
+    if (m_lpszTexture[m_nCurrState])
     {
         if (!CDXWidget::PreRender())
         {
             return;
         }
 
-        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_szTexture[m_nCurrState])))
+        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_lpszTexture[m_nCurrState])))
         {
             MessageBox(NULL, "Set texture", "Set texture failed", MB_OK);
         }

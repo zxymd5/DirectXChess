@@ -23,11 +23,11 @@
 
 CDXWidget::CDXWidget(void)
 {
-    m_pVertexBuffer = NULL;
+    m_lpVertexBuffer = NULL;
     m_pfnCallback = NULL;
     m_pCallbackParam = NULL;
 
-    memset(m_szVertex, 0, 4 * sizeof(CUSTOMVETEX));
+    memset(m_arrVertex, 0, 4 * sizeof(CUSTOMVETEX));
 
     m_bVisible = false;
     m_nDepth = 0;
@@ -35,7 +35,7 @@ CDXWidget::CDXWidget(void)
     m_nTop = 0;
     m_nHeight = 0;
     m_nWidth = 0;
-    memset(m_szWidgetName, 0, nMaxNameLen);
+    memset(m_szWidgetName, 0, MAX_NAME_LEN);
 }
 
 CDXWidget::~CDXWidget(void)
@@ -45,15 +45,15 @@ CDXWidget::~CDXWidget(void)
 
 void CDXWidget::Shutdown()
 {
-    SAFE_RELEASE(m_pVertexBuffer);
+    SAFE_RELEASE(m_lpVertexBuffer);
 }
 
-void CDXWidget::Init(const char *strWidgetName, 
+void CDXWidget::Init(const char *pWidgetName, 
                      int nLeft, int nTop, 
                      DWORD dwWidth, DWORD dwHeight, 
                      bool bVisible, int nDepth)
 {
-    strcpy(m_szWidgetName, strWidgetName);
+    strcpy(m_szWidgetName, pWidgetName);
     m_bVisible = bVisible;
     m_nDepth = nDepth;
 
@@ -64,44 +64,44 @@ void CDXWidget::Init(const char *strWidgetName,
 
 void CDXWidget::ResetVertex()
 {
-    m_szVertex[0].stPos.x = static_cast<float>(m_nLeft);
-    m_szVertex[0].stPos.y = static_cast<float>(m_nTop);
-    m_szVertex[0].stPos.z = 0.5f;
-    m_szVertex[0].fRhw = 1;
-    m_szVertex[0].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
-    m_szVertex[0].u = 0.0f;
-    m_szVertex[0].v = 0.0f;
+    m_arrVertex[0].stPos.x = static_cast<float>(m_nLeft);
+    m_arrVertex[0].stPos.y = static_cast<float>(m_nTop);
+    m_arrVertex[0].stPos.z = 0.5f;
+    m_arrVertex[0].fRhw = 1;
+    m_arrVertex[0].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+    m_arrVertex[0].u = 0.0f;
+    m_arrVertex[0].v = 0.0f;
 
-    m_szVertex[1].stPos.x = static_cast<float>(m_nLeft + m_nWidth);
-    m_szVertex[1].stPos.y = static_cast<float>(m_nTop);
-    m_szVertex[1].stPos.z = 0.5f;
-    m_szVertex[1].fRhw = 1;
-    m_szVertex[1].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
-    m_szVertex[1].u = 1.0f;
-    m_szVertex[1].v = 0.0f;
+    m_arrVertex[1].stPos.x = static_cast<float>(m_nLeft + m_nWidth);
+    m_arrVertex[1].stPos.y = static_cast<float>(m_nTop);
+    m_arrVertex[1].stPos.z = 0.5f;
+    m_arrVertex[1].fRhw = 1;
+    m_arrVertex[1].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+    m_arrVertex[1].u = 1.0f;
+    m_arrVertex[1].v = 0.0f;
 
-    m_szVertex[2].stPos.x = static_cast<float>(m_nLeft);
-    m_szVertex[2].stPos.y = static_cast<float>(m_nTop + m_nHeight);
-    m_szVertex[2].stPos.z = 0.5f;
-    m_szVertex[2].fRhw = 1;
-    m_szVertex[2].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
-    m_szVertex[2].u = 0.0f;
-    m_szVertex[2].v = 1.0f;
+    m_arrVertex[2].stPos.x = static_cast<float>(m_nLeft);
+    m_arrVertex[2].stPos.y = static_cast<float>(m_nTop + m_nHeight);
+    m_arrVertex[2].stPos.z = 0.5f;
+    m_arrVertex[2].fRhw = 1;
+    m_arrVertex[2].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+    m_arrVertex[2].u = 0.0f;
+    m_arrVertex[2].v = 1.0f;
 
-    m_szVertex[3].stPos.x = static_cast<float>(m_nLeft + m_nWidth);
-    m_szVertex[3].stPos.y = static_cast<float>(m_nTop + m_nHeight);
-    m_szVertex[3].stPos.z = 0.5f;
-    m_szVertex[3].fRhw = 1;
-    m_szVertex[3].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
-    m_szVertex[3].u = 1.0f;
-    m_szVertex[3].v = 1.0f;
+    m_arrVertex[3].stPos.x = static_cast<float>(m_nLeft + m_nWidth);
+    m_arrVertex[3].stPos.y = static_cast<float>(m_nTop + m_nHeight);
+    m_arrVertex[3].stPos.z = 0.5f;
+    m_arrVertex[3].fRhw = 1;
+    m_arrVertex[3].dwColor = D3DCOLOR_ARGB(255, 255, 255, 255);
+    m_arrVertex[3].u = 1.0f;
+    m_arrVertex[3].v = 1.0f;
 }
 
 void CDXWidget::Render()
 {
-    g_GameEngine.GetDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CUSTOMVETEX));
+    g_GameEngine.GetDevice()->SetStreamSource(0, m_lpVertexBuffer, 0, sizeof(CUSTOMVETEX));
     g_GameEngine.GetDevice()->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1);
-    g_GameEngine.GetDevice()->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, m_szVertex, sizeof(CUSTOMVETEX));
+    g_GameEngine.GetDevice()->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, m_arrVertex, sizeof(CUSTOMVETEX));
 }
 
 void CDXWidget::SetVisible( bool bVisible )
@@ -117,23 +117,23 @@ void CDXWidget::SetPosRect( int nLeft, int nTop, DWORD dwWidth, DWORD dwHeight )
     m_nWidth = dwWidth;
 }
 
-void CDXWidget::SetPosRect( const RECT &Pos )
+void CDXWidget::SetPosRect( const RECT &rcPos )
 {
-    m_nLeft = Pos.left;
-    m_nTop = Pos.top;
-    m_nHeight = Pos.bottom - m_nTop;
-    m_nWidth = Pos.right - m_nLeft;
+    m_nLeft = rcPos.left;
+    m_nTop = rcPos.top;
+    m_nHeight = rcPos.bottom - m_nTop;
+    m_nWidth = rcPos.right - m_nLeft;
 }
 
-void CDXWidget::MsgResponse( HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam )
+void CDXWidget::MsgResponse( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 
 }
 
-void CDXWidget::SetCallBackInfo( CallBackFunc Func, void *CallBackParam )
+void CDXWidget::SetCallBackInfo( CallBackFunc pfnFunc, void *pCallBackParam )
 {
-    m_pfnCallback = Func;
-    m_pCallbackParam = CallBackParam;
+    m_pfnCallback = pfnFunc;
+    m_pCallbackParam = pCallBackParam;
 }
 
 bool CDXWidget::IsVisible() const
@@ -144,21 +144,21 @@ bool CDXWidget::IsVisible() const
 void CDXWidget::CreateVertexBuffer()
 {
     //´´½¨¶¥µã»º´æ
-    if (FAILED(g_GameEngine.GetDevice()->CreateVertexBuffer(sizeof(m_szVertex), 0, 
+    if (FAILED(g_GameEngine.GetDevice()->CreateVertexBuffer(sizeof(m_arrVertex), 0, 
         D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_DEFAULT, 
-        &m_pVertexBuffer, NULL)))
+        &m_lpVertexBuffer, NULL)))
     {
         return;
     }
 
     void *ptr;
-    if (FAILED(m_pVertexBuffer->Lock(0, sizeof(m_szVertex), (void**)&ptr, 0)))
+    if (FAILED(m_lpVertexBuffer->Lock(0, sizeof(m_arrVertex), (void**)&ptr, 0)))
     {
         return;
     }
 
-    memcpy(ptr, m_szVertex, sizeof(m_szVertex));
-    m_pVertexBuffer->Unlock();
+    memcpy(ptr, m_arrVertex, sizeof(m_arrVertex));
+    m_lpVertexBuffer->Unlock();
 }
 
 bool CDXWidget::PreRender()
@@ -179,13 +179,13 @@ const char * CDXWidget::GetWidgetName()
 
 RECT CDXWidget::GetPosRect()
 {
-    RECT Pos;
-    Pos.left = m_nLeft;
-    Pos.right = m_nLeft + m_nWidth;
-    Pos.top = m_nTop;
-    Pos.bottom = m_nTop + m_nHeight;
+    RECT rc;
+    rc.left = m_nLeft;
+    rc.right = m_nLeft + m_nWidth;
+    rc.top = m_nTop;
+    rc.bottom = m_nTop + m_nHeight;
 
-    return Pos;
+    return rc;
 }
 
 void CDXWidget::HandleFocus( bool bFocus )
@@ -209,7 +209,7 @@ void CDXWidget::SetTexture( const char *pPicture )
 
 }
 
-void CDXWidget::SetTexture( LPDIRECT3DTEXTURE9 pTexture )
+void CDXWidget::SetTexture( LPDIRECT3DTEXTURE9 lpTexture )
 {
     
 }

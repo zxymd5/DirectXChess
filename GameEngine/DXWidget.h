@@ -28,7 +28,7 @@ public:
     CDXWidget(void);
     virtual ~CDXWidget(void);
 
-    virtual void                Init(const char *strWidgetName, 
+    virtual void                Init(const char *pWidgetName, 
                                     int nLeft, int nTop, 
                                     DWORD dwWidth, DWORD dwHeight, 
                                     bool bVisible, int nDepth);
@@ -39,13 +39,13 @@ public:
 
     void                        CreateVertexBuffer();
 
-    void                        SetVisible(bool Visible);
+    void                        SetVisible(bool bVisible);
     bool                        IsVisible() const;
     void                        SetPosRect( int nLeft, int nTop, DWORD dwWidth, DWORD dwHeight );
-    void                        SetPosRect(const RECT &Pos);
+    void                        SetPosRect(const RECT &rcPos);
     void                        SetWidgetName(const char *pWidgetName);
     void                        SetTexture(const char *pPicture);
-    void                        SetTexture(LPDIRECT3DTEXTURE9 pTexture);
+    void                        SetTexture(LPDIRECT3DTEXTURE9 lpTexture);
     void                        SetDepth(int nDepth);
     virtual void                MsgResponse(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -58,8 +58,8 @@ public:
     const int                   GetDepth();
 
 protected:
-    LPDIRECT3DVERTEXBUFFER9     m_pVertexBuffer;
-    CUSTOMVETEX                 m_szVertex[4];
+    LPDIRECT3DVERTEXBUFFER9     m_lpVertexBuffer;
+    CUSTOMVETEX                 m_arrVertex[4];
 
     CallBackFunc                m_pfnCallback;
     void                        *m_pCallbackParam;
@@ -70,7 +70,7 @@ protected:
     int                         m_nTop;
     int                         m_nHeight;
     int                         m_nWidth;
-    char                        m_szWidgetName[nMaxNameLen];
+    char                        m_szWidgetName[MAX_NAME_LEN];
 };
 
 #endif

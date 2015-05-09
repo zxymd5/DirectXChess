@@ -17,8 +17,8 @@
  *	Created on:	2015-03-01
  */
 
-#ifndef CDX_BUTTON_H
-#define CDX_BUTTON_H
+#ifndef DX_BUTTON_H
+#define DX_BUTTON_H
 
 #include "DXWidget.h"
 
@@ -28,8 +28,8 @@ class CDXButton :
 public:
     CDXButton(void);
     virtual ~CDXButton(void);
-    void Init(const char *strWidgetName, const char *strTextureFile,
-              const char *strTextureFileSelected, const char *strTextureFileDisabled,
+    void Init(const char *pWidgetName, const char *pTextureFile,
+              const char *pTextureFileSelected, const char *pTextureFileDisabled,
               int nLeft, int nTop, 
               int nWidth, int nHeight, 
               bool bVisible, int nDepth);
@@ -38,11 +38,11 @@ public:
     virtual void HandleFocus(bool bFocus);
 
     virtual void Render();
-    virtual void MsgResponse(HWND Hwnd, UINT Message, WPARAM WParam, LPARAM LParam);
+    virtual void MsgResponse(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    int             m_nCurrState;
-    LPDIRECT3DTEXTURE9  m_szTexture[STATE_COUNT];
+    int                 m_nCurrState;
+    LPDIRECT3DTEXTURE9  m_lpszTexture[STATE_COUNT];
 };
 
 #endif

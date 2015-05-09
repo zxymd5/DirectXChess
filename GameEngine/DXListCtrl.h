@@ -22,19 +22,18 @@
 
 #include "dxwidget.h"
 #include "DXListItem.h"
-static const int s_nMaxListItem = 10;
 
 class CDXListCtrl : public CDXWidget
 {
 public:
     CDXListCtrl(void);
-    void Init(const char *strWidgetName, 
-              const char *strItemTextureFile,
-               const char *strListItemBasename,
+    void Init(const char *pWidgetName, 
+              const char *pItemTextureFile,
+               const char *pListItemBasename,
               int nLeft, int nTop, 
               int nWidth, int nHeight, 
                int nFontType, int nListItemCount, int nColumnCount,
-              int szColumnWidth[s_nMaxListItemColumn],
+              int arrColumnWidth[MAX_LIST_ITEM_COLUMN],
               bool bVisible, int nDepth);
 
     virtual void Shutdown();
@@ -44,7 +43,7 @@ public:
     virtual ~CDXListCtrl(void);
 
 private:
-    CDXListItem m_szListItem[s_nMaxListItem];
+    CDXListItem m_arrListItem[MAX_LIST_ITEM];
     int m_nListItemCount;
 };
 

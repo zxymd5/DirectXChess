@@ -29,14 +29,14 @@ CDXLabel::~CDXLabel(void)
 {
 }
 
-void CDXLabel::Init( const char *strWidgetName, const char *strTextureFile, 
+void CDXLabel::Init( const char *pWidgetName, const char *pTextureFile, 
                     int nLeft, int nTop, int nWidth, int nHeight, int nFontType,
                     int nTextLeft, int nTextTop, int nTextWidth, 
                     int nTextHeight, bool bVisible, int nDepth )
 {
-    if ((m_pTexture = g_GameEngine.GetTexture(strTextureFile, nWidth, nHeight)) != NULL)
+    if ((m_lpTexture = g_GameEngine.GetTexture(pTextureFile, nWidth, nHeight)) != NULL)
     {
-        CDXWidget::Init(strWidgetName, nLeft, nTop, nWidth, 
+        CDXWidget::Init(pWidgetName, nLeft, nTop, nWidth, 
             nHeight, bVisible, nDepth); 
         m_nTextLeft = nTextLeft;
         m_nTextTop = nTextTop;
@@ -48,24 +48,24 @@ void CDXLabel::Init( const char *strWidgetName, const char *strTextureFile,
 
 void CDXLabel::Render()
 {
-    if (m_pTexture && m_bVisible && m_strText.size())
+    if (m_lpTexture && m_bVisible && m_strText.size())
     {
         if (!CDXWidget::PreRender())
         {
             return;
         }
 
-        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_pTexture)))
+        if (FAILED(g_GameEngine.GetDevice()->SetTexture(0, m_lpTexture)))
         {
             MessageBox(NULL, "Set texture", "Set texture failed", MB_OK);
         }
 
-        RECT stTextPos;
-        stTextPos.left = m_nTextLeft;
-        stTextPos.top = m_nTextTop;
-        stTextPos.right = m_nTextLeft + m_nTextWidth;
-        stTextPos.bottom = m_nTextTop + m_nTextHeight;
-        g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_strText.c_str(), -1, &stTextPos, m_dwAlignment, m_dwFontColor);
+        RECT rcTextPos;
+        rcTextPos.left = m_nTextLeft;
+        rcTextPos.top = m_nTextTop;
+        rcTextPos.right = m_nTextLeft + m_nTextWidth;
+        rcTextPos.bottom = m_nTextTop + m_nTextHeight;
+        g_GameEngine.GetFont(m_nFontType)->DrawTextA(NULL, m_strText.c_str(), -1, &rcTextPos, m_dwAlignment, m_dwFontColor);
 
         CDXWidget::Render();
     }
@@ -86,16 +86,12 @@ void CDXLabel::SetFontColor( int nAlpha, int nRed, int nGreen, int nBlue )
     m_dwFontColor = D3DCOLOR_ARGB(nAlpha, nRed, nGreen, nBlue);
 }
 
-void CDXLabel::MsgResponse( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-}
-
 void CDXLabel::SetNumber( int nNumber )
 {
-    char strNumber[10];
-    memset(strNumber, 0, 10);
-    sprintf(strNumber, "%d", nNumber);
-    m_strText.assign(strNumber);
+    char szNumber[10];
+    memset(szNumber, 0, 10);
+    sprintf(szNumber, "%d", nNumber);
+    m_strText.assign(szNumber);
 }
 
 void CDXLabel::ClearText()

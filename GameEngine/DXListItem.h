@@ -22,21 +22,18 @@
 
 #include "dxlabel.h"
 
-static const int s_nMaxListItemColumn = 10;
-static const int s_nMaxTextLen = 32;
-
 class CDXListItem : public CDXLabel
 {
 public:
     CDXListItem(void);
     virtual ~CDXListItem(void);
-    void Init(const char *strWidgetName, 
-            const char *strTextureFile,
+    void Init(const char *pWidgetName, 
+            const char *pTextureFile,
             int nLeft, int nTop, 
             int nWidth, int nHeight, int nFontType,
-            int nColumnCount, int szColumnWidth[s_nMaxListItemColumn],
+            int nColumnCount, int arrColumnWidth[MAX_LIST_ITEM_COLUMN],
             bool bVisible, int nDepth);
-    void SetText(const char *strText, int nColumn);
+    void SetText(const char *pText, int nColumn);
     void SetNumber(int nNumber, int nColumn);
     void ClearText(int nColumn);
     virtual void Render();
@@ -44,9 +41,9 @@ public:
 private:
 
     int m_nColumnCount;
-    int m_szColumnWidth[s_nMaxListItemColumn];
-    char m_szText[s_nMaxListItemColumn][s_nMaxTextLen];
-    RECT m_szTextPos[s_nMaxListItemColumn];
+    int m_arrColumnWidth[MAX_LIST_ITEM_COLUMN];
+    char m_pszText[MAX_LIST_ITEM_COLUMN][MAX_ITEM_TEXT_LEN];
+    RECT m_arrTextPos[MAX_LIST_ITEM_COLUMN];
 };
 
 #endif

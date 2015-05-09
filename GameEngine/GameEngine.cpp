@@ -39,7 +39,7 @@ CGameEngine::~CGameEngine(void)
     SAFE_RELEASE(m_pD3DDevice);
 }
 
-void CGameEngine::Init( HWND pHwnd, int nWidth, int nHeight )
+void CGameEngine::Init( HWND hWnd, int nWidth, int nHeight )
 {
     // 创建IDirect3D9接口对象
     m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -72,7 +72,7 @@ void CGameEngine::Init( HWND pHwnd, int nWidth, int nHeight )
     d3dpp.MultiSampleType            = D3DMULTISAMPLE_NONE;
     d3dpp.MultiSampleQuality         = 0;
     d3dpp.SwapEffect                 = D3DSWAPEFFECT_DISCARD; 
-    d3dpp.hDeviceWindow              = pHwnd;
+    d3dpp.hDeviceWindow              = hWnd;
     d3dpp.Windowed                   = true;
     d3dpp.EnableAutoDepthStencil     = true; 
     d3dpp.AutoDepthStencilFormat     = D3DFMT_D24S8;
@@ -80,7 +80,7 @@ void CGameEngine::Init( HWND pHwnd, int nWidth, int nHeight )
     d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
     d3dpp.PresentationInterval       = D3DPRESENT_INTERVAL_IMMEDIATE;
 
-    HRESULT lRet = m_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, pHwnd, vp, &d3dpp, &m_pD3DDevice);
+    HRESULT lRet = m_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, vp, &d3dpp, &m_pD3DDevice);
 
     if (FAILED(lRet))
     {
@@ -121,21 +121,21 @@ bool CGameEngine::EndShow()
     return true;
 }
 
-void CGameEngine::ParseFile( const char *FileName )
+void CGameEngine::ParseFile( const char *pFileName )
 {
     CSimpleIni Ini;
-    Ini.LoadFile(FileName);
+    Ini.LoadFile(pFileName);
 
-    CSimpleIniA::TNamesDepend Sections;
-    Ini.GetAllSections(Sections);
+    CSimpleIniA::TNamesDepend lstSections;
+    Ini.GetAllSections(lstSections);
 
-    CSimpleIniA::TNamesDepend::iterator it = Sections.begin();
-    const char *strTextureFile;
-    const char *strTextureFileSelected;
-    const char *strTextureFileDisabled;
-    const char *strItemTextureFile;
-    const char *strListItemBasename;
-    const char *strColumnWidth;
+    CSimpleIniA::TNamesDepend::iterator it = lstSections.begin();
+    const char *pTextureFile;
+    const char *pTextureFileSelected;
+    const char *pTextureFileDisabled;
+    const char *pItemTextureFile;
+    const char *pListItemBasename;
+    const char *pColumnWidth;
 
     bool bVisible;
     int nDepth;
@@ -151,9 +151,9 @@ void CGameEngine::ParseFile( const char *FileName )
     int nFontType;
     int nColumnCount;
     int nListItemCount;
-    int szColumnWidth[s_nMaxListItemColumn];
+    int arrColumnWidth[MAX_LIST_ITEM_COLUMN];
 
-    for (; it != Sections.end(); ++it)
+    for (; it != lstSections.end(); ++it)
     {
         CDXWidget *pWidget = NULL;
 
@@ -163,9 +163,9 @@ void CGameEngine::ParseFile( const char *FileName )
             return;
         }
 
-        strTextureFile = Ini.GetValue(it->pItem, "TextureFile", NULL);
-        strTextureFileSelected = Ini.GetValue(it->pItem, "TextureFileSelected", NULL);
-        strTextureFileDisabled = Ini.GetValue(it->pItem, "TextureFileDisabled", NULL);
+        pTextureFile = Ini.GetValue(it->pItem, "TextureFile", NULL);
+        pTextureFileSelected = Ini.GetValue(it->pItem, "TextureFileSelected", NULL);
+        pTextureFileDisabled = Ini.GetValue(it->pItem, "TextureFileDisabled", NULL);
 
         bVisible = Ini.GetBoolValue(it->pItem, "Visible", false);
         nDepth = Ini.GetLongValue(it->pItem, "Depth", 0);
@@ -182,13 +182,13 @@ void CGameEngine::ParseFile( const char *FileName )
         nFontType = Ini.GetLongValue(it->pItem, "FontType", 0);
 
         //For listctrl
-        strItemTextureFile = Ini.GetValue(it->pItem, "ItemTextureFile", NULL);
-        strListItemBasename = Ini.GetValue(it->pItem, "ListItemBasename", NULL);
-        strColumnWidth = Ini.GetValue(it->pItem, "ColumnWidth", NULL);
-        if (strColumnWidth != NULL)
+        pItemTextureFile = Ini.GetValue(it->pItem, "ItemTextureFile", NULL);
+        pListItemBasename = Ini.GetValue(it->pItem, "ListItemBasename", NULL);
+        pColumnWidth = Ini.GetValue(it->pItem, "ColumnWidth", NULL);
+        if (pColumnWidth != NULL)
         {
-            memset(szColumnWidth, 0, sizeof(int) * s_nMaxListItemColumn);
-            StringToIntArray(strColumnWidth, szColumnWidth, ',');
+            memset(arrColumnWidth, 0, sizeof(int) * MAX_LIST_ITEM_COLUMN);
+            StringToIntArray(pColumnWidth, arrColumnWidth, ',');
         }
         nColumnCount = Ini.GetLongValue(it->pItem, "ColumnCount", 0);
         nListItemCount = Ini.GetLongValue(it->pItem, "ListItemCount", 0);
@@ -198,7 +198,7 @@ void CGameEngine::ParseFile( const char *FileName )
         case 1:         //CDXImage
             {
                 pWidget = new CDXImage;
-                ((CDXImage *)pWidget)->Init(it->pItem, strTextureFile, nLeft, nTop,
+                ((CDXImage *)pWidget)->Init(it->pItem, pTextureFile, nLeft, nTop,
                                             nWidth, nHeight, bVisible, nDepth);
             }
             break;
@@ -206,7 +206,7 @@ void CGameEngine::ParseFile( const char *FileName )
         case 2:         //CDXLabel
             {
                 pWidget = new CDXLabel;
-                ((CDXLabel *)pWidget)->Init(it->pItem, strTextureFile, nLeft, nTop,
+                ((CDXLabel *)pWidget)->Init(it->pItem, pTextureFile, nLeft, nTop,
                                             nWidth, nHeight, nFontType, nTextLeft, nTextTop,
                                             nTextWidth, nTextHeight, bVisible, nDepth);
             }
@@ -215,16 +215,16 @@ void CGameEngine::ParseFile( const char *FileName )
         case 3:         //CDXButton
             {
                 pWidget = new CDXButton;
-                ((CDXButton *)pWidget)->Init(it->pItem, strTextureFile, strTextureFileSelected, strTextureFileDisabled,
+                ((CDXButton *)pWidget)->Init(it->pItem, pTextureFile, pTextureFileSelected, pTextureFileDisabled,
                                             nLeft, nTop,nWidth, nHeight, bVisible, nDepth);
             }
             break;
         case 4:
             {
                 pWidget = new CDXListCtrl;
-                ((CDXListCtrl *)pWidget)->Init(it->pItem, strItemTextureFile, strListItemBasename, 
+                ((CDXListCtrl *)pWidget)->Init(it->pItem, pItemTextureFile, pListItemBasename, 
                                                 nLeft, nTop, nWidth, nHeight, nFontType, 
-                                                nListItemCount, nColumnCount, szColumnWidth,
+                                                nListItemCount, nColumnCount, arrColumnWidth,
                                                 bVisible, nDepth);
             }
 
@@ -264,12 +264,12 @@ void CGameEngine::Shutdown()
     m_mapWidget.clear();
 }
 
-CDXWidget *CGameEngine::GetWidgetByName( const char *strName )
+CDXWidget *CGameEngine::GetWidgetByName( const char *pName )
 {
     map<string, CDXWidget*>::iterator it;
     for (it = m_mapWidget.begin(); it != m_mapWidget.end(); ++it)
     {
-        if (it->first.compare(strName) == 0)
+        if (it->first.compare(pName) == 0)
         {
             return it->second;
         }
@@ -375,14 +375,14 @@ LPD3DXFONT CGameEngine::GetFont( int nFontType )
     return pFont;
 }
 
-LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth, int &nHeight)
+LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *pFileName, int &nWidth, int &nHeight)
 {
     LPDIRECT3DTEXTURE9 pTexture = NULL;
 
     vector<TextureInfo *>::iterator it = m_vecTexture.begin();
     for (; it != m_vecTexture.end(); ++it)
     {
-        if (strcmp(strFileName, (*it)->szFileName) == 0)
+        if (strcmp(pFileName, (*it)->szFileName) == 0)
         {
             pTexture = (*it)->pTexture;
             nHeight = (*it)->nHeight;
@@ -395,7 +395,7 @@ LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth
     {
         TextureInfo *pInfo = new TextureInfo;
         ZeroMemory(pInfo, sizeof(TextureInfo));
-        strcpy(pInfo->szFileName, strFileName);
+        strcpy(pInfo->szFileName, pFileName);
         D3DXIMAGE_INFO ImageInfo;
         ZeroMemory(&ImageInfo, sizeof(ImageInfo));
 
@@ -438,9 +438,9 @@ LPDIRECT3DTEXTURE9 CGameEngine::GetTexture( const char *strFileName, int &nWidth
     return pTexture;
 }
 
-void CGameEngine::StringToIntArray( const char *str, int szArr[], char chDelimiter )
+void CGameEngine::StringToIntArray( const char *pSrcStr, int arrDst[], char chDelimiter )
 {
-    const char *p = str;
+    const char *p = pSrcStr;
     int i = 0;
     int j = 0;
     char strDst[256];
@@ -469,7 +469,7 @@ void CGameEngine::StringToIntArray( const char *str, int szArr[], char chDelimit
     {
         if (*p == ',')
         {
-            szArr[i] = atoi(strDigit);
+            arrDst[i] = atoi(strDigit);
             i++;
             memset(strDigit, 0, 5);
             j = 0;
@@ -482,17 +482,17 @@ void CGameEngine::StringToIntArray( const char *str, int szArr[], char chDelimit
 
         p++;
     }
-    szArr[i] = atoi(strDigit);
+    arrDst[i] = atoi(strDigit);
 }
 
-void CGameEngine::CreateTexFromDir( const char *strDir )
+void CGameEngine::CreateTexFromFiles( const char *pDirectory )
 {
     WIN32_FIND_DATA FindFileData;
     HANDLE hListFile;
 
     char szFilePath[MAX_PATH];
     char szFileFullPath[MAX_PATH];
-    strcpy(szFilePath, strDir);
+    strcpy(szFilePath, pDirectory);
     strcat(szFilePath, "*.png");
 
     hListFile = FindFirstFile(szFilePath, &FindFileData);
@@ -506,7 +506,7 @@ void CGameEngine::CreateTexFromDir( const char *strDir )
         {
             TextureInfo *pInfo = new TextureInfo;
             ZeroMemory(pInfo, sizeof(TextureInfo));
-            sprintf(pInfo->szFileName, "%s%s", strDir, FindFileData.cFileName);
+            sprintf(pInfo->szFileName, "%s%s", pDirectory, FindFileData.cFileName);
             D3DXIMAGE_INFO ImageInfo;
             ZeroMemory(&ImageInfo, sizeof(ImageInfo));
 

@@ -31,32 +31,32 @@ CDXListCtrl::~CDXListCtrl(void)
 
 void CDXListCtrl::Shutdown()
 {
-    for (int i = 0; i < s_nMaxListItem; i++)
+    for (int i = 0; i < MAX_LIST_ITEM; i++)
     {
-        m_szListItem[i].Shutdown();
+        m_arrListItem[i].Shutdown();
     }
 }
 
-void CDXListCtrl::Init( const char *strWidgetName, const char *strItemTextureFile, const char *strListItemBasename,
+void CDXListCtrl::Init( const char *pWidgetName, const char *pItemTextureFile, const char *pListItemBasename,
                        int nLeft, int nTop, int nWidth, int nHeight, int nFontType, 
                        int nListItemCount, int nColumnCount,
-                       int szColumnWidth[s_nMaxListItemColumn], 
+                       int arrColumnWidth[MAX_LIST_ITEM_COLUMN], 
                        bool bVisible, int nDepth )
 {
-    strcpy(m_szWidgetName, strWidgetName);
+    strcpy(m_szWidgetName, pWidgetName);
     m_bVisible = bVisible;
     m_nDepth = nDepth;
     m_nListItemCount = nListItemCount;
     int nListItemHeight = nHeight / nListItemCount;
-    char strListItemName[50];
+    char szListItemName[50];
 
     for (int i = 0; i < nListItemCount; i++)
     {
-        sprintf(strListItemName, "%s%d", strListItemBasename, i);
-        m_szListItem[i].Init(strListItemName, strItemTextureFile, 
+        sprintf(szListItemName, "%s%d", pListItemBasename, i);
+        m_arrListItem[i].Init(szListItemName, pItemTextureFile, 
                             nLeft, nTop, nWidth, nHeight, 
                             nFontType, nColumnCount, 
-                            szColumnWidth, 
+                            arrColumnWidth, 
                             bVisible, nDepth);
 
         nTop += nListItemHeight;
@@ -67,7 +67,7 @@ void CDXListCtrl::Render()
 {
     for (int i = 0; i < m_nListItemCount; i++)
     {
-        m_szListItem[i].Render();
+        m_arrListItem[i].Render();
     }
 }
 
@@ -79,5 +79,5 @@ int CDXListCtrl::GetListItemCount() const
 CDXListItem & CDXListCtrl::GetListItem( int nListItemIndex )
 {
     assert(nListItemIndex < m_nListItemCount && nListItemIndex >= 0);
-    return m_szListItem[nListItemIndex];
+    return m_arrListItem[nListItemIndex];
 }

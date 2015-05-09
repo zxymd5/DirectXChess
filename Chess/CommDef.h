@@ -66,8 +66,9 @@ static const int s_nBlackDead = 1;
 static const int s_nRedDead = 2;
 static const int s_nBlackSide = 1;
 static const int s_nRedSide = 2;
-static const int s_nCompititorMachine = 1;
-static const int s_nCompititorHuman = 2;
+static const int COMPITITOR_MACHINE = 1;
+static const int COMPITITOR_HUMAN = 2;
+static const int COMPITITOR_NETWORK = 3;
 
 static const int BLACK_GENERAL = 1;     //ºÚ½«
 static const int BLACK_CHARIOT = 2;     //ºÚ³µ

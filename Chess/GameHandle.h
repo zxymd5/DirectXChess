@@ -37,8 +37,12 @@ public:
     void ResetChessManLayout();
     void GetChessMan(int szChessMan[][CHESSBOARD_COLUMN]);
     void DoMove(int nRow, int nColumn);
+
+    void ApplyCompleteMove();
+
     bool BlackDoMove(int nRow, int nColumn);
     bool RedDoMove(int nRow, int nColumn);
+    void ComputerMove();
     const MoveRoute &GetCurrentMoveRoute();
     void ResetMoveRoute(MoveRoute &stRoute);
     void SetGameResult(int nGameResult);

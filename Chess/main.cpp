@@ -55,9 +55,10 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             MoveWindow(hWnd, rt.left, rt.top, rt.right - rt.left, rt.bottom - rt.top, TRUE);
 
             HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
-            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"电脑");
-            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"人");
-            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nCompetitor - 1), 0);
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"人机对战");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"自己下棋");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"网络对战");
+            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nGameType - 1), 0);
 
             hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
             SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"黑");
@@ -78,7 +79,7 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (wParam == IDOK)
             {
                 HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
-                g_GameSettings.m_nCompetitor = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
+                g_GameSettings.m_nGameType = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
 
                 hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIORSIDE);
                 int nCompetitorSide = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;

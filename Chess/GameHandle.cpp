@@ -80,7 +80,33 @@ void CGameHandle::GetChessMan( int szChessMan[][CHESSBOARD_COLUMN] )
     memcpy(szChessMan, m_szChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
 }
 
-//to do
+//电脑走棋
+void CGameHandle::ComputerMove()
+{
+    list<MoveRoute> lstMoveRoute;
+    m_clGenerator.GenerateAllMoveRoute(m_szChessMan, g_GameSettings.m_nCompetitorSide, lstMoveRoute);
+
+    MoveRoute stMoveRoute = lstMoveRoute.back();
+    m_stCurrentMoveRoute.stFromPos.nRow = stMoveRoute.stFromPos.nRow;
+    m_stCurrentMoveRoute.stFromPos.nColumn = stMoveRoute.stFromPos.nColumn;
+    m_stCurrentMoveRoute.nMovingChessMan = stMoveRoute.nMovingChessMan;
+
+    Notify(EVENT_UPDATE_MOVE);
+
+    m_stCurrentMoveRoute.stToPos.nRow = stMoveRoute.stToPos.nRow;
+    m_stCurrentMoveRoute.stToPos.nColumn = stMoveRoute.stToPos.nColumn;
+    m_stCurrentMoveRoute.nKilledChessMan = stMoveRoute.nKilledChessMan;
+    m_stCurrentMoveRoute.bAttackGeneral = stMoveRoute.bAttackGeneral;
+    m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
+                                            m_stCurrentMoveRoute.stFromPos.nColumn, 
+                                            m_stCurrentMoveRoute.stToPos.nRow, 
+                                            m_stCurrentMoveRoute.stToPos.nColumn, 
+                                            m_stCurrentMoveRoute.strMoveStepAlpha);
+
+    ApplyCompleteMove();
+}
+
+//人走棋
 void CGameHandle::DoMove(int nRow, int nColumn)
 {
     if ((nRow == -1 || nColumn == -1) || 
@@ -93,8 +119,6 @@ void CGameHandle::DoMove(int nRow, int nColumn)
         return;
     }
 
-    int nChessMan = m_szChessMan[nRow][nColumn];
-    int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
     bool bLegal = false;
     
     if (m_nCurrentTurn == RED)
@@ -111,25 +135,12 @@ void CGameHandle::DoMove(int nRow, int nColumn)
         //如果走了完整的一步
         if (IsCompleteMoveRoute(m_stCurrentMoveRoute))
         {
-            m_stCurrentMoveRoute.nKilledChessMan = m_szChessMan[nRow][nColumn];
-            m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = 0;
-            m_szChessMan[nRow][nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
-            
-            //判断是否将对方置于死地
-            if (m_stCurrentMoveRoute.bAttackGeneral)
-            {
-                if (m_clGenerator.IsGeneralDead(m_szChessMan, m_nCurrentTurn == BLACK ? RED : BLACK))
-                {
-                    m_nWhoIsDead = m_nCurrentTurn == BLACK ? RED : BLACK;
-                    m_nGameResult = m_nCurrentTurn;
-                }
-            }
+            ApplyCompleteMove();
 
-            m_lstMoveRoute.push_back(m_stCurrentMoveRoute);
-            m_nCurrentTurn = (m_nCurrentTurn == BLACK ? RED : BLACK);
-            Notify(EVENT_UPDATE_MOVE);
-            ResetMoveRoute(m_stCurrentMoveRoute);
-            m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
+            if (m_nGameResult == -1 && g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+            {
+                ComputerMove();
+            }
         }
         else
         {
@@ -142,18 +153,17 @@ void CGameHandle::DoMove(int nRow, int nColumn)
     }
 }
 
-
 bool CGameHandle::BlackDoMove( int nRow, int nColumn )
 {
-    int nChessMan = m_szChessMan[nRow][nColumn];
+    int nKilledChessMan = m_szChessMan[nRow][nColumn];
     int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
     bool bLegal = false;
 
     if (nMovingChessMan == 0)
     {
-        if (IsBlackSide(nChessMan))
+        if (IsBlackSide(nKilledChessMan))
         {
-            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.nMovingChessMan = nKilledChessMan;
             m_stCurrentMoveRoute.stFromPos.nRow = nRow;
             m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
             bLegal = true;
@@ -161,9 +171,9 @@ bool CGameHandle::BlackDoMove( int nRow, int nColumn )
     }
     else
     {
-        if (IsBlackSide(nChessMan))
+        if (IsBlackSide(nKilledChessMan))
         {
-            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.nMovingChessMan = nKilledChessMan;
             m_stCurrentMoveRoute.stFromPos.nRow = nRow;
             m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
             bLegal = true;
@@ -189,9 +199,10 @@ bool CGameHandle::BlackDoMove( int nRow, int nColumn )
                 }
 
                 m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
-                m_szChessMan[nRow][nColumn] = nChessMan;
+                m_szChessMan[nRow][nColumn] = nKilledChessMan;
                 if (bLegal)
                 {
+                    m_stCurrentMoveRoute.nKilledChessMan = nKilledChessMan;
                     m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
                         m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
                         m_stCurrentMoveRoute.strMoveStepAlpha);
@@ -212,15 +223,15 @@ bool CGameHandle::BlackDoMove( int nRow, int nColumn )
 
 bool CGameHandle::RedDoMove( int nRow, int nColumn )
 {
-    int nChessMan = m_szChessMan[nRow][nColumn];
+    int nKilledChessMan = m_szChessMan[nRow][nColumn];
     int nMovingChessMan = m_stCurrentMoveRoute.nMovingChessMan;
     bool bLegal = false;
 
     if (nMovingChessMan == 0)
     {
-        if (IsRedSide(nChessMan))
+        if (IsRedSide(nKilledChessMan))
         {
-            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.nMovingChessMan = nKilledChessMan;
             m_stCurrentMoveRoute.stFromPos.nRow = nRow;
             m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
             bLegal = true;
@@ -228,9 +239,9 @@ bool CGameHandle::RedDoMove( int nRow, int nColumn )
     }
     else
     {
-        if (IsRedSide(nChessMan))
+        if (IsRedSide(nKilledChessMan))
         {
-            m_stCurrentMoveRoute.nMovingChessMan = nChessMan;
+            m_stCurrentMoveRoute.nMovingChessMan = nKilledChessMan;
             m_stCurrentMoveRoute.stFromPos.nRow = nRow;
             m_stCurrentMoveRoute.stFromPos.nColumn = nColumn;
             bLegal = true;
@@ -256,10 +267,11 @@ bool CGameHandle::RedDoMove( int nRow, int nColumn )
                 }
 
                 m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
-                m_szChessMan[nRow][nColumn] = nChessMan;
+                m_szChessMan[nRow][nColumn] = nKilledChessMan;
 
                 if (bLegal)
                 {
+                    m_stCurrentMoveRoute.nKilledChessMan = nKilledChessMan;
                     m_clGenerator.GetChessManMoveStepAlpha(m_szChessMan, m_stCurrentMoveRoute.stFromPos.nRow,
                         m_stCurrentMoveRoute.stFromPos.nColumn, nRow, nColumn, 
                         m_stCurrentMoveRoute.strMoveStepAlpha);
@@ -276,6 +288,30 @@ bool CGameHandle::RedDoMove( int nRow, int nColumn )
 
     return bLegal;
 }
+
+
+void CGameHandle::ApplyCompleteMove()
+{
+    m_szChessMan[m_stCurrentMoveRoute.stFromPos.nRow][m_stCurrentMoveRoute.stFromPos.nColumn] = 0;
+    m_szChessMan[m_stCurrentMoveRoute.stToPos.nRow][m_stCurrentMoveRoute.stToPos.nColumn] = m_stCurrentMoveRoute.nMovingChessMan;
+
+    //判断是否将对方置于死地
+    if (m_stCurrentMoveRoute.bAttackGeneral)
+    {
+        if (m_clGenerator.IsGeneralDead(m_szChessMan, m_nCurrentTurn == BLACK ? RED : BLACK))
+        {
+            m_nWhoIsDead = m_nCurrentTurn == BLACK ? RED : BLACK;
+            m_nGameResult = m_nCurrentTurn;
+        }
+    }
+
+    m_lstMoveRoute.push_back(m_stCurrentMoveRoute);
+    m_nCurrentTurn = (m_nCurrentTurn == BLACK ? RED : BLACK);
+    Notify(EVENT_UPDATE_MOVE);
+    ResetMoveRoute(m_stCurrentMoveRoute);
+    m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
+}
+
 
 const MoveRoute & CGameHandle::GetCurrentMoveRoute()
 {
@@ -350,6 +386,11 @@ void CGameHandle::FallBack()
 
         Notify(EVENT_FALLBACK);
         ResetMoveRoute(m_stCurrentMoveRoute);
+
+        if (g_GameSettings.m_nCompetitorSide == m_nCurrentTurn && g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+        {
+            ComputerMove();
+        }
     }
 }
 
@@ -765,4 +806,3 @@ void CGameHandle::OnLose()
         Notify(EVENT_GAME_RESULT);
     }
 }
-

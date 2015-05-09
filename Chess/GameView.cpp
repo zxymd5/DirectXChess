@@ -454,7 +454,7 @@ void CGameView::HandleLButtonUp()
     int nRow = -1;
     int nColumn = -1;
 
-    if (!(g_GameSettings.m_nCompetitor == s_nCompititorMachine && 
+    if (!((g_GameSettings.m_nGameType == COMPITITOR_MACHINE || g_GameSettings.m_nGameType == COMPITITOR_NETWORK) && 
         g_GameHandle.GetCurrentTurn() == g_GameSettings.m_nCompetitorSide))
     {
         if (GetCoordinate (pt, nRow, nColumn, g_GameSettings.m_nCompetitorSide))
@@ -640,6 +640,13 @@ void CGameView::OnNewGame( void *pParam )
     pGameView->m_clSoundPlayer.Play(AUDIO_NEW_GAME);
 
     pGameView->ClearHisotryDisplay();
+
+    //判断是否电脑先走，如果是则电脑走棋
+    if (g_GameSettings.m_nAhead == g_GameSettings.m_nCompetitorSide &&
+        g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+    {
+        g_GameHandle.ComputerMove();
+    }
 }
 
 void CGameView::OnOpen( void *pParam )

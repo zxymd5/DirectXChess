@@ -1,20 +1,20 @@
-/* 		
- * 	This program is free software: you can redistribute it and/or modify
- * 	it under the terms of the GNU General Public License as published by
- * 	the Free Software Foundation, either version 3 of the License, or
- * 	(at your option) any later version.
+/*      
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  File:		CommDef.h
- *  Author:		Richard Zou
- *	Created on:	2015-03-01
+ *  File:       CommDef.h
+ *  Author:     Richard Zou
+ *  Created on: 2015-03-01
  */
 
 #ifndef COMM_DEF_H
@@ -36,8 +36,7 @@ static const int CHESSMAN_LEN = 58;
 static const int CHESSBOARD_CELL_LEN = 60;
 static const int CHESSBOARD_ROW = 10;
 static const int CHESSBOARD_COLUMN = 9;
-static const int MAX_MOVEROUTE_HISTORY = 100;
-static const int MAX_MOVEROUTE = 100;
+static const int MOVE_STEP_PER_PAGE = 10;
 
 static const char *SETTINGS_FILE = "Config.ini";
 static const char *WIDGET_CONFIG_FILE = "Chess.ini";
@@ -313,6 +312,5 @@ static const int EVENT_FALLBACK = 4;
 static const int EVENT_LOAD_CHESSMAN = 5;
 static const int EVENT_GAME_RESULT = 6;
 static const int EVENT_ILLEGAL_MOVE = 7;
-static const int MOVE_STEP_PER_PAGE = 10;
 
 #endif

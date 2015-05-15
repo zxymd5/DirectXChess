@@ -7,7 +7,6 @@
 #define IDC_COMBO_COMPITIOR             1005
 #define IDC_COMBO_COMPITIORSIDE         1006
 #define IDC_COMBO_AHEAD                 1007
-#define IDC_EDIT1                       1008
 #define IDC_STEPTIMEEDIT                1008
 
 // Next default values for new objects

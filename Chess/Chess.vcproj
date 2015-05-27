@@ -199,7 +199,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RC4.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Subject.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Zobrist.cpp"
 				>
 			</File>
 		</Filter>
@@ -237,11 +245,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RC4.h"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
 				RelativePath=".\Subject.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Zobrist.h"
 				>
 			</File>
 		</Filter>

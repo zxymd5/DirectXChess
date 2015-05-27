@@ -66,7 +66,7 @@ static const int COMPITITOR_NETWORK = 3;
 static const int BLACK_GENERAL = 1;     //黑将
 static const int BLACK_CHARIOT = 2;     //黑车
 static const int BLACK_HORSE = 3;       //黑马
-static const int BLACK_CANON = 4;       //黑炮
+static const int BLACK_CANNON = 4;       //黑炮
 static const int BLACK_ADVISOR = 5;     //黑士
 static const int BLACK_MINISTER = 6;    //黑象
 static const int BLACK_SOLDIER = 7;     //黑卒
@@ -80,6 +80,7 @@ static const int RED_MINISTER = 13;     //红相
 static const int RED_SOLDIER = 14;      //红兵
 
 static const char *CHESSMAN_CODE = "krncabpKRNCABP"; //将车马炮士象卒帅车马炮仕相兵
+static const int MAX_SEARCH_DEPTH = 3;
 
 static const char *ALL_CHESSMAN_NAME[] = 
 {
@@ -93,7 +94,7 @@ static const int DEFAULT_CHESSBOARD_LAYOUT[CHESSBOARD_ROW][CHESSBOARD_COLUMN] =
 {
     {BLACK_CHARIOT, BLACK_HORSE, BLACK_MINISTER, BLACK_ADVISOR, BLACK_GENERAL, BLACK_ADVISOR, BLACK_MINISTER, BLACK_HORSE, BLACK_CHARIOT},
     {0,             0,           0,              0,             0,             0,             0,              0,           0            },
-    {0,             BLACK_CANON, 0,              0,             0,             0,             0,              BLACK_CANON, 0            },
+    {0,             BLACK_CANNON, 0,              0,             0,             0,             0,              BLACK_CANNON, 0            },
     {BLACK_SOLDIER, 0,           BLACK_SOLDIER,  0,             BLACK_SOLDIER, 0,             BLACK_SOLDIER,  0,           BLACK_SOLDIER},
     {0,             0,           0,              0,             0,             0,             0,              0,           0            },
 
@@ -241,6 +242,7 @@ struct MoveRoute
     ChessManPosition stFromPos;
     ChessManPosition stToPos;
     char szMoveStepAlpha[5];
+    DWORD dwKey;
 
     MoveRoute()
     {
@@ -248,6 +250,7 @@ struct MoveRoute
         nMovingChessMan = 0;
         bAttackGeneral = false;
         memset(szMoveStepAlpha, 0, 5);
+        dwKey = 0;
     }
 };
 

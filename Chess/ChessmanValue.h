@@ -28,15 +28,8 @@ const int DRAW_VALUE = 20;                  //和棋时返回的分数（取负值）
 const int ADVANCED_VALUE = 3;               //先行权分值
 const int RANDOM_MASK = 7;                  //随机性分值
 
-//MVV/LVA每种子力的价值
-static int arrMvvLva[14] = 
-{
-    5, 4, 3, 3, 1, 1, 2,
-    5, 4, 3, 3, 1, 1, 2
-};
-
 //子力位置价值表
-static int arrChessManValue[CHESSMAN_TYPE_COUNT][CHESSBOARD_ROW][CHESSBOARD_COLUMN]
+const int CHESSMAN_VALUE[CHESSMAN_TYPE_COUNT][CHESSBOARD_ROW][CHESSBOARD_COLUMN] = 
 {
     //黑将
     {

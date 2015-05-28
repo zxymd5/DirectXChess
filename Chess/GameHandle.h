@@ -72,6 +72,8 @@ public:
     int MinMaxSearch(int nDepth, MoveRoute &stRoute);
     int Evaluate();
     bool IsMySide();
+    int RepStatus(int nRecur);              //÷ÿ∏¥æ÷√ÊºÏ≤‚
+    int RepValue(int nRepStatus);
 
     static unsigned int __stdcall SaveGameFunc(void *pParam);
     static unsigned int __stdcall ComputerMove(void *pParam);

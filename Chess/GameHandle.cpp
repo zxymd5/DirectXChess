@@ -324,6 +324,21 @@ void CGameHandle::ApplyCompleteMove()
         }
     }
 
+    int nRepStatus = RepStatus(3);
+    if (nRepStatus > 0)
+    {
+        int nRepVal = RepValue(nRepStatus);
+        if (nRepVal > WIN_VALUE)
+        {
+            m_nGameResult = m_nCurrentTurn == BLACK ? RED : BLACK;
+        }
+
+        if (nRepVal < -WIN_VALUE)
+        {
+            m_nGameResult = m_nCurrentTurn;
+        }
+    }
+
     Notify(EVENT_UPDATE_MOVE);
     ResetMoveRoute(m_stCurrentMoveRoute);
     m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
@@ -1008,4 +1023,46 @@ void CGameHandle::DoMakeMove(MoveRoute &stMoveRoute, bool bRecord)
 bool CGameHandle::IsMySide()
 {
     return !(g_GameSettings.m_nCompetitorSide == m_nCurrentSearchMoveTurn);
+}
+
+int CGameHandle::RepStatus( int nRecur )
+{
+    bool bSelfSide = true;
+    bool bPerpCheck = true;
+    bool bOppPerpCheck = true;
+
+    list<MoveRoute>::reverse_iterator rit = m_lstMoveRoute.rbegin();
+
+    while(rit != m_lstMoveRoute.rend() && rit->nKilledChessMan == 0)
+    {
+        if (bSelfSide)
+        {
+            bPerpCheck = bPerpCheck && rit->bAttackGeneral;
+            if (rit->dwKey == m_stCurrentMoveRoute.dwKey)
+            {
+                nRecur--;
+                if (nRecur == 0)
+                {
+                    return 1 + (bPerpCheck ? 2 : 0) + (bOppPerpCheck ? 4 : 0);
+                }
+            }
+        }
+        else
+        {
+            bOppPerpCheck = bOppPerpCheck && rit->bAttackGeneral;
+        }
+        bSelfSide = !bSelfSide;
+        ++rit;
+    }
+
+    return 0;
+}
+
+int CGameHandle::RepValue( int nRepStatus )
+{
+    int nRetVal = 0;
+    nRetVal = ((nRepStatus & 2) == 0 ? 0 :  - BAN_VALUE) + 
+              ((nRepStatus & 4) == 0 ? 0 : BAN_VALUE);
+
+    return nRetVal == 0 ? (m_lstMoveRoute.size() & 1 == 0 ? -DRAW_VALUE : DRAW_VALUE) : nRetVal;
 }

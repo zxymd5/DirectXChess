@@ -23,6 +23,7 @@
 
 const int MAX_MSG_SIZE = 1024;
 const int MSG_GAME_INFO = 1;
+const int MSG_NEW_GAME = 2;
 
 struct BaseNetworkMsg
 {
@@ -43,6 +44,7 @@ struct MsgGameInfo : public BaseNetworkMsg
 
     MsgGameInfo()
     {
+        nMsgID = 1;
         nMySide = 0;
         nAhead = 0;
         nStepTime = 0;
@@ -50,5 +52,16 @@ struct MsgGameInfo : public BaseNetworkMsg
     }
 };
 
+struct MsgNewGame : public BaseNetworkMsg
+{
+    int arrChessman[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+
+    MsgNewGame()
+    {
+        nMsgID = 2;
+        memset(arrChessman, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    }
+
+};
 
 #endif

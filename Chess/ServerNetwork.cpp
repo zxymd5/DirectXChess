@@ -36,9 +36,10 @@ bool CServerNetwork::InitServer( const char *pIpAddr, int nPort )
     CSockWrap::Setsockopt(m_nListenFd, SOL_SOCKET, SO_REUSEADDR, (const char *)&On, sizeof(On));
     
     sockaddr_in stServerAddr;
-    CSockWrap::GetRemotAddrInfo(pIpAddr, nPort, stServerAddr);
+    //CSockWrap::GetRemotAddrInfo(pIpAddr, nPort, stServerAddr);
+    CSockWrap::GetLocalAddrInfo(nPort, stServerAddr);
     CSockWrap::Bind(m_nListenFd, (const sockaddr *)&stServerAddr, sizeof(sockaddr));
-    CSockWrap::Listen(m_nListenFd, 1);
+    CSockWrap::Listen(m_nListenFd, 5);
 
     return true;
 }

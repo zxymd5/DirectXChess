@@ -199,6 +199,7 @@ LRESULT WINAPI MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     g_GameView.MsgResponse(hWnd, uMsg, wParam, lParam);
+    g_GameHandle.ProcessMessage();
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }

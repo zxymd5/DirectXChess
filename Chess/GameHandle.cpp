@@ -24,7 +24,6 @@
 #include <assert.h>
 #include <fstream>
 #include "../Include/sqlite3.h"
-#include "NetworkMsgDef.h"
 
 CGameHandle g_GameHandle;
 
@@ -68,6 +67,8 @@ void CGameHandle::Init()
         {
             m_clClient.InitClient();
         }
+
+        ::InitializeCriticalSection(&m_csMsgQue);
     }
     else if (g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
     {
@@ -1076,9 +1077,23 @@ int CGameHandle::RepValue( int nRepStatus )
     return nRetVal == 0 ? ((m_lstMoveRoute.size() & 1) == 0 ? -DRAW_VALUE : DRAW_VALUE) : nRetVal;
 }
 
-void CGameHandle::ProcessMessage( void *pMsg )
+void CGameHandle::ProcessMessage( )
 {
-    
+    BaseNetworkMsg *pMsg = NULL;
+    while((pMsg = DequeMsg()) != NULL)
+    {
+        switch(pMsg->nMsgID)
+        {
+        case MSG_GAME_INFO:
+            ProcessGameInfoMessage(pMsg);
+            break;
+        case MSG_NEW_GAME:
+            ProcessNewGameMessage(pMsg);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
@@ -1096,7 +1111,7 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 int nSize = pGameHandle->m_clServer.RecvMsg(szMsg);
                 if (nSize > 0)
                 {
-                    pGameHandle->ProcessMessage((void *)szMsg);
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
                 }
             }
         }
@@ -1107,7 +1122,7 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 int nSize = pGameHandle->m_clClient.RecvMsg(szMsg);
                 if (nSize > 0)
                 {
-                    pGameHandle->ProcessMessage((void *)szMsg);
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
                 }
             }
         }
@@ -1159,6 +1174,7 @@ void CGameHandle::Shutdown()
             m_clClient.StopClient();
         }
         CloseHandle(m_hThreadNetwork);
+        DeleteCriticalSection(&m_csMsgQue);
     }
     else if(g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
     {
@@ -1176,4 +1192,55 @@ void CGameHandle::SendGameInfoMsg()
     stMsg.nAhead = g_GameSettings.m_nAhead;
     memcpy(stMsg.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
     m_clServer.SendMsg((char *)&stMsg, sizeof(stMsg));
+}
+
+void CGameHandle::ProcessGameInfoMessage( void *pMsg )
+{
+    MsgGameInfo *pMsgGameInfo = (MsgGameInfo *)pMsg;
+
+    g_GameSettings.m_nCompetitorSide = pMsgGameInfo->nMySide == BLACK ? RED : BLACK;
+    g_GameSettings.m_nAhead = pMsgGameInfo->nAhead;
+    g_GameSettings.m_nStepTime = pMsgGameInfo->nStepTime;
+    memcpy(m_arrChessMan, pMsgGameInfo->arrChessman, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+}
+
+void CGameHandle::ProcessNewGameMessage( void *pMsg )
+{
+    MsgNewGame *pMsgNewGame = (MsgNewGame *)pMsg;
+    NewGame();
+}
+
+void CGameHandle::EnqueMsg( BaseNetworkMsg *pMsg )
+{
+    EnterCriticalSection(&m_csMsgQue);
+    m_lstMsgQue.push_back(pMsg);
+    LeaveCriticalSection(&m_csMsgQue);
+}
+
+BaseNetworkMsg * CGameHandle::DequeMsg()
+{
+    BaseNetworkMsg *pMsg = NULL;
+    if (m_lstMsgQue.size())
+    {
+        EnterCriticalSection(&m_csMsgQue);
+        pMsg = m_lstMsgQue.back();
+        m_lstMsgQue.pop_back();
+        LeaveCriticalSection(&m_csMsgQue);
+    }
+
+    return pMsg;
+}
+
+void CGameHandle::SendNewGameMsg()
+{
+    MsgNewGame stMsgNewGame;
+    memcpy(stMsgNewGame.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+    {
+        m_clServer.SendMsg((char *)&stMsgNewGame, sizeof(MsgNewGame));
+    }
+    else
+    {
+        m_clClient.SendMsg((char *)&stMsgNewGame, sizeof(MsgNewGame));
+    }
 }

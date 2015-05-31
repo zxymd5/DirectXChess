@@ -20,6 +20,7 @@
 #ifndef GAME_HANDLE_H
 #define GAME_HANDLE_H
 
+#include "NetworkMsgDef.h"
 #include "Zobrist.h"
 #include "Subject.h"
 #include "MoveRouteGenerator.h"
@@ -79,9 +80,14 @@ public:
     int RepValue(int nRepStatus);
 
     //处理网络上的消息
-    void ProcessMessage(void *pMsg);
+    void ProcessMessage();
+    void ProcessGameInfoMessage(void *pMsg);
+    void ProcessNewGameMessage(void *pMsg);
     void SendGameInfoMsg();
+    void SendNewGameMsg();
     void Shutdown();
+    void EnqueMsg(BaseNetworkMsg *pMsg);
+    BaseNetworkMsg *DequeMsg();
 
     static unsigned int __stdcall SaveGameFunc(void *pParam);
     static unsigned int __stdcall ComputerMove(void *pParam);
@@ -103,6 +109,7 @@ private:
     HANDLE m_hThreadComputerMove;   //电脑走棋线程
     HANDLE m_hEventComputerMove;    //电脑走棋Event
     HANDLE m_hThreadNetwork;        //网络消息处理线程
+    CRITICAL_SECTION m_csMsgQue;    //用于消息队列
     __int64 m_llCurrentStepStartTime;
 
     //子力值
@@ -118,6 +125,7 @@ private:
     //用于网络对战
     CServerNetwork m_clServer;
     CClientNetwork m_clClient;
+    list<BaseNetworkMsg *>m_lstMsgQue;
 };
 
 extern CGameHandle g_GameHandle;

@@ -125,6 +125,7 @@ int CSockWrap::Bind( SOCKET fd, const struct sockaddr *sa, socklen_t salen )
     int n;
     if ((n = bind(fd, sa, salen)) < 0)
     {
+        Close(fd);
         HandleErrMsg("Bind socket failed", __FILE__, GetLastError(), __LINE__);
     }
 
@@ -229,8 +230,6 @@ void CSockWrap::GetRemotAddrInfo( const char* pHostName, int nPort, sockaddr_in 
     hostent *hst=NULL;
     struct in_addr ia;
     hst=gethostbyname(pHostName);
-    int n = WSAGetLastError();
-    int m = GetLastError();
     memcpy(&ia.S_un.S_addr,hst->h_addr_list[0],sizeof(ia.S_un.S_addr));
 
     //Fill RemoteAddr

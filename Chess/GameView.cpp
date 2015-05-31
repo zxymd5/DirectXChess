@@ -365,6 +365,14 @@ void CGameView::ProcessNewGameEvent( CSubject *pSub )
     {
         m_pStepTimeLeft->SetText(pGameHandle->GetCurrentTurn() == BLACK ? "黑方走棋" : "红方走棋");
     }
+
+    m_bGameStarted = true;
+    m_bGameOver = false;
+    m_pSave->SetCurrState(STATE_ACTIVE);
+    m_pFallback->SetCurrState(STATE_ACTIVE);
+    m_pTie->SetCurrState(STATE_ACTIVE);
+    m_pLose->SetCurrState(STATE_ACTIVE);
+    m_pSettings->SetCurrState(STATE_DISABLE);
 }
 
 void CGameView::ProcessIllegalMoveEvent( CSubject *pSub )
@@ -634,7 +642,7 @@ void CGameView::OnStart( void *pParam )
     pGameView->m_pNewGame->SetCurrState(STATE_ACTIVE);
     pGameView->m_pOpen->SetCurrState(STATE_ACTIVE);
     
-    if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
     {
         g_GameHandle.OnStart();
         if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
@@ -648,13 +656,6 @@ void CGameView::OnStart( void *pParam )
 void CGameView::OnNewGame( void *pParam )
 {
     CGameView *pGameView = (CGameView *)pParam;
-    pGameView->m_bGameStarted = true;
-    pGameView->m_bGameOver = false;
-    pGameView->m_pSave->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pFallback->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pTie->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pLose->SetCurrState(STATE_ACTIVE);
-    pGameView->m_pSettings->SetCurrState(STATE_DISABLE);
 
     g_GameHandle.NewGame();
     pGameView->m_clSoundPlayer.Play(AUDIO_NEW_GAME);
@@ -666,6 +667,12 @@ void CGameView::OnNewGame( void *pParam )
         g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
     {
         g_GameHandle.ComputerMove();
+    }
+
+    //判断是否是网络对战
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        g_GameHandle.SendNewGameMsg();
     }
 }
 

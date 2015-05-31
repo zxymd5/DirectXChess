@@ -17,13 +17,13 @@
  *  Created on: 2015-03-01
  */
 
-#include "../GameEngine/GameEngine.h"
+#include "SockWrap.h"
 #include "GameView.h"
 #include "GameHandle.h"
 #include "GameSettings.h"
+#include "../GameEngine/GameEngine.h"
 #include "resource.h"
 
-#include <windows.h>
 #include <Commctrl.h>
 #include <stdio.h>
 
@@ -56,7 +56,7 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
             HWND hComboBox = GetDlgItem(hWnd, IDC_COMBO_COMPITIOR);
             SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"人机对战");
-            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"自己下棋");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"自由下棋");
             SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"网络对战");
             SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nGameType - 1), 0);
 
@@ -70,7 +70,14 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"红方");
             SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nAhead - 1), 0);
 
+            hComboBox = GetDlgItem(hWnd, IDC_COMBO_SIDE);
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"客户端");
+            SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM)"服务器端");
+            SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)(g_GameSettings.m_nServerOrClient - 1), 0);
+
             SetDlgItemInt(hWnd, IDC_STEPTIMEEDIT, g_GameSettings.m_nStepTime, FALSE);
+            SetDlgItemText(hWnd, IDC_IPADDREDIT, g_GameSettings.m_szIpAddr);
+            SetDlgItemInt(hWnd, IDC_PORTEDIT, g_GameSettings.m_nPort, FALSE);
         }
         break;
 
@@ -86,6 +93,9 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                 hComboBox = GetDlgItem(hWnd, IDC_COMBO_AHEAD);
                 g_GameSettings.m_nAhead = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
+
+                hComboBox = GetDlgItem(hWnd, IDC_COMBO_SIDE);
+                g_GameSettings.m_nServerOrClient = SendMessage(hComboBox, CB_GETCURSEL, 0, 0) + 1;
                 
                 if (g_GameSettings.m_nCompetitorSide != nCompetitorSide)
                 {
@@ -94,6 +104,8 @@ LRESULT CALLBACK SettingsProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 }
                 
                 g_GameSettings.m_nStepTime = GetDlgItemInt(hWnd, IDC_STEPTIMEEDIT, NULL, FALSE);
+                g_GameSettings.m_nPort = GetDlgItemInt(hWnd, IDC_PORTEDIT, NULL, FALSE);
+                GetDlgItemText(hWnd, IDC_IPADDREDIT, g_GameSettings.m_szIpAddr, 32);
 
                 EndDialog(hWnd, wParam);
             }
@@ -214,6 +226,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
     g_Hwnd = hWnd;
     g_hInstance = hInstance;
 
+    //初始化网络
+    CSockWrap::InitNetwork();
+
     //GameEngine初始化
     g_GameEngine.Init(hWnd, WINDOW_WIDTH, WINDOW_HEIGHT);
     g_GameEngine.CreateTexFromFiles(PICTURE_FOLDER);
@@ -245,6 +260,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     g_GameView.Shutdown();
     g_GameEngine.Shutdown();
+    g_GameHandle.Shutdown();
+    CSockWrap::StopNetwork();
 
     return (int) msg.wParam;
 }

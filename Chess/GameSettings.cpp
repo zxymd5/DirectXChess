@@ -18,8 +18,8 @@
  */
 
 #include "GameSettings.h"
-#include "../Include/SimpleIni.h"
 #include "CommDef.h"
+#include "../Include/SimpleIni.h"
 
 CGameSettings g_GameSettings;
 
@@ -35,11 +35,14 @@ void CGameSettings::LoadSettings(const char *pFileName)
 {
     CSimpleIni clIni;
     clIni.LoadFile(pFileName);
-
-    m_nGameType = clIni.GetLongValue("Game", "GameType", 1);
+    m_nGameType = clIni.GetLongValue("Game", "GameType", COMPITITOR_HUMAN);
     m_nCompetitorSide = clIni.GetLongValue("Game", "CompetitorSide", BLACK);
     m_nAhead = clIni.GetLongValue("Game", "Ahead", BLACK);
     m_nStepTime = clIni.GetLongValue("Game", "StepTime", 0);
+    m_nServerOrClient = clIni.GetLongValue("Game", "ServerOrClient", CLIENT_SIDE);
+    const char *pIpAddr = clIni.GetValue("Game", "IpAddr", "127.0.0.1");
+    strcpy(m_szIpAddr, pIpAddr);
+    m_nPort = clIni.GetLongValue("Game", "Port", 8000);
 }
 
 void CGameSettings::SaveSettings( const char *pFileName )
@@ -50,5 +53,9 @@ void CGameSettings::SaveSettings( const char *pFileName )
     clIni.SetLongValue("Game", "CompetitorSide", m_nCompetitorSide);
     clIni.SetLongValue("Game", "Ahead", m_nAhead);
     clIni.SetLongValue("Game", "StepTime", m_nStepTime);
+    clIni.SetLongValue("Game", "ServerOrClient", m_nServerOrClient);
+    clIni.SetValue("Game", "IpAddr", m_szIpAddr);
+    clIni.SetLongValue("Game", "Port", m_nPort);
+
     clIni.SaveFile(pFileName);
 }

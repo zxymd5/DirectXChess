@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleInid.lib Comctl32.lib SQLited.lib winmm.lib"
+				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleInid.lib Comctl32.lib SQLited.lib winmm.lib ws2_32.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../Lib"
 				GenerateDebugInformation="true"
@@ -134,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleIni.lib Comctl32.lib SQLite.lib winmm.lib"
+				AdditionalDependencies="GameEngined.lib d3d9.lib d3dx9.lib SimpleIni.lib Comctl32.lib SQLite.lib winmm.lib ws2_32.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../Lib"
 				GenerateDebugInformation="true"
@@ -175,6 +175,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\ClientNetwork.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GameHandle.cpp"
 				>
 			</File>
@@ -203,6 +207,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ServerNetwork.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SockWrap.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Subject.cpp"
 				>
 			</File>
@@ -218,6 +230,10 @@
 			>
 			<File
 				RelativePath=".\ChessmanValue.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ClientNetwork.h"
 				>
 			</File>
 			<File
@@ -241,6 +257,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NetworkMsgDef.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Observer.h"
 				>
 			</File>
@@ -250,6 +270,14 @@
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ServerNetwork.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SockWrap.h"
 				>
 			</File>
 			<File

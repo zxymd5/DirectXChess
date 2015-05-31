@@ -23,6 +23,8 @@
 #include "Zobrist.h"
 #include "Subject.h"
 #include "MoveRouteGenerator.h"
+#include "ClientNetwork.h"
+#include "ServerNetwork.h"
 #include <process.h>
 
 #include <MMSystem.h>
@@ -34,6 +36,7 @@ public:
     CGameHandle(void);
     virtual ~CGameHandle(void);
     void Init();
+    void OnStart();
     void NewGame();
 
     void Reset();
@@ -75,8 +78,14 @@ public:
     int RepStatus(int nRecur);              //重复局面检测
     int RepValue(int nRepStatus);
 
+    //处理网络上的消息
+    void ProcessMessage(void *pMsg);
+    void SendGameInfoMsg();
+    void Shutdown();
+
     static unsigned int __stdcall SaveGameFunc(void *pParam);
     static unsigned int __stdcall ComputerMove(void *pParam);
+    static unsigned int __stdcall RecvMsg(void *pParam);
 
 private:
     int m_nCurrentTurn;
@@ -93,6 +102,7 @@ private:
     HANDLE m_hThreadSaveGame;   //写数据库的线程
     HANDLE m_hThreadComputerMove;   //电脑走棋线程
     HANDLE m_hEventComputerMove;    //电脑走棋Event
+    HANDLE m_hThreadNetwork;        //网络消息处理线程
     __int64 m_llCurrentStepStartTime;
 
     //子力值
@@ -104,6 +114,10 @@ private:
     CZobrist m_clCurrentZobrist;
     CZobrist m_clInitZobrist;
     CZobrist m_arrZobristTable[CHESSMAN_TYPE_COUNT][CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+
+    //用于网络对战
+    CServerNetwork m_clServer;
+    CClientNetwork m_clClient;
 };
 
 extern CGameHandle g_GameHandle;

@@ -20,6 +20,8 @@
 #ifndef COMM_DEF_H
 #define COMM_DEF_H
 
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 #include <windows.h>
 #include <stdio.h>
 #include <string>
@@ -62,6 +64,8 @@ static const int RED = 2;
 static const int COMPITITOR_MACHINE = 1;
 static const int COMPITITOR_HUMAN = 2;
 static const int COMPITITOR_NETWORK = 3;
+static const int CLIENT_SIDE = 1;
+static const int SERVER_SIDE = 2;
 
 static const int BLACK_GENERAL = 1;     //ºÚ½«
 static const int BLACK_CHARIOT = 2;     //ºÚ³µ

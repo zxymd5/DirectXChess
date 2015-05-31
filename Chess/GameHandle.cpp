@@ -24,6 +24,7 @@
 #include <assert.h>
 #include <fstream>
 #include "../Include/sqlite3.h"
+#include "NetworkMsgDef.h"
 
 CGameHandle g_GameHandle;
 
@@ -46,12 +47,6 @@ CGameHandle::CGameHandle(void)
 
 CGameHandle::~CGameHandle(void)
 {
-    WaitForSingleObject(m_hEventGameSaved, INFINITE);
-    CloseHandle(m_hEventSaveGame);
-    CloseHandle(m_hThreadSaveGame);
-    CloseHandle(m_hEventGameSaved);
-    CloseHandle(m_hEventComputerMove);
-    CloseHandle(m_hThreadComputerMove);
 }
 
 void CGameHandle::Init()
@@ -63,8 +58,22 @@ void CGameHandle::Init()
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
     m_hThreadSaveGame = (HANDLE)_beginthreadex(NULL, 0, SaveGameFunc, this, 0, NULL);
 
-    m_hEventComputerMove = CreateEvent(NULL, TRUE, FALSE, NULL);
-    m_hThreadComputerMove = (HANDLE)_beginthreadex(NULL, 0, ComputerMove, this, 0, NULL);
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+        {
+            m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
+        }
+        else
+        {
+            m_clClient.InitClient();
+        }
+    }
+    else if (g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+    {
+        m_hEventComputerMove = CreateEvent(NULL, TRUE, FALSE, NULL);
+        m_hThreadComputerMove = (HANDLE)_beginthreadex(NULL, 0, ComputerMove, this, 0, NULL);
+    }
 }
 
 void CGameHandle::NewGame()
@@ -1064,5 +1073,107 @@ int CGameHandle::RepValue( int nRepStatus )
     nRetVal = ((nRepStatus & 2) == 0 ? 0 :  - BAN_VALUE) + 
               ((nRepStatus & 4) == 0 ? 0 : BAN_VALUE);
 
-    return nRetVal == 0 ? (m_lstMoveRoute.size() & 1 == 0 ? -DRAW_VALUE : DRAW_VALUE) : nRetVal;
+    return nRetVal == 0 ? ((m_lstMoveRoute.size() & 1) == 0 ? -DRAW_VALUE : DRAW_VALUE) : nRetVal;
+}
+
+void CGameHandle::ProcessMessage( void *pMsg )
+{
+    
+}
+
+unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pParam;
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        char szMsg[MAX_MSG_SIZE];
+        memset(szMsg, 0, MAX_MSG_SIZE);
+
+        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+        {
+            while(1)
+            {
+                int nSize = pGameHandle->m_clServer.RecvMsg(szMsg);
+                if (nSize > 0)
+                {
+                    pGameHandle->ProcessMessage((void *)szMsg);
+                }
+            }
+        }
+        else
+        {
+            while(1)
+            {
+                int nSize = pGameHandle->m_clClient.RecvMsg(szMsg);
+                if (nSize > 0)
+                {
+                    pGameHandle->ProcessMessage((void *)szMsg);
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+void CGameHandle::OnStart()
+{
+    //如果是网络对战
+    //服务器监听端口号，等待客户端连接
+    //客户端连接服务器
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+        {
+            if(m_clServer.WaitForClientConn() > 0)
+            {
+                SendGameInfoMsg();
+                //创建线程
+                m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+            }
+        }
+        else
+        {
+            m_clClient.ConnToServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
+            m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+        }
+    }
+
+}
+
+void CGameHandle::Shutdown()
+{
+    WaitForSingleObject(m_hEventGameSaved, INFINITE);
+    CloseHandle(m_hEventSaveGame);
+    CloseHandle(m_hThreadSaveGame);
+    CloseHandle(m_hEventGameSaved);
+
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+        {
+            m_clServer.StopServer();
+        }
+        else
+        {
+            m_clClient.StopClient();
+        }
+        CloseHandle(m_hThreadNetwork);
+    }
+    else if(g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+    {
+        CloseHandle(m_hEventComputerMove);
+        CloseHandle(m_hThreadComputerMove);
+    }
+}
+
+void CGameHandle::SendGameInfoMsg()
+{
+    MsgGameInfo stMsg;
+    stMsg.nMsgID = MSG_GAME_INFO;
+    stMsg.nMySide = g_GameSettings.m_nCompetitorSide;
+    stMsg.nStepTime = g_GameSettings.m_nStepTime;
+    stMsg.nAhead = g_GameSettings.m_nAhead;
+    memcpy(stMsg.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    m_clServer.SendMsg((char *)&stMsg, sizeof(stMsg));
 }

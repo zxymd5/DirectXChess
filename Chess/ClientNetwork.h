@@ -12,32 +12,29 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  File:       GameSettings.h
+ *  File:       ClientNetwork.h
  *  Author:     Richard Zou
  *  Created on: 2015-03-01
  */
 
-#ifndef GAME_SETTINGS
-#define GAME_SETTINGS
+#ifndef CLIENT_NETWORK_H
+#define CLIENT_NETWORK_H
 
-class CGameSettings
+#include "SockWrap.h"
+
+class CClientNetwork
 {
 public:
-    CGameSettings(void);
-    ~CGameSettings(void);
-    void LoadSettings(const char *pFileName);
-    void SaveSettings(const char *pFileName);
+    CClientNetwork(void);
+    ~CClientNetwork(void);
+    void InitClient();
+    void ConnToServer(const char *pIpAddr, int nPort);
+    int RecvMsg(char szMsg[]);
+    int SendMsg(char szMsg[], int nSize);
+    void StopClient();
 
-    int m_nGameType;
-    int m_nCompetitorSide;
-    int m_nAhead;
-    int m_nStepTime;
-    int m_nServerOrClient;
-    char m_szIpAddr[32];
-    int m_nPort;
-
+private:
+    SOCKET m_nSockFd;
 };
-
-extern CGameSettings g_GameSettings;
 
 #endif

@@ -52,6 +52,8 @@ CGameView::CGameView(void)
     m_pLose = NULL;
     m_pSettings = NULL;
     m_pExit = NULL;
+    m_pConnect = NULL;
+    m_pDisconnect = NULL;
     m_pMessageBox = NULL;
     m_pConfirm = NULL;
     m_pCurrFocusWidget = NULL;
@@ -146,6 +148,14 @@ void CGameView::Init(HWND hWnd)
     m_pExit = (CDXButton *)g_GameEngine.GetWidgetByName("Exit");
     m_pExit->SetCallBackInfo(OnExit, this);
     m_mapWidget.insert(make_pair(m_pExit->GetDepth(), m_pExit));
+
+    m_pConnect = (CDXButton *)g_GameEngine.GetWidgetByName("Connect");
+    m_pConnect->SetCallBackInfo(OnConnect, this);
+    m_mapWidget.insert(make_pair(m_pConnect->GetDepth(), m_pConnect));
+
+    m_pDisconnect = (CDXButton *)g_GameEngine.GetWidgetByName("Disconnect");
+    m_pDisconnect->SetCallBackInfo(OnDisconnect, this);
+    m_mapWidget.insert(make_pair(m_pDisconnect->GetDepth(), m_pDisconnect));
 
     m_pMessageBox = (CDXLabel *)g_GameEngine.GetWidgetByName("MessageBox");
     m_pMessageBox->SetFontColor(255, 255, 255, 255);
@@ -623,6 +633,16 @@ void CGameView::OnStart( void *pParam )
     pGameView->m_pStart->SetCurrState(STATE_DISABLE);
     pGameView->m_pNewGame->SetCurrState(STATE_ACTIVE);
     pGameView->m_pOpen->SetCurrState(STATE_ACTIVE);
+    
+    if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+    {
+        g_GameHandle.OnStart();
+        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
+        {
+            pGameView->m_pConnect->SetCurrState(STATE_DISABLE);
+        }
+    }
+
 }
 
 void CGameView::OnNewGame( void *pParam )
@@ -1054,4 +1074,14 @@ void CGameView::PlayGameResultSound( int nGameResult )
     {
         m_clSoundPlayer.Play(AUDIO_TIE);
     }
+}
+
+void CGameView::OnConnect( void *pParam )
+{
+
+}
+
+void CGameView::OnDisconnect( void *pParam )
+{
+
 }

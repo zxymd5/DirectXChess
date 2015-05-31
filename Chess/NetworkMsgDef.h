@@ -12,32 +12,43 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  File:       GameSettings.h
+ *  File:       NetworkMsgDef.h
  *  Author:     Richard Zou
  *  Created on: 2015-03-01
  */
 
-#ifndef GAME_SETTINGS
-#define GAME_SETTINGS
+#ifndef NETWORK_MSG_DEF_H
+#define NETWORK_MSG_DEF_H
+#include "CommDef.h"
 
-class CGameSettings
+const int MAX_MSG_SIZE = 1024;
+const int MSG_GAME_INFO = 1;
+
+struct BaseNetworkMsg
 {
-public:
-    CGameSettings(void);
-    ~CGameSettings(void);
-    void LoadSettings(const char *pFileName);
-    void SaveSettings(const char *pFileName);
+    int nMsgID;
 
-    int m_nGameType;
-    int m_nCompetitorSide;
-    int m_nAhead;
-    int m_nStepTime;
-    int m_nServerOrClient;
-    char m_szIpAddr[32];
-    int m_nPort;
-
+    BaseNetworkMsg()
+    {
+        nMsgID = 0;
+    }
 };
 
-extern CGameSettings g_GameSettings;
+struct MsgGameInfo : public BaseNetworkMsg
+{
+    int nMySide;
+    int nAhead;
+    int nStepTime;
+    int arrChessman[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+
+    MsgGameInfo()
+    {
+        nMySide = 0;
+        nAhead = 0;
+        nStepTime = 0;
+        memset(arrChessman, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    }
+};
+
 
 #endif

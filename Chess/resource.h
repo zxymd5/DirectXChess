@@ -8,6 +8,10 @@
 #define IDC_COMBO_COMPITIORSIDE         1006
 #define IDC_COMBO_AHEAD                 1007
 #define IDC_STEPTIMEEDIT                1008
+#define IDC_COMBO_SIDE                  1009
+#define IDC_STEPTIMEEDIT2               1012
+#define IDC_PORTEDIT                    1012
+#define IDC_IPADDREDIT                  1013
 
 // Next default values for new objects
 // 

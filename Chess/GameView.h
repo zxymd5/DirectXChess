@@ -28,7 +28,6 @@
 #include "../GameEngine/DXListCtrl.h"
 #include "../GameEngine/SoundPlayer.h"
 
-#include <Windows.h>
 #include <map>
 #include <algorithm>
 #include <vector>
@@ -99,6 +98,8 @@ public:
     static void OnPrevRecord(void *pParam);
     static void OnNextRecord(void *pParam);
     static void OnNextPage(void *pParam);
+    static void OnConnect(void *pParam);
+    static void OnDisconnect(void *pParam);
 
 private:
     CDXImage    *m_pChessBackground;
@@ -118,6 +119,8 @@ private:
     CDXButton   *m_pLose;
     CDXButton   *m_pSettings;
     CDXButton   *m_pExit;
+    CDXButton   *m_pConnect;
+    CDXButton   *m_pDisconnect;
     CDXLabel    *m_pMessageBox;
     CDXButton   *m_pConfirm;
     CDXWidget   *m_pCurrFocusWidget;

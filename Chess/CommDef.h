@@ -329,5 +329,6 @@ static const int EVENT_REQ_TIE = 10;
 static const int EVENT_REQ_TIE_REPLY = 11;
 static const int EVENT_REQ_LOSE = 12;
 static const int EVENT_REQ_LOSE_REPLY = 13;
+static const int EVENT_CHANGE_POS = 14;
 
 #endif

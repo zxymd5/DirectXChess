@@ -46,6 +46,7 @@ public:
 
     virtual void ProcessEvent(CSubject *pSub, int nEvent, void *pParam);
     void ProcessInitBoardEvent(CSubject *pSub);
+    void ProcessChangePosEvent(CSubject *pSub);
     void ProcessNewGameEvent(CSubject *pSub);
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
     void ProcessFallbackEvent( CSubject *pSub );

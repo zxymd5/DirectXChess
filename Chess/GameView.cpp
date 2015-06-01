@@ -313,6 +313,11 @@ void CGameView::ProcessEvent( CSubject *pSub, int nEvent, void *pParam)
             ProcessInitBoardEvent(pSub);
         }
         break;
+    case EVENT_CHANGE_POS:
+        {
+            ProcessChangePosEvent(pSub);
+        }
+        break;
     case EVENT_NEW_GAME:
         {
             ProcessNewGameEvent(pSub);
@@ -488,7 +493,7 @@ void CGameView::HandleLButtonUp()
     int nRow = -1;
     int nColumn = -1;
 
-    if (!((g_GameSettings.m_nGameType == COMPITITOR_MACHINE || g_GameSettings.m_nGameType == COMPITITOR_NETWORK) && 
+    if (!(g_GameSettings.m_nGameType == COMPITITOR_MACHINE && 
         g_GameHandle.GetCurrentTurn() == g_GameSettings.m_nCompetitorSide))
     {
         if (GetCoordinate (pt, nRow, nColumn, g_GameSettings.m_nCompetitorSide))
@@ -1218,4 +1223,13 @@ void CGameView::ShowTipReplyView( int nTipType, int nResult )
     default:
         break;
     }
+}
+
+void CGameView::ProcessChangePosEvent( CSubject *pSub )
+{
+    CGameHandle *pGameHandle = (CGameHandle *)pSub;
+    int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
+    pGameHandle->GetChessMan(arrChessMan);
+    UpdateChessMan(arrChessMan);
+    ChangeChessManPos();
 }

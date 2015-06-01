@@ -1232,10 +1232,16 @@ void CGameHandle::ProcessGameInfoMsg( void *pMsg )
 {
     MsgGameInfo *pMsgGameInfo = (MsgGameInfo *)pMsg;
 
+    bool bNotify = g_GameSettings.m_nCompetitorSide == pMsgGameInfo->nMySide;
     g_GameSettings.m_nCompetitorSide = pMsgGameInfo->nMySide == BLACK ? RED : BLACK;
     g_GameSettings.m_nAhead = pMsgGameInfo->nAhead;
     g_GameSettings.m_nStepTime = pMsgGameInfo->nStepTime;
     memcpy(m_arrChessMan, pMsgGameInfo->arrChessman, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+
+    if (bNotify)
+    {
+        Notify(EVENT_CHANGE_POS);
+    }
 }
 
 void CGameHandle::ProcessNewGameMsg( void *pMsg )

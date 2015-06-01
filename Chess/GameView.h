@@ -103,6 +103,7 @@ public:
     static void OnNextPage(void *pParam);
     static void OnConnect(void *pParam);
     static void OnDisconnect(void *pParam);
+    static void OnAgreeOrDisagree(void *pParam);
 
 private:
     CDXImage    *m_pChessBackground;
@@ -126,6 +127,8 @@ private:
     CDXButton   *m_pDisconnect;
     CDXLabel    *m_pMessageBox;
     CDXButton   *m_pConfirm;
+    CDXButton   *m_pAgree;
+    CDXButton   *m_pDisagree;
     CDXWidget   *m_pCurrFocusWidget;
     CDXListCtrl *m_pLeftMoveHistory;
     CDXListCtrl *m_pRightMoveHistory;
@@ -154,6 +157,7 @@ private:
     int         m_nCurrentRightStepOrder; //´Ó1¿ªÊ¼
     bool        m_bStepTimeOverNotify;
     int         m_nTipType;
+    int         m_nTipResult;
 };
 
 extern CGameView g_GameView;

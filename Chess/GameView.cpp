@@ -78,6 +78,9 @@ CGameView::CGameView(void)
     m_bStepTimeOverNotify = false;
 
     m_nTipType = 0;
+    m_nTipResult = 0;
+    m_pAgree = NULL;
+    m_pDisagree = NULL;
 }
 
 CGameView::~CGameView(void)
@@ -183,6 +186,14 @@ void CGameView::Init(HWND hWnd)
     m_pConfirm = (CDXButton *)g_GameEngine.GetWidgetByName("Confirm");
     m_pConfirm->SetCallBackInfo(OnConfirm, this);
     m_mapWidget.insert(make_pair(m_pConfirm->GetDepth(), m_pConfirm));
+
+    m_pAgree = (CDXButton *)g_GameEngine.GetWidgetByName("Agree");
+    m_pAgree->SetCallBackInfo(OnAgreeOrDisagree, this);
+    m_mapWidget.insert(make_pair(m_pAgree->GetDepth(), m_pAgree));
+
+    m_pDisagree = (CDXButton *)g_GameEngine.GetWidgetByName("Disagree");
+    m_pDisagree->SetCallBackInfo(OnAgreeOrDisagree, this);
+    m_mapWidget.insert(make_pair(m_pDisagree->GetDepth(), m_pDisagree));
 
     m_pLeftPrevPage = (CDXButton *)g_GameEngine.GetWidgetByName("LeftPrevPage");
     m_pLeftPrevPage->SetCallBackInfo(OnPrevPage, this);
@@ -604,6 +615,8 @@ void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
     m_bGameOver = nGameResult != -1;
     ShowResultView(nGameResult);
     m_pSave->SetCurrState(STATE_ACTIVE);
+    m_nTipResult = 0;
+    m_nTipType = 0;
 }
 
 void CGameView::ProcessFallbackEvent( CSubject *pSub )
@@ -684,6 +697,9 @@ void CGameView::OnNewGame( void *pParam )
 
     pGameView->ClearHisotryDisplay();
 
+    pGameView->m_nTipResult = 0;
+    pGameView->m_nTipType = 0;
+
     //判断是否电脑先走，如果是则电脑走棋
     if (g_GameSettings.m_nAhead == g_GameSettings.m_nCompetitorSide &&
         g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
@@ -712,36 +728,44 @@ void CGameView::OnSave( void *pParam )
 
 void CGameView::OnFallback( void *pParam )
 {
+    CGameView *pGameView = (CGameView *)pParam;
     if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
     {
-        g_GameHandle.SendFallbackMsg();
+        g_GameHandle.SendTipMsg(TIP_REQ_FALLBACK);
+        pGameView->m_nTipType = TIP_REQ_FALLBACK;
     }
     else
     {
-        g_GameHandle.FallBack();
+        g_GameHandle.OnFallback();
     }
 }
 
 void CGameView::OnTie( void *pParam )
-{    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
-{
-    g_GameHandle.SendFallbackMsg();
-}
-else
-{
-    g_GameHandle.OnTie();
-}
+{    
+    CGameView *pGameView = (CGameView *)pParam;
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        g_GameHandle.SendTipMsg(TIP_REQ_TIE);
+        pGameView->m_nTipType = TIP_REQ_TIE;
+    }
+    else
+    {
+        g_GameHandle.OnTie();
+    }
 }
 
 void CGameView::OnLose( void *pParam )
-{    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
-{
-    g_GameHandle.SendFallbackMsg();
-}
-else
-{
-    g_GameHandle.OnLose();
-}
+{    
+    CGameView *pGameView = (CGameView *)pParam;
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        g_GameHandle.SendTipMsg(TIP_REQ_LOSE);
+        pGameView->m_nTipType = TIP_REQ_LOSE;
+    }
+    else
+    {
+        g_GameHandle.OnLose();
+    }
 }
 
 void CGameView::OnSettings( void *pParam )
@@ -755,6 +779,27 @@ void CGameView::OnConfirm( void *pParam )
     CGameView *pGameView = (CGameView *)pParam;
     pGameView->m_pConfirm->SetVisible(false);
     pGameView->m_pMessageBox->SetVisible(false);
+
+    if (pGameView->m_nTipResult == 1)
+    {
+        switch(pGameView->m_nTipType)
+        {
+        case TIP_REQ_FALLBACK:
+            g_GameHandle.OnFallback();
+            break;
+        case TIP_REQ_LOSE:
+            g_GameHandle.OnLose();
+            break;
+        case TIP_REQ_TIE:
+            g_GameHandle.OnTie();
+            break;
+        default:
+            break;
+        }
+
+        pGameView->m_nTipType = 0;
+        pGameView->m_nTipResult = 0;
+    }
 }
 
 void CGameView::OnExit( void *pParam )
@@ -1156,28 +1201,23 @@ void CGameView::ProcessTipEvent( CSubject *pSub, int nEvent, void *pParam )
 
 void CGameView::ProcessTipReplyEvent( CSubject *pSub, int nEvent, void *pParam )
 {
-    int nResult = 0;
+    MsgTipReply *pMsgTipReply = (MsgTipReply *)pParam;
+    m_nTipResult = pMsgTipReply->nResult;
     switch(nEvent)
     {
     case EVENT_REQ_FALLBACK_REPLY:
         {
             m_nTipType = TIP_REQ_FALLBACK;
-            MsgFallbackReply *pFallbackReply = (MsgFallbackReply *)pParam;
-            nResult = pFallbackReply->nResult;
         }
         break;
     case EVENT_REQ_TIE_REPLY:
         {
             m_nTipType = TIP_REQ_TIE;
-            MsgTieReply *pTieReply = (MsgTieReply *)pParam;
-            nResult = pTieReply->nResult;
         }
         break;
     case EVENT_REQ_LOSE_REPLY:
         {
             m_nTipType = TIP_REQ_LOSE;
-            MsgLoseReply *pLoseReply = (MsgLoseReply *)pParam;
-            nResult = pLoseReply->nResult;
         }
         break;
     default:
@@ -1185,7 +1225,7 @@ void CGameView::ProcessTipReplyEvent( CSubject *pSub, int nEvent, void *pParam )
     }
 
     //弹出提示框
-    ShowTipReplyView(m_nTipType, nResult);
+    ShowTipReplyView(m_nTipType, m_nTipResult);
 }
 
 void CGameView::ShowTipView( int nTipType )
@@ -1194,16 +1234,24 @@ void CGameView::ShowTipView( int nTipType )
     switch(nTipType)
     {
     case EVENT_REQ_FALLBACK:
-        strTipMsg = "对方请求悔棋，是否同意？";
+        strTipMsg = "对方请求\n悔棋，是否同意？";
         break;
     case EVENT_REQ_TIE:
-        strTipMsg = "对方请求和棋，是否同意？";
+        strTipMsg = "对方请求\n和棋，是否同意？";
         break;
     case EVENT_REQ_LOSE:
-        strTipMsg = "对方请求认输，是否同意？";
+        strTipMsg = "对方请求\n认输，是否同意？";
         break;
     default:
         break;
+    }
+
+    if (strTipMsg.size())
+    {
+        m_pMessageBox->SetVisible(true);
+        m_pMessageBox->SetText(strTipMsg);
+        m_pAgree->SetVisible(true);
+        m_pDisagree->SetVisible(true);
     }
 }
 
@@ -1215,32 +1263,27 @@ void CGameView::ShowTipReplyView( int nTipType, int nResult )
     case EVENT_REQ_FALLBACK:
         {
             strTipMsg = nResult == 1 ? "对方同意悔棋。" : "对方不同意悔棋。";
-            if (nResult == 1)
-            {
-                g_GameHandle.FallBack();
-            }
         }
         break;
     case EVENT_REQ_TIE:
         {
             strTipMsg = nResult == 1 ? "对方同意和棋。" : "对方不同意和棋。";
-            if (nResult == 1)
-            {
-                g_GameHandle.OnTie();
-            }
         }
         break;
     case EVENT_REQ_LOSE:
         {
             strTipMsg = nResult == 1 ? "对方同意认输。" : "对方不同意认输。";
-            if (nResult == 1)
-            {
-                g_GameHandle.OnLose();
-            }
         }
         break;
     default:
         break;
+    }
+
+    if (strTipMsg.size())
+    {
+        m_pMessageBox->SetVisible(true);
+        m_pMessageBox->SetText(strTipMsg);
+        m_pConfirm->SetVisible(true);
     }
 }
 
@@ -1251,4 +1294,43 @@ void CGameView::ProcessChangePosEvent( CSubject *pSub )
     pGameHandle->GetChessMan(arrChessMan);
     UpdateChessMan(arrChessMan);
     ChangeChessManPos();
+}
+
+void CGameView::OnAgreeOrDisagree( void *pParam )
+{
+    CGameView *pGameView = (CGameView *)pParam;
+    pGameView->m_pAgree->SetVisible(false);
+    pGameView->m_pDisagree->SetVisible(false);
+    pGameView->m_pMessageBox->SetVisible(false);
+
+    int nResult = 0;
+    if (pGameView->m_pCurrFocusWidget == pGameView->m_pAgree)
+    {
+        nResult = 1;
+    }
+    else
+    {
+        nResult = 0;
+    }
+    
+    g_GameHandle.SendTipReplyMsg(pGameView->m_nTipType, nResult);
+
+
+    if (nResult == 1)
+    {
+        switch(pGameView->m_nTipType)
+        {
+        case TIP_REQ_FALLBACK:
+            g_GameHandle.OnFallback();
+            break;
+        case TIP_REQ_LOSE:
+            g_GameHandle.OnWin();
+            break;
+        case TIP_REQ_TIE:
+            g_GameHandle.OnTie();
+            break;
+        default:
+            break;
+        }
+    }
 }

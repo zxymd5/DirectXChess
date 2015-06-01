@@ -1,21 +1,21 @@
 /*      
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  File:       GameHandle.cpp
- *  Author:     Richard Zou
- *  Created on: 2015-03-01
- */
+*  This program is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*  File:       GameHandle.cpp
+*  Author:     Richard Zou
+*  Created on: 2015-03-01
+*/
 
 #include "GameHandle.h"
 #include "GameSettings.h"
@@ -56,7 +56,7 @@ void CGameHandle::Init()
     m_hEventSaveGame = CreateEvent(NULL, TRUE, FALSE, NULL); 
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
     m_hThreadSaveGame = (HANDLE)_beginthreadex(NULL, 0, SaveGameFunc, this, 0, NULL);
-    
+
     if (g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
     {
         m_hEventComputerMove = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -99,7 +99,7 @@ void CGameHandle::GetChessMan( int arrChessMan[][CHESSBOARD_COLUMN] )
 //电脑走棋
 void CGameHandle::ComputerMove()
 {
-     SetEvent(m_hEventComputerMove);
+    SetEvent(m_hEventComputerMove);
 }
 
 unsigned int __stdcall CGameHandle::ComputerMove( void *pParam )
@@ -137,7 +137,7 @@ void CGameHandle::DoMove(int nRow, int nColumn)
     }
 
     bool bLegal = false;
-    
+
     if (m_nCurrentTurn == RED)
     {
         bLegal = RedDoMove(nRow, nColumn);
@@ -410,7 +410,7 @@ int CGameHandle::GetGeneralPosition( int nGeneral, int &nRow, int &nColumn )
     return nChessManCount;
 }
 
-void CGameHandle::FallBack()
+void CGameHandle::OnFallback()
 {
     if (m_lstMoveRoute.size() > 0)
     {
@@ -508,23 +508,23 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
             fs << m_arrChessMan[i][CHESSBOARD_COLUMN - 1] << endl;
         }
         fs << endl;
-        
+
         //再保存轮到谁走棋，棋局结果
         fs << m_nCurrentTurn << '\t' << m_nGameResult << '\t' << m_nWhoIsDead << endl << endl;
 
         //最后保存走棋历史记录
-//         list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
-//         for (; it != m_lstMoveRoute.end(); ++it)
-//         {
-//             fs << it->nMovingChessMan << '\t' 
-//                 << it->nKilledChessMan << '\t' 
-//                 << it->bAttackGeneral  << '\t' 
-//                 << it->stFromPos.nRow << '\t' 
-//                 << it->stFromPos.nColumn << '\t'
-//                 << it->stToPos.nRow << '\t'
-//                 << it->stToPos.nColumn << '\t'
-//                 << it->szMoveStepAlpha << endl;
-//         }
+        //         list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
+        //         for (; it != m_lstMoveRoute.end(); ++it)
+        //         {
+        //             fs << it->nMovingChessMan << '\t' 
+        //                 << it->nKilledChessMan << '\t' 
+        //                 << it->bAttackGeneral  << '\t' 
+        //                 << it->stFromPos.nRow << '\t' 
+        //                 << it->stFromPos.nColumn << '\t'
+        //                 << it->stToPos.nRow << '\t'
+        //                 << it->stToPos.nColumn << '\t'
+        //                 << it->szMoveStepAlpha << endl;
+        //         }
         fs.close();
     }
     else
@@ -558,26 +558,26 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
         //再读取轮到谁走棋，棋局结果
         fs >> m_nCurrentTurn >> m_nGameResult >> m_nWhoIsDead;
         m_nCurrentSearchMoveTurn = m_nCurrentTurn;
-//         fs.seekp(1, ios::cur);
-// 
-//         //最后读取走棋历史记录
-//         MoveRoute stMoveRoute;
-//         while(!fs.eof())
-//         {
-//             fs >> stMoveRoute.nMovingChessMan
-//                 >> stMoveRoute.nKilledChessMan
-//                 >> stMoveRoute.bAttackGeneral
-//                 >> stMoveRoute.stFromPos.nRow
-//                 >> stMoveRoute.stFromPos.nColumn
-//                 >> stMoveRoute.stToPos.nRow
-//                 >> stMoveRoute.stToPos.nColumn
-//                 >> stMoveRoute.szMoveStepAlpha;
-//             if (fs.eof())
-//             {
-//                 break;
-//             }
-//             m_lstMoveRoute.push_back(stMoveRoute);
-//         }
+        //         fs.seekp(1, ios::cur);
+        // 
+        //         //最后读取走棋历史记录
+        //         MoveRoute stMoveRoute;
+        //         while(!fs.eof())
+        //         {
+        //             fs >> stMoveRoute.nMovingChessMan
+        //                 >> stMoveRoute.nKilledChessMan
+        //                 >> stMoveRoute.bAttackGeneral
+        //                 >> stMoveRoute.stFromPos.nRow
+        //                 >> stMoveRoute.stFromPos.nColumn
+        //                 >> stMoveRoute.stToPos.nRow
+        //                 >> stMoveRoute.stToPos.nColumn
+        //                 >> stMoveRoute.szMoveStepAlpha;
+        //             if (fs.eof())
+        //             {
+        //                 break;
+        //             }
+        //             m_lstMoveRoute.push_back(stMoveRoute);
+        //         }
 
         fs.close();
     }
@@ -590,7 +590,7 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
             ::MessageBox(NULL, "无法打开文件！", "错误信息", MB_OK);
             return;
         }
-        
+
         char szSQL[1024];
         sqlite3_stmt *stmt;
 
@@ -602,7 +602,7 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
             sqlite3_close(db);
             return;
         }
-        
+
         while(sqlite3_step(stmt) == SQLITE_ROW)
         {
             int nRow = sqlite3_column_int(stmt, 0);
@@ -630,40 +630,40 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
             m_nCurrentSearchMoveTurn = m_nCurrentTurn;
         }
 
-//         sqlite3_reset(stmt);
-//         sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
-//         nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
-//         if (SQLITE_OK != nRet)
-//         {
-//             sqlite3_finalize(stmt);
-//             sqlite3_close(db);
-//             return;
-//         }
-// 
-//         while(sqlite3_step(stmt) == SQLITE_ROW)
-//         {
-//             MoveRoute stRoute;
-//             stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
-//             stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
-//             stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
-//             stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
-//             stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
-//             stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
-//             stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
-//             strcpy(stRoute.szMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
-// 
-//             m_lstMoveRoute.push_back(stRoute);
-//         }
+        //         sqlite3_reset(stmt);
+        //         sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
+        //         nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+        //         if (SQLITE_OK != nRet)
+        //         {
+        //             sqlite3_finalize(stmt);
+        //             sqlite3_close(db);
+        //             return;
+        //         }
+        // 
+        //         while(sqlite3_step(stmt) == SQLITE_ROW)
+        //         {
+        //             MoveRoute stRoute;
+        //             stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
+        //             stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
+        //             stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
+        //             stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
+        //             stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
+        //             stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
+        //             stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
+        //             strcpy(stRoute.szMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
+        // 
+        //             m_lstMoveRoute.push_back(stRoute);
+        //         }
 
         sqlite3_finalize(stmt);
         sqlite3_close(db);
     }
 
-//     if (m_lstMoveRoute.size())
-//     {
-//         m_stCurrentMoveRoute = m_lstMoveRoute.back();
-//     }
-    
+    //     if (m_lstMoveRoute.size())
+    //     {
+    //         m_stCurrentMoveRoute = m_lstMoveRoute.back();
+    //     }
+
     Notify(EVENT_LOAD_CHESSMAN);
     ResetMoveRoute(m_stCurrentMoveRoute);
     m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
@@ -931,7 +931,7 @@ void CGameHandle::AddChessMan( int nChessMan, int nRow, int nColumn )
 
     m_arrChessMan[nRow][nColumn] = nChessMan;
     m_clCurrentZobrist.Xor(m_arrZobristTable[nChessMan - 1][nRow][nColumn]);
-    
+
     if (IsBlackSide(nChessMan))
     {
         m_nBlackValue += CHESSMAN_VALUE[nChessMan - 1][nRow][nColumn];
@@ -1079,7 +1079,7 @@ int CGameHandle::RepValue( int nRepStatus )
 {
     int nRetVal = 0;
     nRetVal = ((nRepStatus & 2) == 0 ? 0 :  - BAN_VALUE) + 
-              ((nRepStatus & 4) == 0 ? 0 : BAN_VALUE);
+        ((nRepStatus & 4) == 0 ? 0 : BAN_VALUE);
 
     return nRetVal == 0 ? ((m_lstMoveRoute.size() & 1) == 0 ? -DRAW_VALUE : DRAW_VALUE) : nRetVal;
 }
@@ -1103,23 +1103,11 @@ void CGameHandle::ProcessMessage( )
         case MSG_MOVE_ROUTE:
             ProcessMoveRouteMsg(pMsg);
             break;
-        case MSG_FALLBACK:
-            ProcessFallbackMsg(pMsg);
+        case MSG_TIP:
+            ProcessTipMsg(pMsg);
             break;
-        case MSG_TIE:
-            ProcessTieMsg(pMsg);
-            break;
-        case MSG_LOSE:
-            ProcessLoseMsg(pMsg);
-            break;
-        case MSG_FALLBACK_REPLY:
-            ProcessFallbackReplyMsg(pMsg);
-            break;
-        case MSG_TIE_REPLY:
-            ProcessTieReplyMsg(pMsg);
-            break;
-        case MSG_LOSE_REPLY:
-            ProcessLoseReplyMsg(pMsg);
+        case MSG_TIP_REPLY:
+            ProcessTipReplyMsg(pMsg);
             break;
         default:
             break;
@@ -1341,57 +1329,6 @@ void CGameHandle::SendMsg( char *pMsg, int nMsgSize )
     }
 }
 
-void CGameHandle::SendFallbackMsg()
-{
-    MsgFallback stMsgFallback;
-    stMsgFallback.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
-    SendMsg((char *)&stMsgFallback, sizeof(MsgFallback));
-}
-
-void CGameHandle::SendTieMsg()
-{
-    MsgTie stMsgTie;
-    stMsgTie.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
-    SendMsg((char *)&stMsgTie, sizeof(MsgTie));
-}
-
-void CGameHandle::SendLoseMsg()
-{
-    MsgLose stMsgLose;
-    stMsgLose.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
-    SendMsg((char *)&stMsgLose, sizeof(MsgLose));
-}
-
-void CGameHandle::ProcessFallbackMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_FALLBACK, pMsg);
-}
-
-void CGameHandle::ProcessTieMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_TIE, pMsg);
-}
-
-void CGameHandle::ProcessLoseMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_LOSE, pMsg);
-}
-
-void CGameHandle::ProcessFallbackReplyMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_FALLBACK_REPLY, pMsg);
-}
-
-void CGameHandle::ProcessTieReplyMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_TIE_REPLY, pMsg);
-}
-
-void CGameHandle::ProcessLoseReplyMsg( void *pMsg )
-{
-    Notify(EVENT_REQ_LOSE_REPLY, pMsg);
-}
-
 void CGameHandle::OnWin()
 {
     if (m_nGameResult == -1)
@@ -1407,5 +1344,70 @@ void CGameHandle::OnWin()
 
         m_llCurrentStepStartTime = 0;
         Notify(EVENT_GAME_RESULT);
+    }
+}
+
+void CGameHandle::SendTipMsg( int nTipType )
+{
+    MsgTip stMsgTip;
+    stMsgTip.nReqSide = g_GameSettings.m_nCompetitorSide;
+    stMsgTip.nTipType = nTipType;
+
+    SendMsg((char *)&stMsgTip, sizeof(MsgTip));
+}
+
+void CGameHandle::SendTipReplyMsg( int nTipType, int nResult )
+{
+    MsgTipReply stMsgTipReply;
+    stMsgTipReply.nReqSide = g_GameSettings.m_nCompetitorSide;
+    stMsgTipReply.nResult = nResult;
+    stMsgTipReply.nTipType = nTipType;
+
+    SendMsg((char *)&stMsgTipReply, sizeof(MsgTipReply));
+}
+
+void CGameHandle::ProcessTipMsg( void *pMsg )
+{
+    MsgTip *pMsgTip = (MsgTip *)pMsg;
+
+    switch(pMsgTip->nTipType)
+    {
+    case TIP_REQ_FALLBACK:
+        Notify(EVENT_REQ_FALLBACK);
+        break;
+    case TIP_REQ_TIE:
+        Notify(EVENT_REQ_TIE);
+        break;
+    case TIP_REQ_LOSE:
+        Notify(EVENT_REQ_LOSE);
+        break;
+    default:
+        break;
+    }
+}
+
+void CGameHandle::ProcessTipReplyMsg( void *pMsg )
+{
+    MsgTipReply *pMsgTipReply = (MsgTipReply *)pMsg;
+
+    switch(pMsgTipReply->nTipType)
+    {
+    case TIP_REQ_FALLBACK:
+        {
+            Notify(EVENT_REQ_FALLBACK_REPLY, pMsg);
+        }
+        break;
+    case TIP_REQ_TIE:
+        {
+            Notify(EVENT_REQ_TIE_REPLY, pMsg);
+        }
+        break;
+    case TIP_REQ_LOSE:
+        {
+            Notify(EVENT_REQ_LOSE_REPLY, pMsg);
+        }
+        break;
+    default:
+        break;
     }
 }

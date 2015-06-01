@@ -25,13 +25,9 @@ const int MAX_MSG_SIZE = 1024;
 const int MSG_GAME_INFO = 1;
 const int MSG_NEW_GAME = 2;
 const int MSG_CHESSBOARD_SYNC = 3;
-const int MSG_FALLBACK = 4;
-const int MSG_FALLBACK_REPLY = 5;
-const int MSG_TIE = 6;
-const int MSG_TIE_REPLY = 7;
-const int MSG_LOSE = 8;
-const int MSG_LOSE_REPLY = 9;
-const int MSG_MOVE_ROUTE = 10;
+const int MSG_MOVE_ROUTE = 4;
+const int MSG_TIP = 5;
+const int MSG_TIP_REPLY = 6;
 
 struct BaseNetworkMsg
 {
@@ -89,75 +85,31 @@ struct MsgChessboardSync : public BaseNetworkMsg
     }
 };
 
-struct MsgFallback : public BaseNetworkMsg
+struct MsgTip : public BaseNetworkMsg
 {
     int nReqSide;
+    int nTipType;
 
-    MsgFallback()
+    MsgTip()
     {
-        nMsgID = MSG_FALLBACK;
+        nMsgID = MSG_TIP;
         nReqSide = 0;
+        nTipType = 0;
     }
 };
 
-struct MsgFallbackReply : public BaseNetworkMsg
+struct MsgTipReply : public BaseNetworkMsg
 {
     int nReqSide;
     int nResult;
+    int nTipType;
 
-    MsgFallbackReply()
+    MsgTipReply()
     {
-        nMsgID = MSG_FALLBACK_REPLY;
+        nMsgID = MSG_TIP_REPLY;
         nReqSide = 0;
         nResult = 0;
-    }
-};
-
-struct MsgTie : public BaseNetworkMsg
-{
-    int nReqSide;
-
-    MsgTie()
-    {
-        nMsgID = MSG_TIE;
-        nReqSide = 0;
-    }
-};
-
-struct MsgTieReply : public BaseNetworkMsg
-{
-    int nReqSide;
-    int nResult;
-
-    MsgTieReply()
-    {
-        nMsgID = MSG_TIE_REPLY;
-        nReqSide = 0;
-        nResult = 0;
-    }
-};
-
-struct MsgLose : public BaseNetworkMsg
-{
-    int nReqSide;
-
-    MsgLose()
-    {
-        nMsgID = MSG_LOSE;
-        nReqSide = 0;
-    }
-};
-
-struct MsgLoseReply : public BaseNetworkMsg
-{
-    int nReqSide;
-    int nResult;
-
-    MsgLoseReply()
-    {
-        nMsgID = MSG_LOSE_REPLY;
-        nReqSide = 0;
-        nResult = 0;
+        nTipType = 0;
     }
 };
 

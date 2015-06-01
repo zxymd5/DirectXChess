@@ -56,12 +56,12 @@ void CSubject::Detach( CObserver *pObv )
     }
 }
 
-void CSubject::Notify(int nEvent)
+void CSubject::Notify(int nEvent, void *pParam)
 {
     list<CObserver *>::iterator it;
     for (it = m_lstObv.begin(); it != m_lstObv.end(); ++it)
     {
-        (*it)->ProcessEvent(this, nEvent);
+        (*it)->ProcessEvent(this, nEvent, pParam);
     }
 }
 

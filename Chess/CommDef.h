@@ -67,6 +67,10 @@ static const int COMPITITOR_NETWORK = 3;
 static const int CLIENT_SIDE = 1;
 static const int SERVER_SIDE = 2;
 
+static const int TIP_REQ_FALLBACK = 1;
+static const int TIP_REQ_TIE = 2;
+static const int TIP_REQ_LOSE = 3;
+
 static const int BLACK_GENERAL = 1;     //ºÚ½«
 static const int BLACK_CHARIOT = 2;     //ºÚ³µ
 static const int BLACK_HORSE = 3;       //ºÚÂí
@@ -319,5 +323,11 @@ static const int EVENT_FALLBACK = 4;
 static const int EVENT_LOAD_CHESSMAN = 5;
 static const int EVENT_GAME_RESULT = 6;
 static const int EVENT_ILLEGAL_MOVE = 7;
+static const int EVENT_REQ_FALLBACK = 8;
+static const int EVENT_REQ_FALLBACK_REPLY = 9;
+static const int EVENT_REQ_TIE = 10;
+static const int EVENT_REQ_TIE_REPLY = 11;
+static const int EVENT_REQ_LOSE = 12;
+static const int EVENT_REQ_LOSE_REPLY = 13;
 
 #endif

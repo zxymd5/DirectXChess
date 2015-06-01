@@ -44,7 +44,7 @@ public:
     void MsgResponse(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void HandleLButtonUp();
 
-    virtual void ProcessEvent(CSubject *pSub, int nEvent);
+    virtual void ProcessEvent(CSubject *pSub, int nEvent, void *pParam);
     void ProcessInitBoardEvent(CSubject *pSub);
     void ProcessNewGameEvent(CSubject *pSub);
     void ProcessUpdateMoveRouteEvent(CSubject *pSub);
@@ -52,6 +52,8 @@ public:
     void ProcessLoadChessManEvent( CSubject *pSub );
     void ProcessGameResultEvent( CSubject *pSub );
     void ProcessIllegalMoveEvent( CSubject *pSub );
+    void ProcessTipEvent(CSubject *pSub, int nEvent, void *pParam);
+    void ProcessTipReplyEvent(CSubject *pSub, int nEvent, void *pParam);
 
     void UpdateChessMan(int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
     void UpdateMoveRoute(const MoveRoute &stRoute, int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN]);
@@ -72,6 +74,8 @@ public:
     int GetMoveHistoryCurrentIndex(bool bMySide);
 
     void ShowResultView(int nGameResult);
+    void ShowTipView(int nTipType);
+    void ShowTipReplyView( int nTipType, int nResult );
 
     void Init(HWND hWnd);
     void ChangeChessManPos();
@@ -83,8 +87,6 @@ public:
     void PrevPage(bool bMySide);
 
     static void OnStart(void * pParam);
-    static void OnPauseGame(void * pParam);
-    static void OnContinue(void * pParam);
     static void OnNewGame(void * pParam);
     static void OnOpen(void * pParam);
     static void OnSave(void * pParam);
@@ -150,6 +152,7 @@ private:
     int         m_nCurrentLeftStepOrder;  //从1开始
     int         m_nCurrentRightStepOrder; //从1开始
     bool        m_bStepTimeOverNotify;
+    int         m_nTipType;
 };
 
 extern CGameView g_GameView;

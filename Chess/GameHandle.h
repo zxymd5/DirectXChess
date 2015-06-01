@@ -70,6 +70,7 @@ public:
     void StepTimeOver();
     void OnTie();
     void OnLose();
+    void OnWin();
     void ResetZobrist();
     void AddChessMan(int nChessMan, int nRow, int nColumn);
     void DelChessMan(int nChessMan, int nRow, int nColumn);
@@ -81,10 +82,24 @@ public:
 
     //处理网络上的消息
     void ProcessMessage();
-    void ProcessGameInfoMessage(void *pMsg);
-    void ProcessNewGameMessage(void *pMsg);
+    void ProcessGameInfoMsg(void *pMsg);
+    void ProcessNewGameMsg(void *pMsg);
+    void ProcessChessboardSyncMsg(void *pMsg);
+    void ProcessMoveRouteMsg(void *pMsg);
+    void ProcessFallbackMsg(void *pMsg);
+    void ProcessTieMsg(void *pMsg);
+    void ProcessLoseMsg(void *pMsg);
+    void ProcessFallbackReplyMsg(void *pMsg);
+    void ProcessTieReplyMsg(void *pMsg);
+    void ProcessLoseReplyMsg(void *pMsg);
     void SendGameInfoMsg();
     void SendNewGameMsg();
+    void SendChessboardSyncMsg();
+    void SendMoveRouteMsg();
+    void SendFallbackMsg();
+    void SendTieMsg();
+    void SendLoseMsg();
+    void SendMsg(char *pMsg, int nMsgSize);
     void Shutdown();
     void EnqueMsg(BaseNetworkMsg *pMsg);
     BaseNetworkMsg *DequeMsg();

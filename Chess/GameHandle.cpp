@@ -56,21 +56,8 @@ void CGameHandle::Init()
     m_hEventSaveGame = CreateEvent(NULL, TRUE, FALSE, NULL); 
     m_hEventGameSaved = CreateEvent(NULL, TRUE, TRUE, NULL);  
     m_hThreadSaveGame = (HANDLE)_beginthreadex(NULL, 0, SaveGameFunc, this, 0, NULL);
-
-    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
-    {
-        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
-        {
-            m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
-        }
-        else
-        {
-            m_clClient.InitClient();
-        }
-
-        ::InitializeCriticalSection(&m_csMsgQue);
-    }
-    else if (g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
+    
+    if (g_GameSettings.m_nGameType == COMPITITOR_MACHINE)
     {
         m_hEventComputerMove = CreateEvent(NULL, TRUE, FALSE, NULL);
         m_hThreadComputerMove = (HANDLE)_beginthreadex(NULL, 0, ComputerMove, this, 0, NULL);
@@ -175,6 +162,12 @@ void CGameHandle::DoMove(int nRow, int nColumn)
         else
         {
             Notify(EVENT_UPDATE_MOVE);
+
+            //发送走棋消息给对方
+            if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+            {
+                SendMoveRouteMsg();
+            }
         }
     }
     else
@@ -349,6 +342,12 @@ void CGameHandle::ApplyCompleteMove()
         }
     }
 
+    //发送走棋消息给对方
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        SendMoveRouteMsg();
+    }
+
     Notify(EVENT_UPDATE_MOVE);
     ResetMoveRoute(m_stCurrentMoveRoute);
     m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
@@ -514,18 +513,18 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
         fs << m_nCurrentTurn << '\t' << m_nGameResult << '\t' << m_nWhoIsDead << endl << endl;
 
         //最后保存走棋历史记录
-        list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
-        for (; it != m_lstMoveRoute.end(); ++it)
-        {
-            fs << it->nMovingChessMan << '\t' 
-                << it->nKilledChessMan << '\t' 
-                << it->bAttackGeneral  << '\t' 
-                << it->stFromPos.nRow << '\t' 
-                << it->stFromPos.nColumn << '\t'
-                << it->stToPos.nRow << '\t'
-                << it->stToPos.nColumn << '\t'
-                << it->szMoveStepAlpha << endl;
-        }
+//         list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
+//         for (; it != m_lstMoveRoute.end(); ++it)
+//         {
+//             fs << it->nMovingChessMan << '\t' 
+//                 << it->nKilledChessMan << '\t' 
+//                 << it->bAttackGeneral  << '\t' 
+//                 << it->stFromPos.nRow << '\t' 
+//                 << it->stFromPos.nColumn << '\t'
+//                 << it->stToPos.nRow << '\t'
+//                 << it->stToPos.nColumn << '\t'
+//                 << it->szMoveStepAlpha << endl;
+//         }
         fs.close();
     }
     else
@@ -558,26 +557,27 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
 
         //再读取轮到谁走棋，棋局结果
         fs >> m_nCurrentTurn >> m_nGameResult >> m_nWhoIsDead;
-        fs.seekp(1, ios::cur);
-
-        //最后读取走棋历史记录
-        MoveRoute stMoveRoute;
-        while(!fs.eof())
-        {
-            fs >> stMoveRoute.nMovingChessMan
-                >> stMoveRoute.nKilledChessMan
-                >> stMoveRoute.bAttackGeneral
-                >> stMoveRoute.stFromPos.nRow
-                >> stMoveRoute.stFromPos.nColumn
-                >> stMoveRoute.stToPos.nRow
-                >> stMoveRoute.stToPos.nColumn
-                >> stMoveRoute.szMoveStepAlpha;
-            if (fs.eof())
-            {
-                break;
-            }
-            m_lstMoveRoute.push_back(stMoveRoute);
-        }
+        m_nCurrentSearchMoveTurn = m_nCurrentTurn;
+//         fs.seekp(1, ios::cur);
+// 
+//         //最后读取走棋历史记录
+//         MoveRoute stMoveRoute;
+//         while(!fs.eof())
+//         {
+//             fs >> stMoveRoute.nMovingChessMan
+//                 >> stMoveRoute.nKilledChessMan
+//                 >> stMoveRoute.bAttackGeneral
+//                 >> stMoveRoute.stFromPos.nRow
+//                 >> stMoveRoute.stFromPos.nColumn
+//                 >> stMoveRoute.stToPos.nRow
+//                 >> stMoveRoute.stToPos.nColumn
+//                 >> stMoveRoute.szMoveStepAlpha;
+//             if (fs.eof())
+//             {
+//                 break;
+//             }
+//             m_lstMoveRoute.push_back(stMoveRoute);
+//         }
 
         fs.close();
     }
@@ -627,45 +627,52 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
             m_nCurrentTurn = sqlite3_column_int(stmt, 0);
             m_nGameResult = sqlite3_column_int(stmt, 1);
             m_nWhoIsDead = sqlite3_column_int(stmt, 2);
-            m_nCurrentSearchMoveTurn = m_nCurrentSearchMoveTurn;
+            m_nCurrentSearchMoveTurn = m_nCurrentTurn;
         }
 
-        sqlite3_reset(stmt);
-        sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
-        nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
-        if (SQLITE_OK != nRet)
-        {
-            sqlite3_finalize(stmt);
-            sqlite3_close(db);
-            return;
-        }
-
-        while(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-            MoveRoute stRoute;
-            stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
-            stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
-            stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
-            stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
-            stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
-            stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
-            stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
-            strcpy(stRoute.szMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
-
-            m_lstMoveRoute.push_back(stRoute);
-        }
+//         sqlite3_reset(stmt);
+//         sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
+//         nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
+//         if (SQLITE_OK != nRet)
+//         {
+//             sqlite3_finalize(stmt);
+//             sqlite3_close(db);
+//             return;
+//         }
+// 
+//         while(sqlite3_step(stmt) == SQLITE_ROW)
+//         {
+//             MoveRoute stRoute;
+//             stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
+//             stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
+//             stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
+//             stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
+//             stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
+//             stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
+//             stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
+//             strcpy(stRoute.szMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
+// 
+//             m_lstMoveRoute.push_back(stRoute);
+//         }
 
         sqlite3_finalize(stmt);
         sqlite3_close(db);
     }
 
-    if (m_lstMoveRoute.size())
-    {
-        m_stCurrentMoveRoute = m_lstMoveRoute.back();
-    }
+//     if (m_lstMoveRoute.size())
+//     {
+//         m_stCurrentMoveRoute = m_lstMoveRoute.back();
+//     }
     
     Notify(EVENT_LOAD_CHESSMAN);
     ResetMoveRoute(m_stCurrentMoveRoute);
+    m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
+
+    //发送棋盘同步消息
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        SendChessboardSyncMsg();
+    }
 }
 
 unsigned int __stdcall CGameHandle::SaveGameFunc( void *pParam )
@@ -1085,10 +1092,34 @@ void CGameHandle::ProcessMessage( )
         switch(pMsg->nMsgID)
         {
         case MSG_GAME_INFO:
-            ProcessGameInfoMessage(pMsg);
+            ProcessGameInfoMsg(pMsg);
             break;
         case MSG_NEW_GAME:
-            ProcessNewGameMessage(pMsg);
+            ProcessNewGameMsg(pMsg);
+            break;
+        case MSG_CHESSBOARD_SYNC:
+            ProcessChessboardSyncMsg(pMsg);
+            break;
+        case MSG_MOVE_ROUTE:
+            ProcessMoveRouteMsg(pMsg);
+            break;
+        case MSG_FALLBACK:
+            ProcessFallbackMsg(pMsg);
+            break;
+        case MSG_TIE:
+            ProcessTieMsg(pMsg);
+            break;
+        case MSG_LOSE:
+            ProcessLoseMsg(pMsg);
+            break;
+        case MSG_FALLBACK_REPLY:
+            ProcessFallbackReplyMsg(pMsg);
+            break;
+        case MSG_TIE_REPLY:
+            ProcessTieReplyMsg(pMsg);
+            break;
+        case MSG_LOSE_REPLY:
+            ProcessLoseReplyMsg(pMsg);
             break;
         default:
             break;
@@ -1138,17 +1169,20 @@ void CGameHandle::OnStart()
     //客户端连接服务器
     if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
     {
+        ::InitializeCriticalSection(&m_csMsgQue);
         if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
         {
+            m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
+
             if(m_clServer.WaitForClientConn() > 0)
             {
                 SendGameInfoMsg();
-                //创建线程
                 m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
             }
         }
         else
         {
+            m_clClient.InitClient();
             m_clClient.ConnToServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
             m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
         }
@@ -1194,7 +1228,7 @@ void CGameHandle::SendGameInfoMsg()
     m_clServer.SendMsg((char *)&stMsg, sizeof(stMsg));
 }
 
-void CGameHandle::ProcessGameInfoMessage( void *pMsg )
+void CGameHandle::ProcessGameInfoMsg( void *pMsg )
 {
     MsgGameInfo *pMsgGameInfo = (MsgGameInfo *)pMsg;
 
@@ -1204,10 +1238,40 @@ void CGameHandle::ProcessGameInfoMessage( void *pMsg )
     memcpy(m_arrChessMan, pMsgGameInfo->arrChessman, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
 }
 
-void CGameHandle::ProcessNewGameMessage( void *pMsg )
+void CGameHandle::ProcessNewGameMsg( void *pMsg )
 {
-    MsgNewGame *pMsgNewGame = (MsgNewGame *)pMsg;
     NewGame();
+}
+
+void CGameHandle::ProcessChessboardSyncMsg( void *pMsg )
+{
+    MsgChessboardSync *pMsgChessboardSync = (MsgChessboardSync *)pMsg;
+    m_nCurrentTurn = pMsgChessboardSync->nCurrentTurn;
+    m_nGameResult = pMsgChessboardSync->nGameResult;
+    m_nWhoIsDead = pMsgChessboardSync->nWhoIsDead;
+    memcpy(m_arrChessMan, pMsgChessboardSync->arrChessman, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    m_nCurrentSearchMoveTurn = m_nCurrentTurn;
+
+    Notify(EVENT_LOAD_CHESSMAN);
+    ResetMoveRoute(m_stCurrentMoveRoute);
+    m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
+}
+
+void CGameHandle::ProcessMoveRouteMsg( void *pMsg )
+{
+    MsgMoveRoute *pMsgMoveRoute = (MsgMoveRoute *)pMsg;
+    m_nCurrentTurn = pMsgMoveRoute->nCurrentTurn;
+    m_nGameResult = pMsgMoveRoute->nGameResult;
+    m_nWhoIsDead = pMsgMoveRoute->nWhoIsDead;
+    m_stCurrentMoveRoute = pMsgMoveRoute->stMoveRoute;
+    memcpy(m_arrChessMan, pMsgMoveRoute->arrChessman, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+
+    Notify(EVENT_UPDATE_MOVE);
+    if (IsCompleteMoveRoute(m_stCurrentMoveRoute))
+    {
+        ResetMoveRoute(m_stCurrentMoveRoute);
+        m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
+    }
 }
 
 void CGameHandle::EnqueMsg( BaseNetworkMsg *pMsg )
@@ -1235,12 +1299,107 @@ void CGameHandle::SendNewGameMsg()
 {
     MsgNewGame stMsgNewGame;
     memcpy(stMsgNewGame.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    SendMsg((char *)&stMsgNewGame, sizeof(MsgNewGame));
+}
+
+void CGameHandle::SendChessboardSyncMsg()
+{
+    MsgChessboardSync stMsgChessboardSync;
+    stMsgChessboardSync.nCurrentTurn = m_nCurrentTurn;
+    stMsgChessboardSync.nGameResult = m_nGameResult;
+    stMsgChessboardSync.nWhoIsDead = m_nWhoIsDead;
+    memcpy(stMsgChessboardSync.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    SendMsg((char *)&stMsgChessboardSync, sizeof(MsgChessboardSync));
+}
+
+void CGameHandle::SendMoveRouteMsg()
+{
+    MsgMoveRoute stMsgMoveRoute;
+    stMsgMoveRoute.nCurrentTurn = m_nCurrentTurn;
+    stMsgMoveRoute.nGameResult = m_nGameResult;
+    stMsgMoveRoute.nWhoIsDead = m_nWhoIsDead;
+    memcpy(stMsgMoveRoute.arrChessman, m_arrChessMan, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    stMsgMoveRoute.stMoveRoute = m_stCurrentMoveRoute;
+    SendMsg((char *)&stMsgMoveRoute, sizeof(MsgMoveRoute));
+}
+
+void CGameHandle::SendMsg( char *pMsg, int nMsgSize )
+{
     if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
     {
-        m_clServer.SendMsg((char *)&stMsgNewGame, sizeof(MsgNewGame));
+        m_clServer.SendMsg(pMsg, nMsgSize);
     }
     else
     {
-        m_clClient.SendMsg((char *)&stMsgNewGame, sizeof(MsgNewGame));
+        m_clClient.SendMsg(pMsg, nMsgSize);
+    }
+}
+
+void CGameHandle::SendFallbackMsg()
+{
+    MsgFallback stMsgFallback;
+    stMsgFallback.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
+    SendMsg((char *)&stMsgFallback, sizeof(MsgFallback));
+}
+
+void CGameHandle::SendTieMsg()
+{
+    MsgTie stMsgTie;
+    stMsgTie.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
+    SendMsg((char *)&stMsgTie, sizeof(MsgTie));
+}
+
+void CGameHandle::SendLoseMsg()
+{
+    MsgLose stMsgLose;
+    stMsgLose.nReqSide = g_GameSettings.m_nCompetitorSide == BLACK ? RED : BLACK;
+    SendMsg((char *)&stMsgLose, sizeof(MsgLose));
+}
+
+void CGameHandle::ProcessFallbackMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_FALLBACK, pMsg);
+}
+
+void CGameHandle::ProcessTieMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_TIE, pMsg);
+}
+
+void CGameHandle::ProcessLoseMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_LOSE, pMsg);
+}
+
+void CGameHandle::ProcessFallbackReplyMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_FALLBACK_REPLY, pMsg);
+}
+
+void CGameHandle::ProcessTieReplyMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_TIE_REPLY, pMsg);
+}
+
+void CGameHandle::ProcessLoseReplyMsg( void *pMsg )
+{
+    Notify(EVENT_REQ_LOSE_REPLY, pMsg);
+}
+
+void CGameHandle::OnWin()
+{
+    if (m_nGameResult == -1)
+    {
+        if (g_GameSettings.m_nCompetitorSide == BLACK)
+        {
+            m_nGameResult = RED;
+        }
+        else
+        {
+            m_nGameResult = BLACK;
+        }
+
+        m_llCurrentStepStartTime = 0;
+        Notify(EVENT_GAME_RESULT);
     }
 }

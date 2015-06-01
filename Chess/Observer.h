@@ -27,7 +27,7 @@ class CObserver
 {
 public:
     virtual ~CObserver();
-    virtual void ProcessEvent(CSubject *pSub, int nEvent) = 0;
+    virtual void ProcessEvent(CSubject *pSub, int nEvent, void *pParam) = 0;
 
 protected:
     CObserver();

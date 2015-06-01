@@ -31,7 +31,7 @@ public:
     virtual ~CSubject();
     virtual void Attach(CObserver *pObv);
     virtual void Detach(CObserver *pObv);
-    virtual void Notify(int nEvent);
+    virtual void Notify(int nEvent, void *pParam = NULL);
     
 protected:
     CSubject();

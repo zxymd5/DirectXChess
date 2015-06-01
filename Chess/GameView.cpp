@@ -1,21 +1,21 @@
 /*      
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  File:       GameView.cpp
- *  Author:     Richard Zou
- *  Created on: 2015-03-01
- */
+*  This program is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*  File:       GameView.cpp
+*  Author:     Richard Zou
+*  Created on: 2015-03-01
+*/
 
 #include "GameView.h"
 #include "GameHandle.h"
@@ -493,7 +493,7 @@ void CGameView::HandleLButtonUp()
     int nRow = -1;
     int nColumn = -1;
 
-    if (!(g_GameSettings.m_nGameType == COMPITITOR_MACHINE && 
+    if (!((g_GameSettings.m_nGameType == COMPITITOR_MACHINE || g_GameSettings.m_nGameType == COMPITITOR_NETWORK)&& 
         g_GameHandle.GetCurrentTurn() == g_GameSettings.m_nCompetitorSide))
     {
         if (GetCoordinate (pt, nRow, nColumn, g_GameSettings.m_nCompetitorSide))
@@ -561,7 +561,7 @@ void CGameView::ProcessUpdateMoveRouteEvent( CSubject *pSub )
     UpdateMoveRoute(stRoute, arrChessMan);
     PlayTipSound(stRoute, nGameResult);
     UpdateGeneralStatus(nGameResult);
-    
+
     if (g_GameSettings.m_nStepTime <= 0 && nGameResult == -1)
     {
         m_pStepTimeLeft->SetText(pGameHandle->GetCurrentTurn() == BLACK ? "黑方走棋" : "红方走棋");
@@ -584,20 +584,20 @@ void CGameView::ProcessGameResultEvent( CSubject *pSub )
 void CGameView::ProcessLoadChessManEvent( CSubject *pSub )
 {
     CGameHandle *pGameHandle = (CGameHandle *)pSub;
-//     MoveRoute stRoute = pGameHandle->GetCurrentMoveRoute();
-//     list<MoveRoute> lstMoveRoute = pGameHandle->GetLstMoveRoute();
+    //     MoveRoute stRoute = pGameHandle->GetCurrentMoveRoute();
+    //     list<MoveRoute> lstMoveRoute = pGameHandle->GetLstMoveRoute();
     int nGameResult = pGameHandle->GetGameResult();
 
     int arrChessMan[CHESSBOARD_ROW][CHESSBOARD_COLUMN];
     pGameHandle->GetChessMan(arrChessMan);
     UpdateChessMan(arrChessMan);
-//     UpdateMoveRoute(stRoute, arrChessMan);
-// 
-//     list<MoveRoute>::iterator it = lstMoveRoute.begin();
-//     for (; it != lstMoveRoute.end(); ++it)
-//     {
-//         AddMoveHistory(*it);
-//     }
+    //     UpdateMoveRoute(stRoute, arrChessMan);
+    // 
+    //     list<MoveRoute>::iterator it = lstMoveRoute.begin();
+    //     for (; it != lstMoveRoute.end(); ++it)
+    //     {
+    //         AddMoveHistory(*it);
+    //     }
 
     UpdateGeneralStatus(nGameResult);
     m_bGameStarted = true;
@@ -653,7 +653,7 @@ void CGameView::PlayTipSound( const MoveRoute &stRoute, int nGameResult )
             m_clSoundPlayer.Play(AUDIO_CHOOSE);
         }
     }
-    
+
 }
 
 void CGameView::OnStart( void *pParam )
@@ -663,7 +663,7 @@ void CGameView::OnStart( void *pParam )
     pGameView->m_pStart->SetCurrState(STATE_DISABLE);
     pGameView->m_pNewGame->SetCurrState(STATE_ACTIVE);
     pGameView->m_pOpen->SetCurrState(STATE_ACTIVE);
-    
+
     if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
     {
         g_GameHandle.OnStart();
@@ -712,17 +712,36 @@ void CGameView::OnSave( void *pParam )
 
 void CGameView::OnFallback( void *pParam )
 {
-    g_GameHandle.FallBack();
+    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+    {
+        g_GameHandle.SendFallbackMsg();
+    }
+    else
+    {
+        g_GameHandle.FallBack();
+    }
 }
 
 void CGameView::OnTie( void *pParam )
+{    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+{
+    g_GameHandle.SendFallbackMsg();
+}
+else
 {
     g_GameHandle.OnTie();
 }
+}
 
 void CGameView::OnLose( void *pParam )
+{    if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
+{
+    g_GameHandle.SendFallbackMsg();
+}
+else
 {
     g_GameHandle.OnLose();
+}
 }
 
 void CGameView::OnSettings( void *pParam )
@@ -965,7 +984,7 @@ int CGameView::GetMoveHistoryCurrentIndex(bool bMySide)
 {
     int nCurrentRecordIndex = 0;    //从1开始
     int nCurrentStepOrderNumber = bMySide ? m_nCurrentRightStepOrder : m_nCurrentLeftStepOrder;
-    
+
     if (nCurrentStepOrderNumber % MOVE_STEP_PER_PAGE == 0)
     {
         nCurrentRecordIndex = MOVE_STEP_PER_PAGE;
@@ -1045,7 +1064,7 @@ void CGameView::AddMoveHistory( const MoveRoute &stRoute )
     {
         bMySide =false;
     }
-    
+
     vector<ChineseMoveStep> &vecMoveStep = bMySide ? m_vecRightMoveHistory : m_vecLeftMoveHistory;
     stMoveStep.nOrderNumber = vecMoveStep.size() + 1;
     CMoveRouteGenerator::AlphaFmtToChiness(stRoute.szMoveStepAlpha, stMoveStep.szMoveStepInfo, bBlack);

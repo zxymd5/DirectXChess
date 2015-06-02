@@ -101,8 +101,6 @@ public:
     static void OnPrevRecord(void *pParam);
     static void OnNextRecord(void *pParam);
     static void OnNextPage(void *pParam);
-    static void OnConnect(void *pParam);
-    static void OnDisconnect(void *pParam);
     static void OnAgreeOrDisagree(void *pParam);
 
 private:
@@ -123,8 +121,6 @@ private:
     CDXButton   *m_pLose;
     CDXButton   *m_pSettings;
     CDXButton   *m_pExit;
-    CDXButton   *m_pConnect;
-    CDXButton   *m_pDisconnect;
     CDXLabel    *m_pMessageBox;
     CDXButton   *m_pConfirm;
     CDXButton   *m_pAgree;

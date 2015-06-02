@@ -1216,6 +1216,7 @@ void CGameHandle::ProcessMoveRouteMsg( void *pMsg )
     Notify(EVENT_UPDATE_MOVE);
     if (IsCompleteMoveRoute(m_stCurrentMoveRoute))
     {
+        m_lstMoveRoute.push_back(m_stCurrentMoveRoute);
         ResetMoveRoute(m_stCurrentMoveRoute);
         m_llCurrentStepStartTime = m_nGameResult == -1 ? ::timeGetTime() : 0;
     }

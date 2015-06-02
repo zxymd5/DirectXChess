@@ -1236,17 +1236,17 @@ void CGameView::ShowTipReplyView( int nTipType, int nResult )
     string strTipMsg;
     switch(nTipType)
     {
-    case EVENT_REQ_FALLBACK:
+    case TIP_REQ_FALLBACK:
         {
             strTipMsg = nResult == 1 ? "对方同意悔棋。" : "对方不同意悔棋。";
         }
         break;
-    case EVENT_REQ_TIE:
+    case TIP_REQ_TIE:
         {
             strTipMsg = nResult == 1 ? "对方同意和棋。" : "对方不同意和棋。";
         }
         break;
-    case EVENT_REQ_LOSE:
+    case TIP_REQ_LOSE:
         {
             strTipMsg = nResult == 1 ? "对方同意认输。" : "对方不同意认输。";
         }

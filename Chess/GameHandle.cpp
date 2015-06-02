@@ -1073,8 +1073,8 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 }
                 else
                 {
-                    MsgDisconnect stMsgDisconnect;
-                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    MsgDisconnect *pMsgDisconnect = new MsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)pMsgDisconnect);
                     break;
                 }
             }
@@ -1090,8 +1090,8 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 }
                 else
                 {
-                    MsgDisconnect stMsgDisconnect;
-                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    MsgDisconnect *pMsgDisconnect = new MsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)pMsgDisconnect);
                     break;
                 }
             }
@@ -1369,5 +1369,10 @@ void CGameHandle::ProcessTipReplyMsg( void *pMsg )
 void CGameHandle::ProcessDisconnectMsg( void *pMsg )
 {
     g_GameSettings.m_nGameType = COMPITITOR_HUMAN;
+    if (pMsg)
+    {
+        delete pMsg;
+        pMsg = NULL;
+    }
     OnNewGame();
 }

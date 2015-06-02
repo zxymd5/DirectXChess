@@ -161,6 +161,10 @@ void OnFileOperate(UINT uMsg)
         Ofn.lpstrTitle = "±£´æÎÄ¼þ";
         if (GetSaveFileName(&Ofn))
         {
+            if (strstr(szFileName, ".txt") == NULL)
+            {
+                strcat(szFileName, ".txt");
+            }
             g_GameHandle.SaveToFile(szFileName, Ofn.nFilterIndex);
         }
     }

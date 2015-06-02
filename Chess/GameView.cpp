@@ -1233,13 +1233,13 @@ void CGameView::ShowTipView( int nTipType )
     string strTipMsg;
     switch(nTipType)
     {
-    case EVENT_REQ_FALLBACK:
+    case TIP_REQ_FALLBACK:
         strTipMsg = "对方请求\n悔棋，是否同意？";
         break;
-    case EVENT_REQ_TIE:
+    case TIP_REQ_TIE:
         strTipMsg = "对方请求\n和棋，是否同意？";
         break;
-    case EVENT_REQ_LOSE:
+    case TIP_REQ_LOSE:
         strTipMsg = "对方请求\n认输，是否同意？";
         break;
     default:
@@ -1312,7 +1312,7 @@ void CGameView::OnAgreeOrDisagree( void *pParam )
     {
         nResult = 0;
     }
-    
+
     g_GameHandle.SendTipReplyMsg(pGameView->m_nTipType, nResult);
 
 

@@ -38,7 +38,13 @@ bool CServerNetwork::InitServer( const char *pIpAddr, int nPort )
     sockaddr_in stServerAddr;
     //CSockWrap::GetRemotAddrInfo(pIpAddr, nPort, stServerAddr);
     CSockWrap::GetLocalAddrInfo(nPort, stServerAddr);
-    CSockWrap::Bind(m_nListenFd, (const sockaddr *)&stServerAddr, sizeof(sockaddr));
+    int nRet = CSockWrap::Bind(m_nListenFd, (const sockaddr *)&stServerAddr, sizeof(sockaddr));
+    if (nRet < 0)
+    {
+        CSockWrap::Close(m_nListenFd);
+        m_nListenFd = INVALID_SOCKET;
+        return false;
+    }
     CSockWrap::Listen(m_nListenFd, 5);
 
     return true;
@@ -46,7 +52,13 @@ bool CServerNetwork::InitServer( const char *pIpAddr, int nPort )
 
 int CServerNetwork::RecvMsg(char szMsg[] )
 {
-    return CSockWrap::Recv(m_nClientFd, szMsg, MAX_MSG_SIZE, 0);
+    int nSize = CSockWrap::Recv(m_nClientFd, szMsg, MAX_MSG_SIZE, 0);
+
+    if (nSize <= 0)
+    {
+        StopServer();
+    }
+    return nSize;
 }
 
 int CServerNetwork::WaitForClientConn()
@@ -60,8 +72,16 @@ int CServerNetwork::WaitForClientConn()
 
 void CServerNetwork::StopServer()
 {
-    CSockWrap::Close(m_nClientFd);
-    CSockWrap::Close(m_nListenFd);
+    if (m_nClientFd != INVALID_SOCKET)
+    {
+        CSockWrap::Close(m_nClientFd);
+        m_nClientFd = INVALID_SOCKET;
+    }
+    if (m_nListenFd != INVALID_SOCKET)
+    {
+        CSockWrap::Close(m_nListenFd);
+        m_nListenFd = INVALID_SOCKET;
+    }
 }
 
 int CServerNetwork::SendMsg( char szMsg[], int nSize )

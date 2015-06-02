@@ -38,7 +38,7 @@ public:
     virtual ~CGameHandle(void);
     void Init();
     void OnStart();
-    void NewGame();
+    void OnNewGame();
 
     void Reset();
     void ResetChessManLayout();
@@ -88,6 +88,7 @@ public:
     void ProcessMoveRouteMsg(void *pMsg);
     void ProcessTipMsg(void *pMsg);
     void ProcessTipReplyMsg(void *pMsg);
+    void ProcessDisconnectMsg(void *pMsg);
     void SendGameInfoMsg();
     void SendNewGameMsg();
     void SendChessboardSyncMsg();

@@ -52,8 +52,6 @@ CGameView::CGameView(void)
     m_pLose = NULL;
     m_pSettings = NULL;
     m_pExit = NULL;
-    m_pConnect = NULL;
-    m_pDisconnect = NULL;
     m_pMessageBox = NULL;
     m_pConfirm = NULL;
     m_pCurrFocusWidget = NULL;
@@ -153,14 +151,6 @@ void CGameView::Init(HWND hWnd)
     m_pExit = (CDXButton *)g_GameEngine.GetWidgetByName("Exit");
     m_pExit->SetCallBackInfo(OnExit, this);
     m_mapWidget.insert(make_pair(m_pExit->GetDepth(), m_pExit));
-
-    m_pConnect = (CDXButton *)g_GameEngine.GetWidgetByName("Connect");
-    m_pConnect->SetCallBackInfo(OnConnect, this);
-    m_mapWidget.insert(make_pair(m_pConnect->GetDepth(), m_pConnect));
-
-    m_pDisconnect = (CDXButton *)g_GameEngine.GetWidgetByName("Disconnect");
-    m_pDisconnect->SetCallBackInfo(OnDisconnect, this);
-    m_mapWidget.insert(make_pair(m_pDisconnect->GetDepth(), m_pDisconnect));
 
     m_pMessageBox = (CDXLabel *)g_GameEngine.GetWidgetByName("MessageBox");
     m_pMessageBox->SetFontColor(255, 255, 255, 255);
@@ -680,10 +670,6 @@ void CGameView::OnStart( void *pParam )
     if (g_GameSettings.m_nGameType == COMPITITOR_NETWORK)
     {
         g_GameHandle.OnStart();
-        if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
-        {
-            pGameView->m_pConnect->SetCurrState(STATE_DISABLE);
-        }
     }
 
 }
@@ -692,7 +678,7 @@ void CGameView::OnNewGame( void *pParam )
 {
     CGameView *pGameView = (CGameView *)pParam;
 
-    g_GameHandle.NewGame();
+    g_GameHandle.OnNewGame();
     pGameView->m_clSoundPlayer.Play(AUDIO_NEW_GAME);
 
     pGameView->ClearHisotryDisplay();
@@ -1168,16 +1154,6 @@ void CGameView::PlayGameResultSound( int nGameResult )
     }
 }
 
-void CGameView::OnConnect( void *pParam )
-{
-
-}
-
-void CGameView::OnDisconnect( void *pParam )
-{
-
-}
-
 void CGameView::ProcessTipEvent( CSubject *pSub, int nEvent, void *pParam )
 {
     switch(nEvent)
@@ -1233,13 +1209,13 @@ void CGameView::ShowTipView( int nTipType )
     string strTipMsg;
     switch(nTipType)
     {
-    case EVENT_REQ_FALLBACK:
+    case TIP_REQ_FALLBACK:
         strTipMsg = "对方请求\n悔棋，是否同意？";
         break;
-    case EVENT_REQ_TIE:
+    case TIP_REQ_TIE:
         strTipMsg = "对方请求\n和棋，是否同意？";
         break;
-    case EVENT_REQ_LOSE:
+    case TIP_REQ_LOSE:
         strTipMsg = "对方请求\n认输，是否同意？";
         break;
     default:
@@ -1312,7 +1288,7 @@ void CGameView::OnAgreeOrDisagree( void *pParam )
     {
         nResult = 0;
     }
-    
+
     g_GameHandle.SendTipReplyMsg(pGameView->m_nTipType, nResult);
 
 

@@ -28,6 +28,7 @@ const int MSG_CHESSBOARD_SYNC = 3;
 const int MSG_MOVE_ROUTE = 4;
 const int MSG_TIP = 5;
 const int MSG_TIP_REPLY = 6;
+const int MSG_DISCONNECT = 7;
 
 struct BaseNetworkMsg
 {
@@ -128,6 +129,14 @@ struct MsgMoveRoute : public BaseNetworkMsg
         nGameResult = -1;
         nWhoIsDead = 0;
         memset(arrChessman, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
+    }
+};
+
+struct MsgDisconnect : public BaseNetworkMsg
+{
+    MsgDisconnect()
+    {
+        nMsgID = MSG_DISCONNECT;
     }
 };
 

@@ -64,7 +64,7 @@ void CGameHandle::Init()
     }
 }
 
-void CGameHandle::NewGame()
+void CGameHandle::OnNewGame()
 {
     Reset();
 
@@ -512,19 +512,6 @@ void CGameHandle::SaveToFile( const char *pFileName, int nFileType)
         //再保存轮到谁走棋，棋局结果
         fs << m_nCurrentTurn << '\t' << m_nGameResult << '\t' << m_nWhoIsDead << endl << endl;
 
-        //最后保存走棋历史记录
-        //         list<MoveRoute>::iterator it = m_lstMoveRoute.begin();
-        //         for (; it != m_lstMoveRoute.end(); ++it)
-        //         {
-        //             fs << it->nMovingChessMan << '\t' 
-        //                 << it->nKilledChessMan << '\t' 
-        //                 << it->bAttackGeneral  << '\t' 
-        //                 << it->stFromPos.nRow << '\t' 
-        //                 << it->stFromPos.nColumn << '\t'
-        //                 << it->stToPos.nRow << '\t'
-        //                 << it->stToPos.nColumn << '\t'
-        //                 << it->szMoveStepAlpha << endl;
-        //         }
         fs.close();
     }
     else
@@ -558,27 +545,6 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
         //再读取轮到谁走棋，棋局结果
         fs >> m_nCurrentTurn >> m_nGameResult >> m_nWhoIsDead;
         m_nCurrentSearchMoveTurn = m_nCurrentTurn;
-        //         fs.seekp(1, ios::cur);
-        // 
-        //         //最后读取走棋历史记录
-        //         MoveRoute stMoveRoute;
-        //         while(!fs.eof())
-        //         {
-        //             fs >> stMoveRoute.nMovingChessMan
-        //                 >> stMoveRoute.nKilledChessMan
-        //                 >> stMoveRoute.bAttackGeneral
-        //                 >> stMoveRoute.stFromPos.nRow
-        //                 >> stMoveRoute.stFromPos.nColumn
-        //                 >> stMoveRoute.stToPos.nRow
-        //                 >> stMoveRoute.stToPos.nColumn
-        //                 >> stMoveRoute.szMoveStepAlpha;
-        //             if (fs.eof())
-        //             {
-        //                 break;
-        //             }
-        //             m_lstMoveRoute.push_back(stMoveRoute);
-        //         }
-
         fs.close();
     }
     else
@@ -630,39 +596,9 @@ void CGameHandle::LoadFromFile( const char *pFileName, int nFileType)
             m_nCurrentSearchMoveTurn = m_nCurrentTurn;
         }
 
-        //         sqlite3_reset(stmt);
-        //         sprintf(szSQL, "select nmovingchessman, nkilledchessman, battackgeneral, nfromrow, nfromcolumn, ntorow, ntocolumn, strmovestepalpha from moveroute order by id");        
-        //         nRet = sqlite3_prepare_v2(db, szSQL, -1, &stmt, NULL);
-        //         if (SQLITE_OK != nRet)
-        //         {
-        //             sqlite3_finalize(stmt);
-        //             sqlite3_close(db);
-        //             return;
-        //         }
-        // 
-        //         while(sqlite3_step(stmt) == SQLITE_ROW)
-        //         {
-        //             MoveRoute stRoute;
-        //             stRoute.nMovingChessMan = sqlite3_column_int(stmt, 0);
-        //             stRoute.nKilledChessMan = sqlite3_column_int(stmt, 1);
-        //             stRoute.bAttackGeneral = sqlite3_column_int(stmt, 2);
-        //             stRoute.stFromPos.nRow = sqlite3_column_int(stmt, 3);
-        //             stRoute.stFromPos.nColumn = sqlite3_column_int(stmt, 4);
-        //             stRoute.stToPos.nRow = sqlite3_column_int(stmt, 5);
-        //             stRoute.stToPos.nColumn = sqlite3_column_int(stmt, 6);
-        //             strcpy(stRoute.szMoveStepAlpha, (const char *)sqlite3_column_text(stmt, 7));
-        // 
-        //             m_lstMoveRoute.push_back(stRoute);
-        //         }
-
         sqlite3_finalize(stmt);
         sqlite3_close(db);
     }
-
-    //     if (m_lstMoveRoute.size())
-    //     {
-    //         m_stCurrentMoveRoute = m_lstMoveRoute.back();
-    //     }
 
     Notify(EVENT_LOAD_CHESSMAN);
     ResetMoveRoute(m_stCurrentMoveRoute);
@@ -1109,6 +1045,9 @@ void CGameHandle::ProcessMessage( )
         case MSG_TIP_REPLY:
             ProcessTipReplyMsg(pMsg);
             break;
+        case MSG_DISCONNECT:
+            ProcessDisconnectMsg(pMsg);
+            break;
         default:
             break;
         }
@@ -1132,6 +1071,12 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 {
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
                 }
+                else
+                {
+                    MsgDisconnect stMsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    break;
+                }
             }
         }
         else
@@ -1142,6 +1087,12 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 if (nSize > 0)
                 {
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
+                }
+                else
+                {
+                    MsgDisconnect stMsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    break;
                 }
             }
         }
@@ -1160,13 +1111,15 @@ void CGameHandle::OnStart()
         ::InitializeCriticalSection(&m_csMsgQue);
         if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
         {
-            m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
-
-            if(m_clServer.WaitForClientConn() > 0)
+            if(m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort))
             {
-                SendGameInfoMsg();
-                m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+                if(m_clServer.WaitForClientConn() > 0)
+                {
+                    SendGameInfoMsg();
+                    m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+                }
             }
+
         }
         else
         {
@@ -1234,7 +1187,7 @@ void CGameHandle::ProcessGameInfoMsg( void *pMsg )
 
 void CGameHandle::ProcessNewGameMsg( void *pMsg )
 {
-    NewGame();
+    OnNewGame();
 }
 
 void CGameHandle::ProcessChessboardSyncMsg( void *pMsg )
@@ -1410,4 +1363,10 @@ void CGameHandle::ProcessTipReplyMsg( void *pMsg )
     default:
         break;
     }
+}
+
+void CGameHandle::ProcessDisconnectMsg( void *pMsg )
+{
+    g_GameSettings.m_nGameType = COMPITITOR_HUMAN;
+    OnNewGame();
 }

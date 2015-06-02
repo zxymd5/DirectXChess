@@ -1075,6 +1075,7 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 {
                     MsgDisconnect stMsgDisconnect;
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    break;
                 }
             }
         }
@@ -1091,6 +1092,7 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 {
                     MsgDisconnect stMsgDisconnect;
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                    break;
                 }
             }
         }

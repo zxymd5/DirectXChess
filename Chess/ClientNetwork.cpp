@@ -49,10 +49,17 @@ int CClientNetwork::SendMsg( char szMsg[], int nSize )
 
 int CClientNetwork::RecvMsg( char szMsg[] )
 {
-    return CSockWrap::Recv(m_nSockFd, szMsg, MAX_MSG_SIZE, 0);
+    int nSize = CSockWrap::Recv(m_nSockFd, szMsg, MAX_MSG_SIZE, 0);
+    if (nSize <= 0)
+    {
+        StopClient();
+    }
+
+    return nSize;
 }
 
 void CClientNetwork::StopClient()
 {
     CSockWrap::Close(m_nSockFd);
+    m_nSockFd = INVALID_SOCKET;
 }

@@ -678,7 +678,7 @@ void CGameView::OnNewGame( void *pParam )
 {
     CGameView *pGameView = (CGameView *)pParam;
 
-    g_GameHandle.NewGame();
+    g_GameHandle.OnNewGame();
     pGameView->m_clSoundPlayer.Play(AUDIO_NEW_GAME);
 
     pGameView->ClearHisotryDisplay();

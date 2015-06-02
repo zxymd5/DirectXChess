@@ -125,7 +125,6 @@ int CSockWrap::Bind( SOCKET fd, const struct sockaddr *sa, socklen_t salen )
     int n;
     if ((n = bind(fd, sa, salen)) < 0)
     {
-        Close(fd);
         HandleErrMsg("Bind socket failed", __FILE__, GetLastError(), __LINE__);
     }
 

@@ -64,7 +64,7 @@ void CGameHandle::Init()
     }
 }
 
-void CGameHandle::NewGame()
+void CGameHandle::OnNewGame()
 {
     Reset();
 
@@ -1045,6 +1045,9 @@ void CGameHandle::ProcessMessage( )
         case MSG_TIP_REPLY:
             ProcessTipReplyMsg(pMsg);
             break;
+        case MSG_DISCONNECT:
+            ProcessDisconnectMsg(pMsg);
+            break;
         default:
             break;
         }
@@ -1068,6 +1071,11 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 {
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
                 }
+                else
+                {
+                    MsgDisconnect stMsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
+                }
             }
         }
         else
@@ -1078,6 +1086,11 @@ unsigned int __stdcall CGameHandle::RecvMsg( void *pParam )
                 if (nSize > 0)
                 {
                     pGameHandle->EnqueMsg((BaseNetworkMsg *)szMsg);
+                }
+                else
+                {
+                    MsgDisconnect stMsgDisconnect;
+                    pGameHandle->EnqueMsg((BaseNetworkMsg *)&stMsgDisconnect);
                 }
             }
         }
@@ -1096,13 +1109,15 @@ void CGameHandle::OnStart()
         ::InitializeCriticalSection(&m_csMsgQue);
         if (g_GameSettings.m_nServerOrClient == SERVER_SIDE)
         {
-            m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort);
-
-            if(m_clServer.WaitForClientConn() > 0)
+            if(m_clServer.InitServer(g_GameSettings.m_szIpAddr, g_GameSettings.m_nPort))
             {
-                SendGameInfoMsg();
-                m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+                if(m_clServer.WaitForClientConn() > 0)
+                {
+                    SendGameInfoMsg();
+                    m_hThreadNetwork = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, this, 0, NULL);
+                }
             }
+
         }
         else
         {
@@ -1170,7 +1185,7 @@ void CGameHandle::ProcessGameInfoMsg( void *pMsg )
 
 void CGameHandle::ProcessNewGameMsg( void *pMsg )
 {
-    NewGame();
+    OnNewGame();
 }
 
 void CGameHandle::ProcessChessboardSyncMsg( void *pMsg )
@@ -1346,4 +1361,10 @@ void CGameHandle::ProcessTipReplyMsg( void *pMsg )
     default:
         break;
     }
+}
+
+void CGameHandle::ProcessDisconnectMsg( void *pMsg )
+{
+    g_GameSettings.m_nGameType = COMPITITOR_HUMAN;
+    OnNewGame();
 }

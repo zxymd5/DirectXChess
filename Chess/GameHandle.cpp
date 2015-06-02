@@ -320,10 +320,10 @@ void CGameHandle::ApplyCompleteMove()
     //判断是否将对方置于死地
     if (m_stCurrentMoveRoute.bAttackGeneral)
     {
-        if (m_clGenerator.IsGeneralDead(m_arrChessMan, m_nCurrentTurn == BLACK ? RED : BLACK))
+        if (m_clGenerator.IsGeneralDead(m_arrChessMan, m_nCurrentTurn))
         {
-            m_nWhoIsDead = m_nCurrentTurn == BLACK ? RED : BLACK;
-            m_nGameResult = m_nCurrentTurn;
+            m_nWhoIsDead = m_nCurrentTurn;
+            m_nGameResult = m_nCurrentTurn == BLACK ? RED : BLACK;
         }
     }
 
@@ -857,6 +857,7 @@ void CGameHandle::Reset()
     m_lstMoveRoute.clear();
     m_nBlackValue = 0;
     m_nRedValue = 0;
+    memset(m_arrChessMan, 0, sizeof(int) * CHESSBOARD_ROW * CHESSBOARD_COLUMN);
 }
 
 void CGameHandle::AddChessMan( int nChessMan, int nRow, int nColumn )

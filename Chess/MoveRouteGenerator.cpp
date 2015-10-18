@@ -931,85 +931,89 @@ void CMoveRouteGenerator::GetBlackSoldierMoveStepAlpha( int arrChessMan[][CHESSB
     szAlphaFmt[1] = nFromColumn + 1 + '0';
     //获取兵的位置
     ChessManPosition arrPos[5];
-    int SoldierCount = GetChessManPosition(arrChessMan, BLACK_SOLDIER, arrPos);
+    int nSoldierCount = GetChessManPosition(arrChessMan, BLACK_SOLDIER, arrPos);
 
     int nMark = 0;
-    for (int i = 0; i < SoldierCount; i++)
+    ChessManPosition arrSameColumnPos[5];
+    int szSoliderCountOnEachColumn[CHESSBOARD_COLUMN];
+    memset(szSoliderCountOnEachColumn, 0, CHESSBOARD_COLUMN * sizeof(int));
+
+    for (int i = 0; i < nSoldierCount; i++)
     {
         if (arrPos[i].nColumn == nFromColumn)
         {
+            arrSameColumnPos[nMark] = arrPos[i];
             nMark++;
         }
+        szSoliderCountOnEachColumn[arrPos[i].nColumn]++;
     }
 
     if (nMark > 1)
     {
-        int szSoldierCountOnEachColumn[CHESSBOARD_COLUMN] = {0};                                                  //九条纵线上，每条线上兵的个数
-        int szColumnForEachSoldier[5] = {-1, -1, -1, -1, -1};                                                       //5个兵各在哪些纵线上
-        int n = 0;
-        int nStart = 0;
-
-        for (int i = 0; i < SoldierCount; i++)
+        char chOrder = 'c';         //前
+        for (int i = nMark - 1; i >= 0; i--)
         {
-            szSoldierCountOnEachColumn[arrPos[i].nColumn]++;
-        }
-
-        for (int i = 0; i < CHESSBOARD_COLUMN; i++)
-        {
-            if (szSoldierCountOnEachColumn[i] > 1)
-            {
-                //此纵线有两个以上的兵
-                for (int j = 0; j < SoldierCount; j++)
-                {
-                    if (i == arrPos[j].nColumn)
-                    {
-                        szColumnForEachSoldier[n] = j;
-                        n++;
-                    }
-                }
-
-                //为纵线上的棋子排序
-                for (int k = nStart; k < n - 1; k++)
-                {
-                    for (int j = n - 2; j >= k; j--)
-                    {
-                        if (arrPos[szColumnForEachSoldier[j]].nRow < arrPos[szColumnForEachSoldier[j + 1]].nRow)
-                        {
-                            int nTmp = szColumnForEachSoldier[j];
-                            szColumnForEachSoldier[j] = szColumnForEachSoldier[j + 1];
-                            szColumnForEachSoldier[j + 1] = nTmp;
-                        }
-                    }
-                }
-                nStart = n;
-            }
-        }
-
-        char chOrder = 'c'; //前
-        for (int i = 0; i < SoldierCount; i++)
-        {
-            if (arrPos[szColumnForEachSoldier[i]].nRow == nToRow)
+            if (arrSameColumnPos[i].nRow == (nFromRow < nToRow ? nToRow - 1 : nToRow))
             {
                 szAlphaFmt[1] = chOrder;
+                break;
             }
             chOrder++;
         }
 
         //转换成前后或前中后
-        if (nStart == 2)
+        int szMoreSoldierColumn[2];
+        int szSoldierPerColumn[2];
+        int j = 0;
+        memset(szMoreSoldierColumn, 0, 2 * sizeof(int));
+        memset(szSoldierPerColumn, 0, 2 * sizeof(int));
+
+        for (int i = 0; i < CHESSBOARD_COLUMN; ++i)
         {
-            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
+            if (szSoliderCountOnEachColumn[i] > 1)
+            {
+                szMoreSoldierColumn[j] = i;
+                szSoldierPerColumn[j] = szSoliderCountOnEachColumn[i];
+                j++;
+            }
         }
-        else if (nStart == 3)
+
+        bool bInMoreSoldierColumn = false;
+        int nIndex = -1;
+        for (int i = 0; i < 2; ++i)
         {
-            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
+            if (szMoreSoldierColumn[i] == nFromColumn && j > 1)
+            {
+                nIndex = i;
+                bInMoreSoldierColumn = true;
+                break;
+            }
+        }
+
+        if (!bInMoreSoldierColumn)
+        {
+            if (nMark == 2)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
+            }
+            else if (nMark == 3)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] == 'c'? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
+            }
+        }
+        else
+        {
+            if (nIndex == 1)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] + szSoldierPerColumn[0];
+            }
         }
     }
 
     if (nFromRow == nToRow)
     {
         szAlphaFmt[2] = '.';
-        szAlphaFmt[3] = nToColumn + 1 + '0';
+        szAlphaFmt[3] = nToColumn + '1';
     }
     else
     {
@@ -1025,85 +1029,89 @@ void CMoveRouteGenerator::GetRedSoldierMoveStepAlpha( int arrChessMan[][CHESSBOA
 
     //获取兵的位置
     ChessManPosition arrPos[5];
-    int SoldierCount = GetChessManPosition(arrChessMan, RED_SOLDIER, arrPos);
+    int nSoldierCount = GetChessManPosition(arrChessMan, RED_SOLDIER, arrPos);
 
     int nMark = 0;
-    for (int i = 0; i < SoldierCount; i++)
+    ChessManPosition arrSameColumnPos[5];
+    int szSoliderCountOnEachColumn[CHESSBOARD_COLUMN];
+    memset(szSoliderCountOnEachColumn, 0, CHESSBOARD_COLUMN * sizeof(int));
+    
+    for (int i = 0; i < nSoldierCount; i++)
     {
         if (arrPos[i].nColumn == nFromColumn)
         {
+            arrSameColumnPos[nMark] = arrPos[i];
             nMark++;
         }
+        szSoliderCountOnEachColumn[arrPos[i].nColumn]++;
     }
 
     if (nMark > 1)
     {
-        int szSoldierCountOnEachColumn[CHESSBOARD_COLUMN] = {0};                                                  //九条纵线上，每条线上兵的个数
-        int szColumnForEachSoldier[5] = {-1, -1, -1, -1, -1};                                                       //5个兵各对应stPos中哪些下标
-        int n = 0;
-        int nStart = 0;
-
-        for (int i = 0; i < SoldierCount; i++)
+        char chOrder = 'c';         //前
+        for (int i = 0; i < nMark; i++)
         {
-            szSoldierCountOnEachColumn[arrPos[i].nColumn]++;
-        }
-
-        for (int i = CHESSBOARD_COLUMN - 1; i >= 0; i--)
-        {
-            if (szSoldierCountOnEachColumn[i] > 1)
-            {
-                //此纵线有两个以上的兵
-                for (int j = 0; j < SoldierCount; j++)
-                {
-                    if (i == arrPos[j].nColumn)
-                    {
-                        szColumnForEachSoldier[n] = j;
-                        n++;
-                    }
-                }
-
-                //为纵线上的棋子排序
-                for (int k = nStart; k < n - 1; k++)
-                {
-                    for (int j = n - 2; j >= k; j--)
-                    {
-                        if (arrPos[szColumnForEachSoldier[j]].nRow > arrPos[szColumnForEachSoldier[j + 1]].nRow)
-                        {
-                            int nTmp = szColumnForEachSoldier[j];
-                            szColumnForEachSoldier[j] = szColumnForEachSoldier[j + 1];
-                            szColumnForEachSoldier[j + 1] = nTmp;
-                        }
-                    }
-                }
-                nStart = n;
-            }
-        }
-
-        char chOrder = 'c'; //前
-        for (int i = 0; i < SoldierCount; i++)
-        {
-            if (arrPos[szColumnForEachSoldier[i]].nRow == nToRow)
+            if (arrSameColumnPos[i].nRow == (nFromRow > nToRow ? nToRow + 1 : nToRow))
             {
                 szAlphaFmt[1] = chOrder;
+                break;
             }
             chOrder++;
         }
 
         //转换成前后或前中后
-        if (nStart == 2)
+        int szMoreSoldierColumn[2];
+        int szSoldierPerColumn[2];
+        int j = 0;
+        memset(szMoreSoldierColumn, 0, 2 * sizeof(int));
+        memset(szSoldierPerColumn, 0, 2 * sizeof(int));
+
+        for (int i = 0; i < CHESSBOARD_COLUMN; ++i)
         {
-            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
+            if (szSoliderCountOnEachColumn[i] > 1)
+            {
+                szMoreSoldierColumn[j] = i;
+                szSoldierPerColumn[j] = szSoliderCountOnEachColumn[i];
+                j++;
+            }
         }
-        else if (nStart == 3)
+
+        bool bInMoreSoldierColumn = false;
+        int nIndex = -1;
+        for (int i = 0; i < 2; ++i)
         {
-            szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
+            if (szMoreSoldierColumn[i] == nFromColumn && j > 1)
+            {
+                nIndex = i;
+                bInMoreSoldierColumn = true;
+                break;
+            }
+        }
+
+        if (!bInMoreSoldierColumn)
+        {
+            if (nMark == 2)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] == 'c' ? 'q' : 'h';
+            }
+            else if (nMark == 3)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] == 'c'? 'q' : (szAlphaFmt[1] == 'd' ? 'z' : 'h');
+            }
+        }
+        else
+        {
+            if (nIndex == 0)
+            {
+                szAlphaFmt[1] = szAlphaFmt[1] + szSoldierPerColumn[1];
+            }
         }
     }
 
     if (nFromRow == nToRow)
     {
         szAlphaFmt[2] = '.';
-        szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '0';
+        szAlphaFmt[3] = CHESSBOARD_COLUMN - nToColumn + '1';
     }
     else
     {

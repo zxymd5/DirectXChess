@@ -172,7 +172,12 @@ void CGameHandle::DoMove(int nRow, int nColumn)
     }
     else
     {
-        Notify(EVENT_ILLEGAL_MOVE);
+        if (m_stCurrentMoveRoute.nMovingChessMan > 0 && 
+            m_stCurrentMoveRoute.stFromPos.nRow >= 0 &&
+            m_stCurrentMoveRoute.stFromPos.nColumn >= 0)
+        {
+            Notify(EVENT_ILLEGAL_MOVE);
+        }
     }
 }
 
@@ -787,15 +792,7 @@ void CGameHandle::StepTimeOver()
 {
     if (m_nGameResult == -1)
     {
-        if (m_nCurrentTurn == BLACK)
-        {
-            m_nGameResult = RED;
-        }
-        else
-        {
-            m_nGameResult = BLACK;
-        }
-
+        m_nGameResult = (m_nCurrentTurn == BLACK ? RED : BLACK);
         m_llCurrentStepStartTime = 0;
         Notify(EVENT_GAME_RESULT);
     }
@@ -816,15 +813,7 @@ void CGameHandle::OnLose()
 {
     if (m_nGameResult == -1)
     {
-        if (g_GameSettings.m_nCompetitorSide == BLACK)
-        {
-            m_nGameResult = BLACK;
-        }
-        else
-        {
-            m_nGameResult = RED;
-        }
-
+        m_nGameResult = g_GameSettings.m_nCompetitorSide;
         m_llCurrentStepStartTime = 0;
         Notify(EVENT_GAME_RESULT);
     }
